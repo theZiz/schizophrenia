@@ -18,8 +18,10 @@
  Janek Schäfer (foxblock) , TODO_at_ADD.MAIL
  Alexander Matthes (Ziz) , zizsdl_at_googlemail.com
 */
-#include "sparrow3d.h"
+#include <sparrow3d.h>
 #include <SDL_image.h>
+
+#include "global_defines.h"
 
 SDL_Surface *screen;
 SDL_Surface *scientist;
@@ -29,11 +31,11 @@ spFontPointer font = NULL;
 
 void draw_test( void )
 {
-	spResetZBuffer();
-	spClearTarget( 0 );
+	RESET_ZBUFFER
+	CLEAN_TARGET
 	spIdentity();
-	spSetZSet( 1 );
-	spSetZTest( 1 );
+	spSetZSet( Z_SORTING );
+	spSetZTest( Z_SORTING );
 	spSetAlphaTest( 1 );
 
 	sprite->rotation = 0;
@@ -98,7 +100,6 @@ void resize( Uint16 w, Uint16 h )
 int main( int argc, char **argv )
 {
 	//sparrow3D Init
-	spSetDefaultWindowSize( 640, 480 ); //Creates a 640x480 window at PC instead of 320x240
 	spInitCore();
 
 	//Setup
