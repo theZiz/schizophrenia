@@ -82,18 +82,18 @@ void resize( Uint16 w, Uint16 h )
 	if ( font )
 		spFontDelete( font );
 	font = spFontLoad( "./font/StayPuft.ttf", 20 * spGetSizeFactor() >> SP_ACCURACY );
-	spFontAddRange( font, ' ', '~', 0 ); //whole ASCII
+	spFontAdd( font,SP_FONT_RANGE_GERMAN, 0 );
 	spFontAddBorder( font, 65535 );
-  spFontSetButtonStrategy(SP_FONT_BUTTON);
-  spFontAddButton( font, SP_BUTTON_A_NAME[0], SP_BUTTON_A_NAME, 65535, spGetRGB(64,64,64));
-  spFontAddButton( font, SP_BUTTON_B_NAME[0], SP_BUTTON_B_NAME, 65535, spGetRGB(64,64,64));
-  spFontAddButton( font, SP_BUTTON_X_NAME[0], SP_BUTTON_X_NAME, 65535, spGetRGB(64,64,64));
-  spFontAddButton( font, SP_BUTTON_Y_NAME[0], SP_BUTTON_Y_NAME, 65535, spGetRGB(64,64,64));
-  spFontAddButton( font, SP_BUTTON_L_NAME[0], SP_BUTTON_L_NAME, 65535, spGetRGB(64,64,64));
-  spFontAddButton( font, SP_BUTTON_R_NAME[0], SP_BUTTON_R_NAME, 65535, spGetRGB(64,64,64));
-  spFontSetButtonStrategy(SP_FONT_INTELLIGENT);
-  spFontAddButton( font, 'S', SP_BUTTON_START_NAME, 65535, spGetRGB(64,64,64));
-  spFontAddButton( font, 'E', SP_BUTTON_SELECT_NAME, 65535, spGetRGB(64,64,64));
+	spFontSetButtonStrategy(SP_FONT_BUTTON);
+	spFontAddButton( font, SP_BUTTON_A_NAME[0], SP_BUTTON_A_NAME, 65535, spGetRGB(64,64,64));
+	spFontAddButton( font, SP_BUTTON_B_NAME[0], SP_BUTTON_B_NAME, 65535, spGetRGB(64,64,64));
+	spFontAddButton( font, SP_BUTTON_X_NAME[0], SP_BUTTON_X_NAME, 65535, spGetRGB(64,64,64));
+	spFontAddButton( font, SP_BUTTON_Y_NAME[0], SP_BUTTON_Y_NAME, 65535, spGetRGB(64,64,64));
+	spFontAddButton( font, SP_BUTTON_L_NAME[0], SP_BUTTON_L_NAME, 65535, spGetRGB(64,64,64));
+	spFontAddButton( font, SP_BUTTON_R_NAME[0], SP_BUTTON_R_NAME, 65535, spGetRGB(64,64,64));
+	spFontSetButtonStrategy(SP_FONT_INTELLIGENT);
+	spFontAddButton( font, 'S', SP_BUTTON_START_NAME, 65535, spGetRGB(64,64,64));
+	spFontAddButton( font, 'E', SP_BUTTON_SELECT_NAME, 65535, spGetRGB(64,64,64));
 }
 
 
@@ -111,7 +111,7 @@ int main( int argc, char **argv )
 	scientist = spLoadSurface( "./data/science_guy_frames01.png" );
 
 	//Sprite Creating
-	sprite = spNewSprite();
+	sprite = spNewSprite(NULL);
   spNewSubSpriteTilingRow( sprite, scientist, 1, 1, 22, 46, 24, 48, 9 ,100);
 
 	//All glory the main loop

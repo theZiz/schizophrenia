@@ -1,0 +1,16 @@
+default = jar idle
+fps = 10
+framesize  = 24, 24
+bordersize = 24, 24
+
+[jar idle]
+image = jar_idle.png
+frame = 0, 0 
+
+[jar fall]
+image = jar_fall.png
+frame = 0, 0, 8
+
+[jar move]
+image = jar_move.png
+frame = 0, 0, 8

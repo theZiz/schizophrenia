@@ -1,0 +1,12 @@
+default = title
+fps = 1
+[title]
+image = title.png
+framesize  = 320, 114
+bordersize = 320, 114
+frame      =   0,   0
+
+[credits]
+framesize  = 394, 99
+bordersize = 394, 99
+frame      =   0,  0

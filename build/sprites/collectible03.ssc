@@ -1,0 +1,34 @@
+default = full
+image = blueprint.png
+framesize  = 24, 24
+bordersize = 24, 24
+fps = 1
+
+[full]
+framesize  = 96, 48
+bordersize = 96, 48
+frame = 0, 0
+
+[0]
+frame = 0, 0
+
+[1]
+frame = 24, 0
+
+[2]
+frame = 48, 0
+
+[3]
+frame = 72, 0
+
+[4]
+frame = 0, 24
+
+[5]
+frame = 24, 24
+
+[6]
+frame = 48, 24
+
+[7]
+frame = 72, 24

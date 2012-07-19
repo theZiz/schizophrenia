@@ -1,0 +1,34 @@
+default = full
+image = polaroid.png
+framesize = 24, 24
+bordersize = 24, 24
+fps = 1
+
+[full]
+framesize  = 72, 72
+bordersize = 72, 72
+frame = 0, 0
+
+[0]
+frame = 0, 0
+
+[1]
+frame = 24, 0
+
+[2]
+frame = 0, 24
+
+[3]
+frame = 24, 24
+
+[4]
+frame = 48, 24
+
+[5]
+frame = 0, 48
+
+[6]
+frame = 24, 48
+
+[7]
+frame = 48, 48

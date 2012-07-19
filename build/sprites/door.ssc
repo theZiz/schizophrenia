@@ -1,0 +1,29 @@
+default = door 0 closed
+fps = 1
+bordersize = 32, 54
+framesize  = 32, 54
+
+[door 0 closed]
+frame = 0, 0
+
+[door 0 open]
+frame = 32, 0
+
+[door 1 closed]
+frame = 64, 0
+
+[door 1 open]
+frame = 96, 0
+
+[door 2 closed]
+frame = 128. 0
+
+[door 2 open]
+frame = 160, 0
+
+[door 3 closed]
+frame = 192, 0
+
+[door 3 open]
+frame = 224, 0
+

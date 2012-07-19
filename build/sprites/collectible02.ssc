@@ -1,0 +1,43 @@
+default = full
+image = watch.png
+framesize  = 30, 18
+bordersize = 30, 18
+fps = 1
+
+[full]
+framesize = 60, 72
+bordersize = 60, 72
+frame = 0, 0
+
+
+[0]
+frame = 0, 0
+
+
+[1]
+frame = 30, 0
+
+
+[2]
+frame = 0, 18
+
+
+[3]
+frame = 30, 18
+
+
+[4]
+frame = 0, 36
+
+
+[5]
+frame = 30, 36
+
+
+[6]
+frame = 0, 54
+
+
+[7]
+frame = 30, 54
+

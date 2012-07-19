@@ -1,0 +1,32 @@
+default = stand right
+image = enemy01_frames01.png
+fps = 10
+framesize  = 28, 16
+bordersize = 28, 16
+
+[stand right]
+frame = 0, 0
+
+[stand left]
+frame = 0, 16
+
+[run right]
+fps = 20
+frame = 0, 0, 6
+
+[run left]
+fps = 20
+frame = 0, 16, 6
+
+[death right]
+image      = enemy01_death.png
+framesize  = 40, 20
+bordersize = 40, 20
+frame      =  0,  0, 7
+
+
+[death left]
+image      = enemy01_death.png
+framesize  = 40, 20
+bordersize = 40, 20
+frame      =  0, 20, 7

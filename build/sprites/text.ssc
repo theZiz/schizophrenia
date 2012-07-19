@@ -1,0 +1,39 @@
+default = sorry
+fps     = 1
+
+[sorry]
+image      = sorry.png
+framesize  = 93, 26
+bordersize = 93, 26
+frame      =  0,  0
+
+[a]
+image      = jump.png
+framesize  = 35, 22
+bordersize = 35, 22
+frame      =  0,  0
+
+[b]
+image      = switch.png
+framesize  = 25, 24
+bordersize = 25, 24
+frame      =  0,  0
+
+[clone]
+image      = clone.png
+framesize  = 171, 64
+bordersize = 171, 64
+frame      =   0,  0
+
+[restrict]
+image      = restrict.png
+framesize  = 169, 62
+bordersize = 169, 62
+frame      =   0,  0
+
+[bounce]
+image      = bounce.png
+framesize  = 119, 42
+bordersize = 119, 42
+frame      =   0,  0
+

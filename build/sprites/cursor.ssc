@@ -1,0 +1,12 @@
+default = cursor clone
+fps = 24
+image = cursor.png
+framesize  = 16, 16
+bordersize = 16, 16
+
+[cursor clone]
+frame = 0, 0, 8
+
+[cursor delete]
+frame = 0, 16, 8
+

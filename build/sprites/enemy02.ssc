@@ -1,0 +1,30 @@
+default = stand right
+image = enemy02_frames01.png
+fps = 10
+framesize  = 24, 48
+bordersize = 24, 48
+
+[stand right]
+frame = 0, 0
+
+[stand left]
+frame = 0, 96
+
+[run right]
+frame = 24, 0, 8
+
+[run left]
+frame = 24, 96, 8
+
+[push right]
+frame = 24, 48, 6
+
+[push left]
+frame = 24, 144, 6
+
+[jump right]
+frame = 0, 48
+
+[jump left]
+frame = 0, 144
+

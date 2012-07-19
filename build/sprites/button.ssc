@@ -1,0 +1,12 @@
+default = off
+image = button_switch.png
+framesize = 32, 8
+bordersize = 32, 8
+fps = 1
+
+[off]
+frame = 64, 24
+
+[on]
+frame = 96, 24
+

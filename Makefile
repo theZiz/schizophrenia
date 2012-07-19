@@ -52,6 +52,9 @@ SDL_PATH = -I/usr/include/SDL
 # LIB determines, where all the other libraries are
 # LIB = -L/usr/lib
 
+# Where to put the executables to?
+BUILD_PATH = ./build/
+
 # === The Targets. Set your own paths on your PC!
 # == GP2X/WIZ ==
 ifeq ($(TARGET),open2x)
@@ -104,9 +107,9 @@ targets:
 	@echo "gp2x, open2x (like gp2x, but dynamic compiled => smaller), wiz caanoo, dingux, pandora, maemo5, maemo6"
 
 schizophrenia: schizophrenia.c
-	$(CPP) $(CFLAGS) schizophrenia.c $(SDL) $(INCLUDE) $(SDL_INCLUDE) $(SPARROW_INCLUDE) $(LIB) $(SDL_LIB) $(SPARROW_LIB) $(STATIC) $(DYNAMIC) -o schizophrenia
+	$(CPP) $(CFLAGS) schizophrenia.c $(SDL) $(INCLUDE) $(SDL_INCLUDE) $(SPARROW_INCLUDE) $(LIB) $(SDL_LIB) $(SPARROW_LIB) $(STATIC) $(DYNAMIC) -o $(BUILD_PATH)schizophrenia
 
 
 clean:
 	rm -f *.o
-	rm -f schizophrenia
+	rm -f $(BUILD_PATH)schizophrenia

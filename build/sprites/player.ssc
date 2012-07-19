@@ -1,0 +1,45 @@
+image = ./data/science_guy_frames01.png   
+fps = 10
+framesize = 22, 46
+bordersize = 24, 48
+
+[stand right]
+frame = 0, 0
+
+[stand left]
+frame = 0, 96
+
+[run right]
+frame = 0, 0, 8
+
+[run left]
+frame = 0, 96, 8
+
+[push right]
+fps = 8
+frame = 24, 48, 6
+
+[push left]
+fps = 8
+frame = 24, 144, 6
+
+[jump right]
+frame = 0, 48
+
+[jump left]
+frame = 0, 144, 1
+
+[death right]
+fps = 24
+image = science_guy_death.png
+framesize  = 28, 48
+bordersize = 28, 48
+frame      =  0,  0, 20
+
+[death left]
+fps = 24
+image = science_guy_death.png
+framesize  = 28, 48
+bordersize = 28, 48
+frame      =  0, 48, 20
+
