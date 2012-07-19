@@ -1,3 +1,9 @@
+Visual stuff:
+- Implementing a Surface cache in sparrow3d
+- Loading levels (try to copy and paste old stuff)
+- Showing levels
+
+Physics (in German, because Chatlog):
 - wichtig, dass jede Beschleunigung limitiert und das sogar recht
   strinkt, also üblicherweise fällt man nie schneller als man
   hochspringt oder sich vorwärts bewegt
