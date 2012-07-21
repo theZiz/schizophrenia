@@ -15,11 +15,12 @@
  above.
 
  For feedback and questions about our Files and Projects please mail us,
- Janek Schäfer (foxblock) , TODO_at_ADD.MAIL
+ Janek Schäfer (foxblock) , foxblock_at_gmail_com
  Alexander Matthes (Ziz) , zizsdl_at_googlemail.com
 */
 #include <sparrow3d.h>
 #include <SDL_image.h>
+#include "level.h"
 
 #include "global_defines.h"
 
