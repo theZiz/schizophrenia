@@ -100,6 +100,9 @@ int main( int argc, char **argv )
 	//Sprite Creating
 	sprite = spNewSprite(NULL);
 	spNewSubSpriteTilingRow( sprite, scientist, 1, 1, 22, 46, 24, 48, 9 ,100);
+	
+	//Loading the first level:
+	pLevel level = loadLevel("./level/testlevel.tmx");
 
 	//All glory the main loop
 	spLoop( draw_test, calc_test, 10, resize, NULL );

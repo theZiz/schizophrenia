@@ -71,5 +71,6 @@ typedef struct sLevel {
 } tLevel;
 
 pLevel loadLevel(char* filename);
+void drawLevel(pLevel level);
 
 #endif

@@ -72,13 +72,53 @@ void allocLayer(pLayer layer,int width, int height)
 
 pLevel loadLevel(char* filename)
 {
+	SDL_RWops *file = SDL_RWFromFile(filename, "rt");
+	if (!file)
+	{
+		printf("Level \"%s\" not found. We're all gone die!\n",filename);
+		return NULL;
+	}
+	//Creating a new, empty level
 	pLevel level = (pLevel)malloc(sizeof(tLevel));
 	level->layer.physic.tile = NULL;
 	level->layer.background.tile = NULL;
 	level->layer.player.tile = NULL;
 	level->layer.foreground.tile = NULL;
-	//TODO: Implement :P
+	
+	char buffer[65536];
+	//Reading to the begin of the first tag
+	spReadUntil(file,buffer,65536,'<');
+	//Reading the first tag
+	spReadUntil(file,buffer,65536,'>');
+	if (buffer[0] == '?')
+		printf("Reading first line %s - Everything as expected\n",buffer);
+	else
+	{
+		printf("Reading first line %s - What the hell is this?\n",buffer);
+		SDL_RWclose(file);
+		return NULL;
+	}
+	//Reading the first level specific tag
+	spReadUntil(file,buffer,65536,'<');
+	spReadUntil(file,buffer,65536,'>');
+	if (strcmp(buffer,"map") == 0)
+	{
+		printf("Reading level map\n");
+	}
+	else
+	{
+		printf("Expected \"map\", not \"%s\".\n",buffer);
+		SDL_RWclose(file);
+		return NULL;
+	}
+	
+	SDL_RWclose(file);
 	return level;
+}
+
+void drawLevel(pLevel level)
+{
+	//TODO: Implement
 }
 
 void deleteLevel(pLevel level)
