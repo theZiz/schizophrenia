@@ -15,11 +15,12 @@
  above.
 
  For feedback and questions about our Files and Projects please mail us,
- Janek Schäfer (foxblock) , TODO_at_ADD.MAIL
+ Janek Schäfer (foxblock) , foxblock_at_gmail_com
  Alexander Matthes (Ziz) , zizsdl_at_googlemail.com
 */
 #include <sparrow3d.h>
 #include <SDL_image.h>
+#include "level.h"
 
 #include "global_defines.h"
 
@@ -33,7 +34,6 @@ void draw_test( void )
 {
 	RESET_ZBUFFER
 	CLEAN_TARGET
-	spIdentity();
 	spSetZSet( Z_SORTING );
 	spSetZTest( Z_SORTING );
 	spSetAlphaTest( 1 );
@@ -49,12 +49,12 @@ void draw_test( void )
 	sprite->zoomY = SP_ONE;
 	spDrawSprite( 4 * screen->w / 5, 5 * screen->h / 8, -1, sprite );
 
+
+	//HUD (for debug reasons)
 	spSetZSet( 0 );
 	spSetZTest( 0 );
 	spSetAlphaTest( 1 );
-	
-	spFontDrawMiddle( screen->w / 2, 2, -1, "Schizophrenia", font );
-	char buffer[256];
+	char buffer[16];
 	sprintf( buffer, "fps: %i", spGetFPS() );
 	spFontDrawRight( screen->w-1, screen->h-font->maxheight, -1, buffer, font );
 
@@ -75,25 +75,12 @@ int calc_test( Uint32 steps )
 
 void resize( Uint16 w, Uint16 h )
 {
-	//Setup of the new/resized window
-	spSetPerspective( 50.0, ( float )spGetWindowSurface()->w / ( float )spGetWindowSurface()->h, 0.1, 100 );
-
 	//Font Loading
 	if ( font )
 		spFontDelete( font );
-	font = spFontLoad( "./font/StayPuft.ttf", 20 * spGetSizeFactor() >> SP_ACCURACY );
-	spFontAdd( font,SP_FONT_RANGE_GERMAN, 0 );
-	spFontAddBorder( font, 65535 );
-	spFontSetButtonStrategy(SP_FONT_BUTTON);
-	spFontAddButton( font, SP_BUTTON_A_NAME[0], SP_BUTTON_A_NAME, 65535, spGetRGB(64,64,64));
-	spFontAddButton( font, SP_BUTTON_B_NAME[0], SP_BUTTON_B_NAME, 65535, spGetRGB(64,64,64));
-	spFontAddButton( font, SP_BUTTON_X_NAME[0], SP_BUTTON_X_NAME, 65535, spGetRGB(64,64,64));
-	spFontAddButton( font, SP_BUTTON_Y_NAME[0], SP_BUTTON_Y_NAME, 65535, spGetRGB(64,64,64));
-	spFontAddButton( font, SP_BUTTON_L_NAME[0], SP_BUTTON_L_NAME, 65535, spGetRGB(64,64,64));
-	spFontAddButton( font, SP_BUTTON_R_NAME[0], SP_BUTTON_R_NAME, 65535, spGetRGB(64,64,64));
-	spFontSetButtonStrategy(SP_FONT_INTELLIGENT);
-	spFontAddButton( font, 'S', SP_BUTTON_START_NAME, 65535, spGetRGB(64,64,64));
-	spFontAddButton( font, 'E', SP_BUTTON_SELECT_NAME, 65535, spGetRGB(64,64,64));
+	font = spFontLoad( "./font/LiberationMono-Regular.ttf", 10 * spGetSizeFactor() >> SP_ACCURACY );
+	spFontAdd( font,SP_FONT_GROUP_NUMBERS, 0 ); //Just for fps
+	spFontAddBorder( font, spGetFastRGB(127,127,127) );
 }
 
 
@@ -112,14 +99,17 @@ int main( int argc, char **argv )
 
 	//Sprite Creating
 	sprite = spNewSprite(NULL);
-  spNewSubSpriteTilingRow( sprite, scientist, 1, 1, 22, 46, 24, 48, 9 ,100);
+	spNewSubSpriteTilingRow( sprite, scientist, 1, 1, 22, 46, 24, 48, 9 ,100);
+	
+	//Loading the first level:
+	pLevel level = loadLevel("./level/testlevel.tmx");
 
 	//All glory the main loop
 	spLoop( draw_test, calc_test, 10, resize, NULL );
 
 	//Winter Wrap up, Winter Wrap up …
 	spFontDelete( font );
-
+	spDeleteSprite(sprite);
 	spDeleteSurface( scientist );
 	spQuitCore();
 	return 0;
