@@ -85,6 +85,10 @@ pLevel loadLevel(char* filename)
 	level->layer.player.tile = NULL;
 	level->layer.foreground.tile = NULL;
 	
+	//Some values, which will be read and used later
+	int width = 0;
+	int height = 0;
+	
 	char buffer[65536];
 	//Reading to the begin of the first tag
 	spReadUntil(file,buffer,65536,'<');
@@ -101,13 +105,46 @@ pLevel loadLevel(char* filename)
 	//Reading the first level specific tag
 	spReadUntil(file,buffer,65536,'<');
 	spReadUntil(file,buffer,65536,'>');
-	if (strcmp(buffer,"map") == 0)
+	if (strstr(buffer,"map"))
 	{
 		printf("Reading level map\n");
+		//Parsing parameters of "map"
+		char *begin = strchr(buffer,' ');
+		while (1)
+		{
+			if (!begin)
+				break;
+			begin++; // sign after ' '
+			char* end = strchr(begin,' ');
+			if (end)
+				end[0] = 0;
+			else
+				break;
+			//the parameter is now in "begin"
+			//we search only width and height
+			if (strstr(begin,"width")==begin) //width at the BEGIN of the string!
+			{
+				char* number_begin = strchr(begin,'\"');
+				number_begin++; //now the begin of the number
+				width = atoi(number_begin);
+				printf("Level width is %i\n",width);
+			}
+			else
+			if (strstr(begin,"height")==begin) //height at the BEGIN of the string!
+			{
+				char* number_begin = strchr(begin,'\"');
+				number_begin++; //now the begin of the number
+				height = atoi(number_begin);
+				printf("Level height is %i\n",height);
+			}			
+			begin = end;
+		}
+		//Now reading everything, which is between <map …> and </map>
+		
 	}
 	else
 	{
-		printf("Expected \"map\", not \"%s\".\n",buffer);
+		printf("Expected \"map …\", not \"%s\".\n",buffer);
 		SDL_RWclose(file);
 		return NULL;
 	}
