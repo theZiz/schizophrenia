@@ -66,6 +66,8 @@ typedef struct sLevelObjectGroup {
 typedef struct sLevel *pLevel;
 typedef struct sLevel {
 	struct {tLayer physic,background,player,foreground;} layer;
+	struct {Sint32 x,y;} camera;
+	Uint16 backgroundColor;
 	pLevelObjectGroup firstObjectGroup;
 	pLevelObject choosenPlayer;
 } tLevel;

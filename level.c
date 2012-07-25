@@ -66,8 +66,33 @@ pLevelObject createObject(pLevelObjectGroup group,LevelObjectType type)
 void allocLayer(pLayer layer,int width, int height)
 {
 	layer->tile = (spSpritePointer*)malloc(sizeof(spSpritePointer)*width*height);
+	memset(layer->tile,0,width*height*sizeof(spSpritePointer));
 	layer->width = width;
 	layer->height = height;
+}
+
+#define READ_TIL_TAG_BEGIN end = spReadUntil(file,buffer,65536,'<'); if (end) break;
+#define READ_TIL_TAG_END end = spReadUntil(file,buffer,65536,'>'); if (end) break;
+
+int getHexSign(char sign)
+{
+	if (sign >= '0' && sign <= '9')
+		return sign-'0';
+	if (sign >= 'A' && sign <= 'F')
+		return sign-'A'+10;
+	if (sign >= 'a' && sign <= 'f')
+		return sign-'a'+10;
+	return 0;
+}
+
+Uint16 hex2color(char* value)
+{
+	if (strlen(value) < 6)
+		return 0;
+	int r = getHexSign(value[0])*16+getHexSign(value[1]);
+	int g = getHexSign(value[2])*16+getHexSign(value[3]);
+	int b = getHexSign(value[4])*16+getHexSign(value[5]);
+	return spGetRGB(r,g,b);
 }
 
 pLevel loadLevel(char* filename)
@@ -84,6 +109,9 @@ pLevel loadLevel(char* filename)
 	level->layer.background.tile = NULL;
 	level->layer.player.tile = NULL;
 	level->layer.foreground.tile = NULL;
+	level->camera.x = 0;
+	level->camera.y = 0;
+	level->backgroundColor = 65535; //white
 	
 	//Some values, which will be read and used later
 	int width = 0;
@@ -140,7 +168,44 @@ pLevel loadLevel(char* filename)
 			begin = end;
 		}
 		//Now reading everything, which is between <map …> and </map>
-		
+		//Creating the layers and setting them to NULL.
+		printf("Creating layers\n");
+		allocLayer(&(level->layer.physic),width,height);
+		allocLayer(&(level->layer.background),width,height);
+		allocLayer(&(level->layer.player),width,height);
+		allocLayer(&(level->layer.foreground),width,height);
+		int end = 0;
+		while (!end)
+		{
+			READ_TIL_TAG_BEGIN
+			READ_TIL_TAG_END
+			//possibilites are: properties, tileset, layer, objectgroup or /map
+			if (strstr(buffer,"properties") == buffer)
+			{
+				//Reading the propertes. Possibilites are: "background color"
+				READ_TIL_TAG_BEGIN
+				READ_TIL_TAG_END
+				if (strstr(buffer,"property") == buffer)
+				{
+					char* property = strstr(buffer,"name");
+					property = strchr(property,'\"');
+					property++;
+					char* end = strchr(property,'\"');
+					end[0] = 0;
+					printf("Found the property \"%s\"\n",property);
+					if (strcmp(property,"background color") == 0)
+					{
+						end++;
+						char* value = strstr(end,"value");
+						value = strstr(value,"#");
+						end = strchr(value,'\"');
+						end[0] = 0;
+						level->backgroundColor = hex2color(value);
+						printf("Set the background color to %s (%i)\n",value,level->backgroundColor);
+					}
+				}
+			}
+		}
 	}
 	else
 	{
