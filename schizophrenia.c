@@ -42,9 +42,9 @@ void draw_test( void )
 	spSetZSet( 0 );
 	spSetZTest( 0 );
 	spSetAlphaTest( 1 );
-	char buffer[16];
-	sprintf( buffer, "fps: %i", spGetFPS() );
-	spFontDrawRight( screen->w-1, screen->h-font->maxheight, -1, buffer, font );
+	char buffer[256];
+	sprintf( buffer, "camera X: %i\ncamera Y: %i\nfps: %i", level->actualCamera.x >> SP_ACCURACY-5,level->actualCamera.y >> SP_ACCURACY-5,spGetFPS() );
+	spFontDrawRight( screen->w-1, screen->h-font->maxheight*3, -1, buffer, font );
 
 	spFlip();
 }
@@ -54,10 +54,21 @@ Sint32 rotation = 0;
 int calc_test( Uint32 steps )
 {
 	rotation+=steps*16;
-	//level->actualCamera.x = spSin(rotation)*2+2*SP_ONE;
-	//level->actualCamera.y = spCos(rotation)*2+2*SP_ONE;
+	if ( spGetInput()->axis[0] < 0)
+		level->targetCamera.x -= steps*256;
+	if ( spGetInput()->axis[0] > 0)
+		level->targetCamera.x += steps*256;
+	if ( spGetInput()->axis[1] < 0)
+		level->targetCamera.y += steps*256;
+	if ( spGetInput()->axis[1] > 0)
+		level->targetCamera.y -= steps*256;
+
+	calcCamera(level,steps);	
+
 	if ( spGetInput()->button[SP_BUTTON_START] )
 		return 1;
+	
+		
 	return 0;
 }
 
@@ -67,7 +78,7 @@ void resize( Uint16 w, Uint16 h )
 	if ( font )
 		spFontDelete( font );
 	font = spFontLoad( "./font/LiberationMono-Regular.ttf", 10 * spGetSizeFactor() >> SP_ACCURACY );
-	spFontAdd( font,SP_FONT_GROUP_NUMBERS, 0 ); //Just for fps
+	spFontAdd( font,SP_FONT_GROUP_ASCII, 0 ); //Just for debug stuff
 	spFontAddBorder( font, spGetFastRGB(127,127,127) );
 }
 
@@ -83,7 +94,7 @@ int main( int argc, char **argv )
 	resize( screen->w, screen->h );
 
 	//Loading the first level:
-	level = loadLevel("./level/testlevel.tmx");
+	level = loadLevel("./level/tile_test.tmx");
 
 	//All glory the main loop
 	spLoop( draw_test, calc_test, 10, resize, NULL );

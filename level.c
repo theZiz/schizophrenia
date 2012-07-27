@@ -469,6 +469,12 @@ void drawLevel(pLevel level)
 	
 	spLine(screenWidth/2-5,screenHeight/2,-1,screenWidth/2+5,screenHeight/2,-1,0);
 	spLine(screenWidth/2,screenHeight/2-5,-1,screenWidth/2,screenHeight/2+5,-1,0);
+	int dx = level->targetCamera.x-level->actualCamera.x >> SP_ACCURACY - 5;
+	int dy = level->targetCamera.y-level->actualCamera.y >> SP_ACCURACY - 5;
+	spLine(screenWidth/2-5+dx,screenHeight/2+dy,-1,screenWidth/2+5+dx,screenHeight/2+dy,-1,0);
+	spLine(screenWidth/2+dx,screenHeight/2-5+dy,-1,screenWidth/2+dx,screenHeight/2+5+dy,-1,12345);
+
+
 	spSetVerticalOrigin(SP_CENTER);
 	spSetHorizontalOrigin(SP_CENTER);	
 }
@@ -489,4 +495,14 @@ void deleteLevel(pLevel level)
 			spDeleteSprite(level->spriteTable[i]);
 	free(level->spriteTable);
 	free(level);
+}
+
+void calcCamera(pLevel level,Sint32 steps)
+{
+	int i;
+	for (i = 0; i < steps; i++)
+	{
+		level->actualCamera.x += (level->targetCamera.x-level->actualCamera.x)>>7;
+		level->actualCamera.y += (level->targetCamera.y-level->actualCamera.y)>>7;
+	}
 }

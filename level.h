@@ -78,5 +78,6 @@ typedef struct sLevel {
 
 pLevel loadLevel(char* filename);
 void drawLevel(pLevel level);
+void calcCamera(pLevel level,Sint32 steps);
 
 #endif
