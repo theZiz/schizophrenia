@@ -439,6 +439,10 @@ void drawLevel(pLevel level)
 	int screenTileHeight = screenWidth/32+2;
 	int screenTileBeginX = level->actualCamera.x >> SP_ACCURACY;
 	int screenTileBeginY = level->actualCamera.y >> SP_ACCURACY;
+	int startX = screenTileBeginX-screenTileWidth/2;
+	int startY = screenTileBeginY-screenTileHeight/2;
+	int endX = screenTileBeginX+screenTileWidth/2;
+	int endY = screenTileBeginY+screenTileHeight/2;
 	//layer
 	int l;
 	for (l = -3; l < 0; l++)
@@ -451,8 +455,8 @@ void drawLevel(pLevel level)
 			case -1: layer = &(level->layer.foreground); break;
 		}
 		int x,y;
-		for (x = screenTileBeginX-screenTileWidth/2; x < screenTileBeginX+screenTileWidth/2; x++)
-			for (y = screenTileBeginY-screenTileHeight/2; y < screenTileBeginY+screenTileHeight/2; y++)
+		for (x = startX; x < endX; x++)
+			for (y = startY; y < endY; y++)
 			{
 				if (x < 0 || x >= layer->width)
 					continue;
