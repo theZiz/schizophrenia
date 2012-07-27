@@ -28,7 +28,7 @@
 typedef struct sLayer *pLayer;
 typedef struct sLayer {
 	int width,height;
-	spSpritePointer *tile;
+	int *tile;
 } tLayer;
 
 typedef enum {
@@ -65,6 +65,8 @@ typedef struct sLevelObjectGroup {
 
 typedef struct sLevel *pLevel;
 typedef struct sLevel {
+	spSpritePointer *spriteTable;
+	int spriteTableCount;
 	struct {tLayer physic,background,player,foreground;} layer;
 	struct {Sint32 x,y;} camera;
 	Uint16 backgroundColor;

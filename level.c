@@ -65,8 +65,8 @@ pLevelObject createObject(pLevelObjectGroup group,LevelObjectType type)
 
 void allocLayer(pLayer layer,int width, int height)
 {
-	layer->tile = (spSpritePointer*)malloc(sizeof(spSpritePointer)*width*height);
-	memset(layer->tile,0,width*height*sizeof(spSpritePointer));
+	layer->tile = (int*)malloc(sizeof(int)*width*height);
+	memset(layer->tile,0,width*height*sizeof(int));
 	layer->width = width;
 	layer->height = height;
 }
@@ -95,6 +95,37 @@ Uint16 hex2color(char* value)
 	return spGetRGB(r,g,b);
 }
 
+typedef struct sTile_set *pTile_set;
+typedef struct sTile_set {
+	int firstgid;
+	int lastgid;
+	int width,height,tilewidth,tileheight;
+	char* filename;
+	pTile_set next;
+} tTile_set;
+
+spSpritePointer get_sprite(int tilenr,pTile_set tile_set,spSpritePointer *table)
+{
+	if (tilenr <= 0)
+		return NULL;
+	if (table[tilenr])
+		return table[tilenr];
+	while (tile_set)
+	{
+		if (tile_set->firstgid<=tilenr && tile_set->lastgid>=tilenr)
+		{
+			//Calculating the position of the tile.
+			int lineMax = tile_set->width/tile_set->tilewidth;
+			int lineNumber = (tilenr-tile_set->firstgid)/lineMax;
+			int linePosition = (tilenr-tile_set->firstgid)%lineMax;
+			table[tilenr] = spNewSprite(NULL);
+			spNewSubSpriteWithTiling(table[tilenr],spLoadSurface(tile_set->filename),linePosition*tile_set->tilewidth,lineNumber*tile_set->tileheight,tile_set->tilewidth,tile_set->tileheight,1000);
+		}
+		tile_set = tile_set->next;
+	}
+	return NULL;
+}
+
 pLevel loadLevel(char* filename)
 {
 	SDL_RWops *file = SDL_RWFromFile(filename, "rt");
@@ -112,10 +143,12 @@ pLevel loadLevel(char* filename)
 	level->camera.x = 0;
 	level->camera.y = 0;
 	level->backgroundColor = 65535; //white
+	level->spriteTable = NULL;
 	
 	//Some values, which will be read and used later
 	int width = 0;
 	int height = 0;
+	pTile_set tile_set = NULL;
 	
 	char buffer[65536];
 	//Reading to the begin of the first tag
@@ -182,29 +215,187 @@ pLevel loadLevel(char* filename)
 			//possibilites are: properties, tileset, layer, objectgroup or /map
 			if (strstr(buffer,"properties") == buffer)
 			{
-				//Reading the propertes. Possibilites are: "background color"
-				READ_TIL_TAG_BEGIN
-				READ_TIL_TAG_END
-				if (strstr(buffer,"property") == buffer)
+				//Reading the properties. Possibilites are: "background color"
+				while (!end)
 				{
-					char* property = strstr(buffer,"name");
-					property = strchr(property,'\"');
-					property++;
-					char* end = strchr(property,'\"');
-					end[0] = 0;
-					printf("Found the property \"%s\"\n",property);
-					if (strcmp(property,"background color") == 0)
+					READ_TIL_TAG_BEGIN
+					READ_TIL_TAG_END
+					if (strstr(buffer,"/properties") == buffer)
+						break;
+					else
+					if (strstr(buffer,"property") == buffer)
 					{
-						end++;
-						char* value = strstr(end,"value");
-						value = strstr(value,"#");
-						end = strchr(value,'\"');
-						end[0] = 0;
-						level->backgroundColor = hex2color(value);
-						printf("Set the background color to %s (%i)\n",value,level->backgroundColor);
+						char* property = strstr(buffer,"name");
+						property = strchr(property,'\"');
+						property++;
+						char* end_s = strchr(property,'\"');
+						end_s[0] = 0;
+						printf("Found the property \"%s\"\n",property);
+						if (strcmp(property,"background color") == 0)
+						{
+							end_s++;
+							char* value = strstr(end_s,"value");
+							value = strstr(value,"#");
+							end_s = strchr(value,'\"');
+							end_s[0] = 0;
+							level->backgroundColor = hex2color(value);
+							printf("Set the background color to %s (%i)\n",value,level->backgroundColor);
+						}
 					}
 				}
 			}
+			else
+			if (strstr(buffer,"tileset") == buffer)
+			{
+				//Reading the parameters of the tag
+				pTile_set newset = (pTile_set)malloc(sizeof(tTile_set));
+				newset->next = tile_set;
+				tile_set = newset;				
+				//firstgid
+				char* attribute = strstr(buffer,"firstgid");
+				attribute = strchr(attribute,'\"');
+				attribute++;
+				char* end_s = strchr(attribute,'\"');
+				end_s[0] = 0;				
+				newset->firstgid = atoi(attribute);
+				end_s[0] = '\"';
+				//tilewidth
+				attribute = strstr(buffer,"tilewidth");
+				attribute = strchr(attribute,'\"');
+				attribute++;
+				end_s = strchr(attribute,'\"');
+				end_s[0] = 0;				
+				newset->tilewidth = atoi(attribute);
+				end_s[0] = '\"';
+				//tileheight
+				attribute = strstr(buffer,"tileheight");
+				attribute = strchr(attribute,'\"');
+				attribute++;
+				end_s = strchr(attribute,'\"');
+				end_s[0] = 0;				
+				newset->tileheight = atoi(attribute);
+				
+				newset->filename = NULL;
+				//Reading the tilesets.
+				while (!end)
+				{
+					READ_TIL_TAG_BEGIN
+					READ_TIL_TAG_END
+					if (strstr(buffer,"image") == buffer)
+					{
+						//filename (source)
+						attribute = strstr(buffer,"source");
+						attribute = strchr(attribute,'\"');
+						attribute++;
+						char* end_s = strchr(attribute,'\"');
+						end_s[0] = 0;
+						newset->filename = (char*)malloc(strlen(attribute)+1);
+						sprintf(newset->filename,"%s",attribute);
+						end_s[0] = '\"';
+						//width
+						attribute = strstr(buffer,"width");
+						attribute = strchr(attribute,'\"');
+						attribute++;
+						end_s = strchr(attribute,'\"');
+						end_s[0] = 0;
+						newset->width = atoi(attribute);
+						end_s[0] = '\"';
+						//height
+						attribute = strstr(buffer,"height");
+						attribute = strchr(attribute,'\"');
+						attribute++;
+						end_s = strchr(attribute,'\"');
+						end_s[0] = 0;
+						newset->height = atoi(attribute);
+						newset->lastgid = newset->firstgid+(newset->width/newset->tilewidth)*(newset->height/newset->tileheight)-1;
+						printf("Added tileset from %i to %i with \"%s\"\n",newset->firstgid,newset->lastgid,newset->filename);
+					}
+					else
+					if (strstr(buffer,"/tileset") == buffer)
+						break;
+				}				
+			}
+			else
+			if (strstr(buffer,"layer") == buffer)
+			{
+				//Creating spriteLookUptable if not existing
+				if (level->spriteTable == NULL)
+				{
+					level->spriteTable = (spSpritePointer*)malloc((tile_set->lastgid+1)*sizeof(spSpritePointer));
+					memset(level->spriteTable,0,(tile_set->lastgid+1)*sizeof(spSpritePointer));
+					level->spriteTableCount = tile_set->lastgid+1;
+				}
+				//Loading layer
+				pLayer layer = NULL;
+				char* layername = strstr(buffer,"name");
+				layername = strchr(layername,'\"');
+				layername++;
+				char* end_s = strchr(layername,'\"');
+				end_s[0] = 0;
+				if (strstr(layername,"background"))
+				{
+					layer = &(level->layer.background);
+					printf("Loading Background layer\n");
+				}
+				else
+				if (strstr(layername,"player"))
+				{
+					layer = &(level->layer.player);
+					printf("Loading Player layer\n");
+				}
+				else
+				if (strstr(layername,"foreground"))
+				{
+					layer = &(level->layer.foreground);
+					printf("Loading Foreground layer\n");
+				}
+				else
+				if (strstr(layername,"collision") || strstr(layername,"physic"))
+				{
+					layer = &(level->layer.physic);
+					printf("Loading Physic layer\n");
+				}
+				else
+					printf("Unknown layer \"%s\". Will crash with segfault. ;-)\n",layername);
+				//So, now we know the kind of the layer, time to load the "data"
+				READ_TIL_TAG_BEGIN
+				READ_TIL_TAG_END
+				if (strstr(buffer,"data") == buffer)
+				{
+					char* encoding = strstr(buffer,"encoding");
+					encoding = strchr(encoding,'\"');
+					encoding++;
+					char* end_s = strchr(encoding,'\"');
+					end_s[0] = 0;
+					if (strcmp(encoding,"csv"))
+						printf("Expected csv-encoding. This will NOT work!\n");
+				}
+				else
+					printf("Expected data-tag in layer, you know? Will Crash.\n");
+				READ_TIL_TAG_BEGIN
+				//Reading layer
+				
+				
+				
+				READ_TIL_TAG_END
+				//endtag data
+				if (strcmp(buffer,"/data"))
+					printf("Expected </data> instead of <%s>\n",buffer);
+				READ_TIL_TAG_BEGIN
+				READ_TIL_TAG_END
+				//endtag layer
+				if (strcmp(buffer,"/layer"))
+					printf("Expected </layer> instead of <%s>\n",buffer);
+				
+			}
+			
+		}
+		while (tile_set)
+		{
+			pTile_set next = tile_set->next;
+			free(tile_set->filename);
+			free(tile_set);
+			tile_set = next;
 		}
 	}
 	else
@@ -233,5 +424,11 @@ void deleteLevel(pLevel level)
 		free(level->layer.player.tile);
 	if (level->layer.foreground.tile)
 		free(level->layer.foreground.tile);
+	int i;
+	for (i = 0; i < level->spriteTableCount; i++)
+		if (level->spriteTable[i])
+			spDeleteSprite(level->spriteTable[i]);
+	free(level->spriteTable);
+	
 	
 }
