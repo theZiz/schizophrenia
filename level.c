@@ -65,8 +65,8 @@ pLevelObject createObject(pLevelObjectGroup group,LevelObjectType type)
 
 void allocLayer(pLayer layer,int width, int height)
 {
-	layer->tile = (int*)malloc(sizeof(int)*width*height);
-	memset(layer->tile,0,width*height*sizeof(int));
+	layer->tile = (pTile)malloc(sizeof(tTile)*width*height);
+	memset(layer->tile,0,width*height*sizeof(tTile));
 	layer->width = width;
 	layer->height = height;
 }
@@ -119,7 +119,10 @@ spSpritePointer get_sprite(int tilenr,pTile_set tile_set,spSpritePointer *table)
 			int lineNumber = (tilenr-tile_set->firstgid)/lineMax;
 			int linePosition = (tilenr-tile_set->firstgid)%lineMax;
 			table[tilenr] = spNewSprite(NULL);
-			spNewSubSpriteWithTiling(table[tilenr],spLoadSurface(tile_set->filename),linePosition*tile_set->tilewidth,lineNumber*tile_set->tileheight,tile_set->tilewidth,tile_set->tileheight,1000);
+			char filename[1024];
+			sprintf(filename,"./level/%s",tile_set->filename);
+			spNewSubSpriteWithTiling(table[tilenr],spLoadSurface(filename),linePosition*tile_set->tilewidth,lineNumber*tile_set->tileheight,tile_set->tilewidth,tile_set->tileheight,1000);
+			return table[tilenr];
 		}
 		tile_set = tile_set->next;
 	}
@@ -140,8 +143,10 @@ pLevel loadLevel(char* filename)
 	level->layer.background.tile = NULL;
 	level->layer.player.tile = NULL;
 	level->layer.foreground.tile = NULL;
-	level->camera.x = 0;
-	level->camera.y = 0;
+	level->actualCamera.x = 0;
+	level->actualCamera.y = 0;
+	level->targetCamera.x = 0;
+	level->targetCamera.y = 0;
 	level->backgroundColor = 65535; //white
 	level->spriteTable = NULL;
 	
@@ -374,8 +379,20 @@ pLevel loadLevel(char* filename)
 					printf("Expected data-tag in layer, you know? Will Crash.\n");
 				READ_TIL_TAG_BEGIN
 				//Reading layer
-				
-				
+				int i;
+				char* next_number = buffer;
+				for (i = 0; i < layer->width*layer->height && next_number; i++)
+				{
+					while (next_number[0] < '0' || next_number[0] > '9')
+						next_number++;
+					layer->tile[i].nr = atoi(next_number);
+					if (layer == &(level->layer.physic))
+						layer->tile[i].sprite = NULL;
+					else
+						layer->tile[i].sprite = get_sprite(layer->tile[i].nr,tile_set,level->spriteTable);
+					next_number = strchr(next_number,',');
+					
+				}
 				
 				READ_TIL_TAG_END
 				//endtag data
@@ -386,10 +403,10 @@ pLevel loadLevel(char* filename)
 				//endtag layer
 				if (strcmp(buffer,"/layer"))
 					printf("Expected </layer> instead of <%s>\n",buffer);
-				
 			}
-			
+			//TODO: Reading Objects
 		}
+		printf("Deleting temporary tile_set list\n");
 		while (tile_set)
 		{
 			pTile_set next = tile_set->next;
@@ -404,14 +421,56 @@ pLevel loadLevel(char* filename)
 		SDL_RWclose(file);
 		return NULL;
 	}
-	
+	level->actualCamera.x = width<<SP_ACCURACY-1;
+	level->actualCamera.y = height<<SP_ACCURACY-1;
+	level->targetCamera.x = width<<SP_ACCURACY-1;
+	level->targetCamera.y = height<<SP_ACCURACY-1;
 	SDL_RWclose(file);
 	return level;
 }
 
 void drawLevel(pLevel level)
 {
-	//TODO: Implement
+	spSetVerticalOrigin(SP_TOP);
+	spSetHorizontalOrigin(SP_LEFT);
+	int screenWidth = spGetWindowSurface()->w;
+	int screenHeight = spGetWindowSurface()->h;
+	int screenTileWidth  = screenWidth/32+2;
+	int screenTileHeight = screenWidth/32+2;
+	int screenTileBeginX = level->actualCamera.x >> SP_ACCURACY;
+	int screenTileBeginY = level->actualCamera.y >> SP_ACCURACY;
+	//layer
+	int l;
+	for (l = -3; l < 0; l++)
+	{
+		pLayer layer;
+		switch (l)
+		{
+			case -3: layer = &(level->layer.background); break;
+			case -2: layer = &(level->layer.player); break;
+			case -1: layer = &(level->layer.foreground); break;
+		}
+		int x,y;
+		for (x = screenTileBeginX-screenTileWidth/2; x < screenTileBeginX+screenTileWidth/2; x++)
+			for (y = screenTileBeginY-screenTileHeight/2; y < screenTileBeginY+screenTileHeight/2; y++)
+			{
+				if (x < 0 || x >= layer->width)
+					continue;
+				if (y < 0 || y >= layer->height)
+					continue;
+				spSpritePointer sprite = layer->tile[x+y*layer->width].sprite;
+				if (sprite == NULL)
+					continue;
+				int positionX = (x-screenTileBeginX)*32+screenWidth/2-((level->actualCamera.x >> SP_ACCURACY -5) & 31);
+				int positionY = (y-screenTileBeginY)*32+screenHeight/2-((level->actualCamera.y >> SP_ACCURACY -5) & 31);
+				spDrawSprite(positionX,positionY,l,sprite);
+			}
+	}
+	
+	spLine(screenWidth/2-5,screenHeight/2,-1,screenWidth/2+5,screenHeight/2,-1,0);
+	spLine(screenWidth/2,screenHeight/2-5,-1,screenWidth/2,screenHeight/2+5,-1,0);
+	spSetVerticalOrigin(SP_CENTER);
+	spSetHorizontalOrigin(SP_CENTER);	
 }
 
 void deleteLevel(pLevel level)
@@ -429,6 +488,5 @@ void deleteLevel(pLevel level)
 		if (level->spriteTable[i])
 			spDeleteSprite(level->spriteTable[i]);
 	free(level->spriteTable);
-	
-	
+	free(level);
 }

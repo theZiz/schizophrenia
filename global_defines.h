@@ -31,4 +31,4 @@
 
 /* At some point, if everywhere tiles are drawn, this define should be erased,
    so, that no (unnecessary) cleaning is done anymore */
-#define CLEAN_TARGET spClearTarget(0);
+#define CLEAN_TARGET(color) spClearTarget(color);

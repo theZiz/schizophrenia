@@ -24,11 +24,13 @@
 
 #include <sparrow3d.h>
 
+typedef struct sTile *pTile;
+typedef struct sTile {int nr;spSpritePointer sprite;} tTile;
 
 typedef struct sLayer *pLayer;
 typedef struct sLayer {
 	int width,height;
-	int *tile;
+	pTile tile;
 } tLayer;
 
 typedef enum {
@@ -68,7 +70,7 @@ typedef struct sLevel {
 	spSpritePointer *spriteTable;
 	int spriteTableCount;
 	struct {tLayer physic,background,player,foreground;} layer;
-	struct {Sint32 x,y;} camera;
+	struct {Sint32 x,y;} targetCamera, actualCamera;
 	Uint16 backgroundColor;
 	pLevelObjectGroup firstObjectGroup;
 	pLevelObject choosenPlayer;

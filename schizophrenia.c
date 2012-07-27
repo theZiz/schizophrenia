@@ -25,30 +25,18 @@
 #include "global_defines.h"
 
 SDL_Surface *screen;
-SDL_Surface *scientist;
-spSpritePointer sprite;
-Sint32 rotation = 0;
 spFontPointer font = NULL;
+pLevel level;
 
 void draw_test( void )
 {
 	RESET_ZBUFFER
-	CLEAN_TARGET
+	CLEAN_TARGET(level->backgroundColor)
 	spSetZSet( Z_SORTING );
 	spSetZTest( Z_SORTING );
 	spSetAlphaTest( 1 );
 
-	sprite->rotation = 0;
-	spDrawSprite( screen->w / 5, 5 * screen->h / 8, -1, sprite );
-	sprite->zoomX = spSin( rotation * 8 ) + ( 3 << SP_ACCURACY - 1 );
-	sprite->zoomY = spCos( rotation * 6 ) + ( 3 << SP_ACCURACY - 1 );
-	spDrawSprite( 2 * screen->w / 5, 5 * screen->h / 8, -1, sprite );
-	sprite->rotation = rotation * 4;
-	spDrawSprite( 3 * screen->w / 5, 5 * screen->h / 8, -1, sprite );
-	sprite->zoomX = SP_ONE;
-	sprite->zoomY = SP_ONE;
-	spDrawSprite( 4 * screen->w / 5, 5 * screen->h / 8, -1, sprite );
-
+	drawLevel(level);
 
 	//HUD (for debug reasons)
 	spSetZSet( 0 );
@@ -61,13 +49,13 @@ void draw_test( void )
 	spFlip();
 }
 
+Sint32 rotation = 0;
 
 int calc_test( Uint32 steps )
 {
-	spUpdateSprite( sprite, steps );
-
-	rotation += steps << SP_ACCURACY - 11;
-
+	rotation+=steps*16;
+	//level->actualCamera.x = spSin(rotation)*2+2*SP_ONE;
+	//level->actualCamera.y = spCos(rotation)*2+2*SP_ONE;
 	if ( spGetInput()->button[SP_BUTTON_START] )
 		return 1;
 	return 0;
@@ -94,25 +82,15 @@ int main( int argc, char **argv )
 	spSelectRenderTarget(screen);
 	resize( screen->w, screen->h );
 
-	//Textures loading
-	scientist = spLoadSurface( "./data/science_guy_frames01.png" );
-
-	//Sprite Creating
-	sprite = spNewSprite(NULL);
-	spNewSubSpriteTilingRow( sprite, scientist, 1, 1, 22, 46, 24, 48, 9 ,100);
-	
 	//Loading the first level:
-	pLevel level = loadLevel("./level/tile_test.tmx");
+	level = loadLevel("./level/testlevel.tmx");
 
 	//All glory the main loop
 	spLoop( draw_test, calc_test, 10, resize, NULL );
 	
-	deleteLevel(level);
-
 	//Winter Wrap up, Winter Wrap up …
+	deleteLevel(level);
 	spFontDelete( font );
-	spDeleteSprite(sprite);
-	spDeleteSurface( scientist );
 	spQuitCore();
 	return 0;
 }
