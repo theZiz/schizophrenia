@@ -45,7 +45,8 @@ typedef enum {
 	TROPHIES,    //  8
 	GENERIC,     //  9
 	COLLECTIBLE, // 10
-	GROUP        // 11
+	UNSELECTABLE,// 11
+	GROUP        // 12
 } LevelObjectType;
 
 typedef enum {

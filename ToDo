@@ -6,6 +6,7 @@ Visual stuff:
 - die anderen optionalen Parameter laden:
   - type (speed, kind)
   - cloneable
+  - unselectable!!!
 
 Physics (in German, because Chatlog):
 - wichtig, dass jede Beschleunigung limitiert und das sogar recht
