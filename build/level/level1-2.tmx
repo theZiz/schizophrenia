@@ -126,7 +126,7 @@
  </objectgroup>
  <objectgroup name="vertical" width="50" height="20">
   <object name="button" x="259" y="604"/>
-  <object name="stupidplatform_v" type="-0.005,0.005" x="285" y="592" width="64" height="16"/>
+  <object name="platform" type="(0;-0.005),(0;0.005)" x="285" y="592" width="64" height="16"/>
  </objectgroup>
  <objectgroup name="bug" width="50" height="20">
   <object x="641" y="480"/>
@@ -135,16 +135,16 @@
   <object name="level1-1.tmx@47,-16" x="65" y="608"/>
   <object name="level1-4.tmx" x="1024" y="416"/>
  </objectgroup>
- <objectgroup name="collectible" width="50" height="20">
-  <object name="0,1" x="64" y="448"/>
-  <object name="0,5" x="1536" y="384"/>
+ <objectgroup name="collectible00" width="50" height="20">
+  <object name="1" x="64" y="448"/>
+  <object name="5" x="1536" y="384"/>
  </objectgroup>
  <objectgroup name="horizontal" width="50" height="20">
   <object name="switch" x="224" y="272"/>
-  <object name="platform" type="0.001" x="1472" y="422" width="64" height="16"/>
+  <object name="platform" type="(0.001;0),(-0.001;0)" x="1472" y="422" width="64" height="16"/>
  </objectgroup>
  <objectgroup name="generic" width="50" height="20">
-  <object name="./sprites/text.sdf" type="clone" x="112" y="496"/>
-  <object name="./sprites/text.sdf" type="bounce" x="768" y="448"/>
+  <object name="./sprites/text.sdf@clone" x="112" y="496"/>
+  <object name="./sprites/text.sdf@bounce" x="768" y="448"/>
  </objectgroup>
 </map>

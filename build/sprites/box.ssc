@@ -4,13 +4,13 @@ framesize  = 24, 24
 bordersize = 24, 24
 
 [jar idle]
-image = jar_idle.png
+image = ./images/jar_idle.png
 frame = 0, 0 
 
 [jar fall]
-image = jar_fall.png
+image = ./images/jar_fall.png
 frame = 0, 0, 8
 
 [jar move]
-image = jar_move.png
+image = ./images/jar_move.png
 frame = 0, 0, 8

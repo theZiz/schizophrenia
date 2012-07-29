@@ -1,6 +1,6 @@
 default = cursor clone
 fps = 24
-image = cursor.png
+image = ./images/cursor.png
 framesize  = 16, 16
 bordersize = 16, 16
 

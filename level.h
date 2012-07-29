@@ -34,33 +34,43 @@ typedef struct sLayer {
 } tLayer;
 
 typedef enum {
-	PLAYER,
-	ENEMY1,
-	ENEMY2,
-	BOX,
-	SWITCH,
-	BUTTON,
-	DOOR,
-	PLATFORM_V,
-	PLATFORM_H
+	PLAYER,      //  0
+	BUG,         //  1
+	NEGA,        //  2
+	BOX,         //  3
+	SWITCH,      //  4
+	BUTTON,      //  5
+	DOOR,        //  6
+	PLATFORM,    //  7
+	TROPHIES,    //  8
+	GENERIC,     //  9
+	COLLECTIBLE, // 10
+	GROUP        // 11
 } LevelObjectType;
+
+typedef enum {
+	LEFT,
+	UP,
+	RIGHT,
+	DOWN
+} LevelDirection;
 
 typedef struct sLevelObject *pLevelObject;
 typedef struct sLevelObject {
 	spSpriteCollectionPointer animation;
 	LevelObjectType type;
 	Sint32 x,y; //one tile == SP_ONE, so (because of 32x32 tiles) x>>SP_ACCURACY-5 is the pixel position
+	int w,h; //pixel! not used by all objects
+	Sint32 speed; //speed in positionchange / 1 ms. Not used by all objects
+	LevelDirection direction; //direction. Not used by all objects
+	char* some_char; //some objects need to save a string as e.g. destiny
+	int kind; //some objects have different kinds. Saved here.
 	pLevelObject prev,next; //ring of objects in one group
 } tLevelObject;
 
-typedef enum {
-	PAIR,
-	EGOIST //EGOIST groups don't interact with other members of the group
-} LevelObjectGroupType;
-
 typedef struct sLevelObjectGroup *pLevelObjectGroup;
 typedef struct sLevelObjectGroup {
-	LevelObjectGroupType type;
+	LevelObjectType type;
 	pLevelObject firstObject;
 	pLevelObjectGroup prev,next; //ring of objects in one group
 } tLevelObjectGroup;

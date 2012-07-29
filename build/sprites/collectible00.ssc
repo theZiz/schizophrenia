@@ -1,5 +1,5 @@
 default = full
-image = polaroid.png
+image = ./images/polaroid.png
 framesize = 24, 24
 bordersize = 24, 24
 fps = 1

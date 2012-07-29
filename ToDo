@@ -2,6 +2,11 @@ Visual stuff:
 - Loading levels
 - Showing levels
 
+- die richtigen Sprites laden für jeden Objecttype
+- die anderen optionalen Parameter laden:
+  - type (speed, kind)
+  - cloneable
+
 Physics (in German, because Chatlog):
 - wichtig, dass jede Beschleunigung limitiert und das sogar recht
   strinkt, also üblicherweise fällt man nie schneller als man
@@ -15,3 +20,62 @@ Physics (in German, because Chatlog):
   paar Frames dauern (d.h. nicht zu schnell steigen), damit man Zeit hat
   das zu steuern, der Umkehrpunkt sollte aber nicht zu lange dauern
 - eine gewisse Mindestsprunghöhe ist noch ganz sinnvoll
+
+Old ToDo:
+Foxblock:
+- Teamlogo
+- Vielleicht für die Collectibles noch eine Art "Schattenbild". Also nur die
+  Kontur, als eine Art... "Rahmen", wo die dann eingefügt werden, wenn man sie
+  findet.
+- Box-Todes Ani
+- Hintergründe
+- Quantenverschränktheit-Effekt
+- Nicht-Klonbar-Effekt
+
+Ziz:
+--- Code in C und mit libSparrow neuschreiben
+- Todesanimation abspielen wenn Objekt/Spieler stirbt
+- Fade In/Out
+- Scale2x für die Pandora und PC
+* Aus Nicht Klonen Bereich kann man nicht klonen (sollen wir das nicht einfach so lassen?)
+- Quantenverschränktheit
+- freie Steuerungskonfiguration
+
+Bugs:
+- Wann eine stupidplatform_v in der Bewegung nach obne "eingeklemmt" wird (also nicht mehr 
+  weiter kommt) und man drauf steht wechselt man ständig zw. Lauf und Sprungani
+- Fall Animation der Box wird beim Auftreffen auf den Boden nicht abgespielt
+- Boxen rutschen in manchen Fällen vom Kopf
+- Abspringen von sich nach unten oder oben bewegenden Plattformen manchmal eingeschränkt (in der Höhe)
+- Wenn man unter eine sich nach unten bewegende Plattform (auf der schon ein Physiker steht) 
+  springt wird diese dadurch aufgehalten und man klebt dran fest
+- Käfer sterben nicht wenn man auf sie springt
+- Man kann Käfer als Rakete benutzen wenn man unter sie springt
+- man hüpft auf Platformen die sich nach unten bewegen
+
+(Gameplay-)Änderungen:
+- Nur klonen wenn man fest auf dem Boden steht (ist sonst zu leicht explotable), auf Platformen evtl auch
+  -> Nur klonen wenn das zu klonende Objekt fest auf dem Boden steht
+- Sound- und Bildeffekt wenn ein Physiker stirbt oder gelöscht wird
+- Effekt wenn man Puzleteile einsammelt (Flashbacks - nachdem man alle Puzzleteile )
+- Sounds
+- Musik
++ Cursor standardmäßig etwas in Blickrichtung vom Physiker weg platzieren um ungewolltes Löschen zu vermeiden
++ Cursor-Bewegung beschleunigen (keine konstante Geschwindigkeit)
+- Cursor-Reichweite anzeigen
+- Nicht-klonbare Objekte und Bereiche durch Effekt darstellen (in der normalen Ansicht)
+  -> Klonbare Objekte besser hervorheben (Spieler haben nicht kapiert was sie zu tun haben), evtl Tips einblenden 
+     wenn Spieler länger stillsteht oder bei ersten Klonvorgängen "assistieren" (zB Markierung von nahen, klonbaren
+     Objekten - "clone me")
+- Quantenverschränkte Objekte durch Effekt darstellen
+- Erzeuge Partikel wenn etwas zerstört wird, welche dann zur Fernbedienung fliegen (-> Verdeutlichung, dass diese dadurch aufgeladen wird)
+- Änderung Funktionsweise der Spieler-Klone:
+  -> Kann nichts mehr auf dem Kopf ballancieren, wenn etwas den Kopf trifft wird der Spieler(-Klon) umgeworfen (mit Hinfall-Ani) und
+     das Objekt(oder anderer Klon) fällt seitlich zu Boden
+  -> Dadurch bessere Trennung der Funktonsbereiche der Objekte - Spieler-Klon ist nicht mehr für alles nutzbar
+- In-Game Hilfe in ersten Leveln zum Klonen (kein Text, entweder Pfeil-Overlays "Klick here to clone this" oder Bilder im Hintergrund)
+- Keine freie Bewegung des Klon/Destroy-Fadenkreuzes, sondern direkte Auswahl der Objekte in der Umgebung
+- Anzeige des Klon-Radius (Halbtransparenter Kreis)
+
+Level:
+- Ideen? (Anspielungen, Themen aus der Physik, etc.)

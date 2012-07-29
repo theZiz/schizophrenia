@@ -1,0 +1,7 @@
+default = credits
+fps = 1
+image = ./images/title.png
+[credits]
+framesize  = 394, 99
+bordersize = 394, 99
+frame      =   0,  0

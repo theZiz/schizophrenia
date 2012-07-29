@@ -1,5 +1,5 @@
 default = full
-image = bear.png
+image = ./images/bear.png
 framesize = 32, 25
 bordersize = 32, 25
 fps = 1

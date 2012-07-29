@@ -1,5 +1,5 @@
 default = off
-image = button_switch.png
+image = ./images/button_switch.png
 framesize = 32, 8
 bordersize = 32, 8
 fps = 1

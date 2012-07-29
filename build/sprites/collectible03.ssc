@@ -1,5 +1,5 @@
 default = full
-image = blueprint.png
+image = ./images/blueprint.png
 framesize  = 24, 24
 bordersize = 24, 24
 fps = 1

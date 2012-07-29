@@ -119,6 +119,6 @@
  </layer>
  <objectgroup name="player" width="20" height="20"/>
  <objectgroup name="box" width="20" height="20"/>
- <objectgroup name="collectible" width="20" height="20"/>
+ <objectgroup name="collectible00" width="20" height="20"/>
  <objectgroup name="door" width="20" height="20"/>
 </map>

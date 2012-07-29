@@ -2,7 +2,7 @@ default = off
 fps = 1
 framesize  = 32, 32
 bordersize = 32, 32
-image = button_switch.png
+image = ./images/button_switch.png
 
 [on]
 frame = 0, 0

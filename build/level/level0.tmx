@@ -53,8 +53,8 @@
   <object x="48" y="142"/>
  </objectgroup>
  <objectgroup name="generic" width="85" height="6">
-  <object name="./sprites/title.sdf" x="184" y="-24"/>
-  <object name="./sprites/title.sdf" type="credits" x="608" y="-24"/>
+  <object name="./sprites/title.scc" x="184" y="-24"/>
+  <object name="./sprites/credits.scc" x="608" y="-24"/>
  </objectgroup>
  <objectgroup name="door" width="85" height="6">
   <object name="level1-1.tmx" type="0" x="1104" y="160"/>

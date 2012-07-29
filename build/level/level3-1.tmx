@@ -96,9 +96,9 @@
  <objectgroup name="player" width="37" height="14">
   <object x="88" y="400"/>
  </objectgroup>
- <objectgroup name="collectible" width="37" height="14">
-  <object name="2,2" x="384" y="160"/>
-  <object name="2,5" x="1088" y="352"/>
+ <objectgroup name="collectible02" width="37" height="14">
+  <object name="2" x="384" y="160"/>
+  <object name="5" x="1088" y="352"/>
  </objectgroup>
  <objectgroup name="door" width="37" height="14">
   <object name="level0.tmx@51.5,-3" type="2" x="64" y="416"/>
@@ -112,10 +112,10 @@
   <object x="736" y="304"/>
  </objectgroup>
  <objectgroup name="group" width="37" height="14">
-  <object name="stupidplatform_v" type="-0.002,0.002" x="144" y="368" width="64" height="16"/>
+  <object name="platform" type="(0;-0.002),(0;0.002)" x="144" y="368" width="64" height="16"/>
   <object name="button" x="416" y="348"/>
  </objectgroup>
  <objectgroup name="generic" width="37" height="14">
-  <object name="./sprites/text.sdf" type="sorry" x="1055" y="271"/>
+  <object name="./sprites/text.sdf@sorry" x="1055" y="271"/>
  </objectgroup>
 </map>

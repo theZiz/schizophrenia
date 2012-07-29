@@ -1,5 +1,5 @@
 default = stand right
-image = enemy02_frames01.png
+image = ./images/enemy02_frames01.png
 fps = 10
 framesize  = 24, 48
 bordersize = 24, 48

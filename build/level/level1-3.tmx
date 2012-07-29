@@ -120,9 +120,9 @@
  <objectgroup name="player" width="36" height="20">
   <object x="223" y="543"/>
  </objectgroup>
- <objectgroup name="collectible" width="36" height="20">
-  <object name="0,6" x="62" y="223"/>
-  <object name="0,2" x="416" y="384"/>
+ <objectgroup name="collectible00" width="36" height="20">
+  <object name="6" x="62" y="223"/>
+  <object name="2" x="416" y="384"/>
  </objectgroup>
  <objectgroup name="door" width="36" height="20">
   <object name="level1-2.tmx@31,-11" x="192" y="576"/>
@@ -130,15 +130,15 @@
  </objectgroup>
  <objectgroup name="group1" width="36" height="20">
   <object name="button" x="640" y="572"/>
-  <object name="stupidplatform_v" type="-0.001,0.001" x="608" y="320" width="64" height="16"/>
+  <object name="platform" type="(0;-0.001),(0;0.001)" x="608" y="320" width="64" height="16"/>
  </objectgroup>
  <objectgroup name="Kopie von group1" width="36" height="20">
   <object name="button" x="768" y="572"/>
-  <object name="stupidplatform_v" type="0.001,-0.001" x="736" y="192" width="64" height="16"/>
+  <object name="platform" type="(0;0.001),(0;-0.001)" x="736" y="192" width="64" height="16"/>
  </objectgroup>
  <objectgroup name="Kopie von Kopie von group1" width="36" height="20">
   <object name="button" x="896" y="572"/>
-  <object name="stupidplatform_v" type="-0.001,0.001" x="864" y="384" width="64" height="16"/>
+  <object name="platform" type="(0;-0.001),(0;0.001)" x="864" y="384" width="64" height="16"/>
  </objectgroup>
  <objectgroup name="bug" width="36" height="20">
   <object x="397" y="494"/>

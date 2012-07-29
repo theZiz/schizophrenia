@@ -1,5 +1,5 @@
 default = 0
-image = energy.png
+image = ./images/energy.png
 framesize  = 23, 47
 bordersize = 23, 47
 

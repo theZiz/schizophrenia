@@ -145,11 +145,11 @@
  </objectgroup>
  <objectgroup name="second-horizontal" width="50" height="25">
   <object name="switch" x="1152" y="560"/>
-  <object name="stupidplatform" type="0,0.001" x="1216" y="582" width="64" height="16"/>
+  <object name="platform" type="(0;0),(0.001;0)" x="1216" y="582" width="64" height="16"/>
  </objectgroup>
  <objectgroup name="first-vertical" width="50" height="25">
   <object name="button" x="671" y="572"/>
-  <object name="stupidplatform_v" type="-0.002,0.001" x="736" y="640" width="61" height="16"/>
+  <object name="platform" type="(0;-0.002),(0;0.001)" x="736" y="640" width="61" height="16"/>
  </objectgroup>
  <objectgroup name="box" width="50" height="25">
   <object x="896" y="640"/>
@@ -158,12 +158,12 @@
   <object name="level1-2.tmx" gid="465" x="1520" y="576"/>
   <object name="level0.tmx@34,-3" gid="465" x="48" y="768"/>
  </objectgroup>
- <objectgroup name="collectible" width="50" height="25">
-  <object name="0,0" x="1326" y="559"/>
-  <object name="0,4" x="1039" y="365"/>
+ <objectgroup name="collectible00" width="50" height="25">
+  <object name="0" x="1326" y="559"/>
+  <object name="4" x="1039" y="365"/>
  </objectgroup>
  <objectgroup name="generic" width="50" height="25">
-  <object name="./sprites/text.sdf" type="a" x="368" y="656"/>
-  <object name="./sprites/text.sdf" type="b" x="1136" y="512"/>
+  <object name="./sprites/text.sdf@a" x="368" y="656"/>
+  <object name="./sprites/text.sdf@b" x="1136" y="512"/>
  </objectgroup>
 </map>

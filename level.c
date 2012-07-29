@@ -21,7 +21,7 @@
 
 #include "level.h"
 
-pLevelObjectGroup createGroup(pLevelObjectGroup *firstGroup, LevelObjectGroupType type)
+pLevelObjectGroup createGroup(pLevelObjectGroup *firstGroup, LevelObjectType type)
 {
 	pLevelObjectGroup group = (pLevelObjectGroup)malloc(sizeof(tLevelObjectGroup));
 	group->type = type;
@@ -45,8 +45,17 @@ pLevelObjectGroup createGroup(pLevelObjectGroup *firstGroup, LevelObjectGroupTyp
 pLevelObject createObject(pLevelObjectGroup group,LevelObjectType type)
 {
 	pLevelObject obj = (pLevelObject)malloc(sizeof(tLevelObject));
+	//Some default values. Keep in mind: Not every value is used for every object
 	obj->type = type;
 	obj->animation = NULL;
+	obj->x = 0;
+	obj->y = 0;
+	obj->w = 24;
+	obj->h = 24;
+	obj->speed = 0;
+	obj->direction = RIGHT;
+	obj->some_char = NULL;
+	obj->kind = 0;
 	if (group->firstObject)
 	{
 		group->firstObject->prev->next = obj;
@@ -149,6 +158,8 @@ pLevel loadLevel(char* filename)
 	level->targetCamera.y = 0;
 	level->backgroundColor = 65535; //white
 	level->spriteTable = NULL;
+	level->firstObjectGroup = NULL;
+	level->choosenPlayer = NULL;
 	
 	//Some values, which will be read and used later
 	int width = 0;
@@ -404,7 +415,191 @@ pLevel loadLevel(char* filename)
 				if (strcmp(buffer,"/layer"))
 					printf("Expected </layer> instead of <%s>\n",buffer);
 			}
-			//TODO: Reading Objects
+			else
+			if (strstr(buffer,"objectgroup") == buffer)
+			{
+				LevelObjectType defaultType = GROUP;
+				char* name = strstr(buffer,"name");
+				name = strchr(name,'\"');
+				name++;
+				char* end_s = strchr(name,'\"');
+				end_s[0] = 0;				
+				//Which type?
+				if (strcmp(name,"player") == 0)
+					defaultType = PLAYER;
+				else
+				if (strcmp(name,"bug") == 0)
+					defaultType = BUG;
+				else
+				if (strcmp(name,"nega") == 0)
+					defaultType = NEGA;
+				else
+				if (strcmp(name,"box") == 0)
+					defaultType = BOX;
+				else
+				if (strcmp(name,"door") == 0)
+					defaultType = DOOR;
+				else
+				if (strcmp(name,"trophies") == 0)
+					defaultType = TROPHIES;
+				else
+				if (strcmp(name,"generic") == 0)
+					defaultType = GENERIC;
+				else
+				if (strstr(name,"collectible") == name)
+					defaultType = COLLECTIBLE;
+				end_s[0] = '\"';
+				printf("Loading objectgroup of kind %i\n",defaultType);
+				//Creating the group.
+				pLevelObjectGroup group = createGroup(&(level->firstObjectGroup),defaultType);
+				//Reading the objects of the group
+				while (!end)
+				{
+					READ_TIL_TAG_BEGIN
+					READ_TIL_TAG_END
+					if (strstr(buffer,"/objectgroup") == buffer)
+						break;
+					else
+					if (strstr(buffer,"object") == buffer)
+					{
+						LevelObjectType objectType = defaultType;
+						pLevelObject obj = createObject(group,objectType);
+						
+						//name (if exist)
+						char* attribute = strstr(buffer,"name");
+						if (attribute)
+						{
+							attribute = strchr(attribute,'\"');
+							attribute++;
+							char* end_s = strchr(attribute,'\"');
+							end_s[0] = 0;
+							if (defaultType == BUG) //BUG
+							{
+								if (strcmp(attribute,"right") == 0)
+									obj->direction = RIGHT;
+								else
+								if (strcmp(attribute,"left") == 0)
+									obj->direction = LEFT;
+							}
+							else
+							if (defaultType == DOOR || defaultType == GENERIC) //DOOR, GENERIC
+							{
+								obj->some_char = (char*)malloc(strlen(attribute)+1);
+								sprintf(obj->some_char,"%s",attribute);
+							}
+							if (defaultType == TROPHIES || defaultType == COLLECTIBLE) //TROPHIES, COLLECTIBLE
+								obj->kind = attribute[0]-'0'; //works fine from 0 to 9. :)
+							else
+							if (defaultType == GROUP) //GROUP
+							{
+								if (strcmp(attribute,"switch") == 0)
+									obj->type = SWITCH;
+								else
+								if (strcmp(attribute,"button") == 0)
+									obj->type = BUTTON;
+								else
+								if (strcmp(attribute,"platform") == 0)
+									obj->type = PLATFORM;								
+							}
+							end_s[0] = '\"';
+						}
+						printf("  Create object of type %i\n",obj->type);
+						//x
+						attribute = strstr(buffer,"x");
+						attribute = strchr(attribute,'\"');
+						attribute++;
+						end_s = strchr(attribute,'\"');
+						end_s[0] = 0;
+						obj->x = atoi(attribute);
+						end_s[0] = '\"';
+						//y
+						attribute = strstr(buffer,"y");
+						attribute = strchr(attribute,'\"');
+						attribute++;
+						end_s = strchr(attribute,'\"');
+						end_s[0] = 0;
+						obj->y = atoi(attribute);
+						//w (if exist)
+						attribute = strstr(buffer,"width");
+						if (attribute)
+						{
+							attribute = strchr(attribute,'\"');
+							attribute++;
+							obj->w = atoi(attribute);
+						}
+						//w (if exist)
+						attribute = strstr(buffer,"height");
+						if (attribute)
+						{
+							attribute = strchr(attribute,'\"');
+							attribute++;
+							obj->w = atoi(attribute);
+						}
+						
+						char* temp;
+						char buffer[256];
+						SDL_Surface* surface;
+						switch (obj->type) //Creating the animation
+						{
+							case PLAYER:
+								obj->animation = spLoadSpriteCollection("./sprites/player.ssc",NULL);
+								break; //finish me!
+							case BUG:
+								obj->animation = spLoadSpriteCollection("./sprites/enemy01.ssc",NULL);
+								break; //finish me!
+							case NEGA:
+								obj->animation = spLoadSpriteCollection("./sprites/enemy02.ssc",NULL);
+								break;
+							case BOX:
+								obj->animation = spLoadSpriteCollection("./sprites/box.ssc",NULL);
+								break;
+							case SWITCH:
+								obj->animation = spLoadSpriteCollection("./sprites/switch.ssc",NULL);
+								break; //finish me!
+							case BUTTON:
+								obj->animation = spLoadSpriteCollection("./sprites/button.ssc",NULL);
+								break;
+							case DOOR:
+								obj->animation = spLoadSpriteCollection("./sprites/door.ssc",NULL);
+								break; //finish me!
+							case PLATFORM:
+								printf("    Creating custom platform\n");
+								obj->animation = spNewSpriteCollection();
+								spAddSpriteToCollection(obj->animation,spNewSprite(NULL));
+								surface = spCreateSurface(obj->w,obj->h);
+								SDL_FillRect(surface,NULL,12345);
+								spNewSubSpriteNoTiling(spActiveSprite(obj->animation),surface,1000);
+								spDeleteSurface(surface); //For the ref counter
+								break;
+							case TROPHIES:
+								obj->animation = spLoadSpriteCollection(name,NULL); 
+								sprintf(buffer,"collectible0%i",obj->kind);
+								spSelectSprite(obj->animation,"full");
+								break;
+							case GENERIC:
+								temp = strchr(name,'@');
+								if (temp)
+								{
+									temp[0] = 0;
+									obj->animation = spLoadSpriteCollection(name,NULL);
+									printf("    Creating animation %s",name);
+									temp[0] = '@';
+									spSelectSprite(obj->animation,&(temp[1]));
+									printf(" with default=\"%s\"\n",&(temp[1]));
+								}
+								else
+									obj->animation = spLoadSpriteCollection(name,NULL);
+								break;
+							case COLLECTIBLE:
+								obj->animation = spLoadSpriteCollection(name,NULL); 
+								sprintf(buffer,"%i",obj->kind);
+								spSelectSprite(obj->animation,buffer);
+								break;
+						}
+						
+					}
+				}					
+			}
 		}
 		printf("Deleting temporary tile_set list\n");
 		while (tile_set)
@@ -498,6 +693,29 @@ void deleteLevel(pLevel level)
 		if (level->spriteTable[i])
 			spDeleteSprite(level->spriteTable[i]);
 	free(level->spriteTable);
+	//Deleting all objects
+	pLevelObjectGroup group = level->firstObjectGroup;
+	if (group)
+	do
+	{
+		pLevelObject obj = group->firstObject;
+		if (obj)
+		do
+		{
+			if (obj->some_char)
+				free(obj->some_char);
+			if (obj->animation)
+				spDeleteSpriteCollection(obj->animation,0);
+			pLevelObject next = obj->next;
+			free(obj);
+			obj = next;
+		}
+		while (obj != group->firstObject);
+		pLevelObjectGroup next = group->next;
+		free(group);
+		group = next;
+	}
+	while (group != level->firstObjectGroup);
 	free(level);
 }
 

@@ -112,7 +112,7 @@
  <objectgroup name="group2" width="60" height="18">
   <object name="button" x="64" y="540"/>
   <object name="button" x="192" y="540"/>
-  <object name="stupidplatform_v" type="-0.001,0.001" x="96" y="480" width="64" height="16"/>
+  <object name="platform" type="(0;-0.001),(0;0.001)" x="96" y="480" width="64" height="16"/>
  </objectgroup>
  <objectgroup name="player" width="60" height="18">
   <object x="1140" y="433"/>
@@ -121,16 +121,16 @@
   <object x="1408" y="448"/>
   <object x="1072" y="352"/>
  </objectgroup>
- <objectgroup name="collectible" width="60" height="18">
-  <object name="1,0" x="1825" y="352"/>
-  <object name="1,5" x="128" y="320"/>
+ <objectgroup name="collectible01" width="60" height="18">
+  <object name="0" x="1825" y="352"/>
+  <object name="5" x="128" y="320"/>
  </objectgroup>
  <objectgroup name="door" width="60" height="18">
   <object name="level0.tmx@41.5,-3" type="1" x="1120" y="448"/>
  </objectgroup>
  <objectgroup name="group1" width="60" height="18">
   <object name="button" x="1632" y="444"/>
-  <object name="stupidplatform" type="0.002,-0.002" x="1690" y="397" width="64" height="16"/>
+  <object name="platform" type="(0.002;0),(-0.002;0)" x="1690" y="397" width="64" height="16"/>
  </objectgroup>
  <objectgroup name="bug" width="60" height="18">
   <object x="544" y="512"/>
@@ -139,7 +139,7 @@
   <object x="32" y="400" width="448" height="256"/>
  </objectgroup>
  <objectgroup name="generic" width="60" height="18">
-  <object name="./sprites/text.sdf" type="sorry" x="992" y="223"/>
-  <object name="./sprites/text.sdf" type="restrict" x="256" y="480"/>
+  <object name="./sprites/text.sdf@sorry" x="992" y="223"/>
+  <object name="./sprites/text.sdf@restrict" x="256" y="480"/>
  </objectgroup>
 </map>

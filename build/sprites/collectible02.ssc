@@ -1,5 +1,5 @@
 default = full
-image = watch.png
+image = ./images/watch.png
 framesize  = 30, 18
 bordersize = 30, 18
 fps = 1
