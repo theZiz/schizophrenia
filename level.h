@@ -56,16 +56,22 @@ typedef enum {
 	DOWN
 } LevelDirection;
 
+typedef enum {
+	OFF = 0,
+	ON = 1
+} LevelState;
+
 typedef struct sLevelObject *pLevelObject;
 typedef struct sLevelObject {
 	spSpriteCollectionPointer animation;
 	LevelObjectType type;
 	Sint32 x,y; //one tile == SP_ONE, so (because of 32x32 tiles) x>>SP_ACCURACY-5 is the pixel position
 	int w,h; //pixel! not used by all objects
-	Sint32 speed; //speed in positionchange / 1 ms. Not used by all objects
+	struct {struct {Sint32 x,y;} v1,v2;} speed; //speed in positionchange / 1 ms. Not used by all objects
 	LevelDirection direction; //direction. Not used by all objects
 	char* some_char; //some objects need to save a string as e.g. destiny
 	int kind; //some objects have different kinds. Saved here.
+	LevelState state; //on and off
 	pLevelObject prev,next; //ring of objects in one group
 } tLevelObject;
 

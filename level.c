@@ -52,10 +52,14 @@ pLevelObject createObject(pLevelObjectGroup group,LevelObjectType type)
 	obj->y = 0;
 	obj->w = 24;
 	obj->h = 24;
-	obj->speed = 0;
+	obj->speed.v1.x = 0;
+	obj->speed.v1.y = 0;
+	obj->speed.v2.x = 0;
+	obj->speed.v2.y = 0;
 	obj->direction = RIGHT;
 	obj->some_char = NULL;
 	obj->kind = 0;
+	obj->state = OFF;
 	if (group->firstObject)
 	{
 		group->firstObject->prev->next = obj;
@@ -448,6 +452,9 @@ pLevel loadLevel(char* filename)
 				else
 				if (strstr(name,"collectible") == name)
 					defaultType = COLLECTIBLE;
+				else
+				if (strstr(name,"unselectable") == name)
+					defaultType = UNSELECTABLE;
 				end_s[0] = '\"';
 				printf("Loading objectgroup of kind %i\n",defaultType);
 				//Creating the group.
@@ -473,7 +480,7 @@ pLevel loadLevel(char* filename)
 							attribute++;
 							char* end_s = strchr(attribute,'\"');
 							end_s[0] = 0;
-							if (defaultType == BUG) //BUG
+							if (defaultType == BUG || defaultType == NEGA ) //BUG, NEGA
 							{
 								if (strcmp(attribute,"right") == 0)
 									obj->direction = RIGHT;
@@ -519,6 +526,7 @@ pLevel loadLevel(char* filename)
 						end_s = strchr(attribute,'\"');
 						end_s[0] = 0;
 						obj->y = atoi(attribute);
+						end_s[0] = '\"';
 						//w (if exist)
 						attribute = strstr(buffer,"width");
 						if (attribute)
@@ -535,7 +543,47 @@ pLevel loadLevel(char* filename)
 							attribute++;
 							obj->w = atoi(attribute);
 						}
-						
+						//type (if exist)
+						attribute = strstr(buffer,"type");
+						if (attribute)
+						{
+							attribute = strchr(attribute,'\"');
+							attribute++;
+							char* end_s = strchr(attribute,'\"');
+							end_s[0] = 0;
+							if (obj->type == SWITCH || obj->type == BUTTON)
+							{
+								if (strstr(attribute,"negative"))
+									obj->kind = 1;
+								if (strstr(attribute,"on"))
+									obj->state= ON;
+								if (strstr(attribute,"off"))
+									obj->state= OFF;
+							}
+							else
+							if (obj->type == DOOR)
+								obj->kind = attribute[0]-'0';
+							else
+							if (obj->type == PLATFORM)
+							{
+								//Searching the first "("
+								char* temp = strchr(attribute,'(');
+								temp++;
+								obj->speed.v1.x = (Sint32)(atof(temp)*SP_ACCURACY_FACTOR);
+								temp = strchr(temp,';');
+								temp++;
+								obj->speed.v1.y = (Sint32)(atof(temp)*SP_ACCURACY_FACTOR);
+								printf("    Setting the first vector (%i:%i)\n",obj->speed.v1.x,obj->speed.v1.y);
+								temp = strchr(temp,'(');
+								temp++;
+								obj->speed.v2.x = (Sint32)(atof(temp)*SP_ACCURACY_FACTOR);
+								temp = strchr(temp,';');
+								temp++;
+								obj->speed.v2.y = (Sint32)(atof(temp)*SP_ACCURACY_FACTOR);
+								printf("    Setting the second vector (%i:%i)\n",obj->speed.v2.x,obj->speed.v2.y);
+							}
+							end_s[0] = '\"';
+						}						
 						char* temp;
 						char buffer[256];
 						SDL_Surface* surface;
@@ -543,25 +591,42 @@ pLevel loadLevel(char* filename)
 						{
 							case PLAYER:
 								obj->animation = spLoadSpriteCollection("./sprites/player.ssc",NULL);
-								break; //finish me!
+								break;
 							case BUG:
 								obj->animation = spLoadSpriteCollection("./sprites/enemy01.ssc",NULL);
-								break; //finish me!
+								if (obj->direction == LEFT)
+									spSelectSprite(obj->animation,"stand left");
+								else
+								if (obj->direction == RIGHT)
+									spSelectSprite(obj->animation,"stand right");
+								break;
 							case NEGA:
 								obj->animation = spLoadSpriteCollection("./sprites/enemy02.ssc",NULL);
+								if (obj->direction == LEFT)
+									spSelectSprite(obj->animation,"stand left");
+								else
+								if (obj->direction == RIGHT)
+									spSelectSprite(obj->animation,"stand right");
 								break;
 							case BOX:
 								obj->animation = spLoadSpriteCollection("./sprites/box.ssc",NULL);
 								break;
 							case SWITCH:
 								obj->animation = spLoadSpriteCollection("./sprites/switch.ssc",NULL);
-								break; //finish me!
+								if (obj->state)
+									spSelectSprite(obj->animation,"on");
+								break;
 							case BUTTON:
 								obj->animation = spLoadSpriteCollection("./sprites/button.ssc",NULL);
 								break;
 							case DOOR:
 								obj->animation = spLoadSpriteCollection("./sprites/door.ssc",NULL);
-								break; //finish me!
+								sprintf(buffer,"door %i closed",obj->kind);
+								spSelectSprite(obj->animation,buffer);
+								break;
+							case UNSELECTABLE:
+								obj->animation = NULL; //!TODO: something nice
+								break;
 							case PLATFORM:
 								printf("    Creating custom platform\n");
 								obj->animation = spNewSpriteCollection();
