@@ -510,54 +510,6 @@ pLevel loadLevel(char* filename)
 							}
 							end_s[0] = '\"';
 						}
-						printf("  Create object of type %i\n",obj->type);
-						TODO: Den Unterschied erkennen zwischen Objekten,
-						die also stupide Rahmen definiert werden
-						  - w und h vorhanden
-						  - gid nicht vorhanden
-						  - y = y
-						und denen, die über ein Tile definiert werden
-						  - w und h nicht vorhanden
-						  - vor allem gid vorhanden!
-						  - y = y - h
-						//Setting the default w and h
-						switch (obj->type)
-						{
-							case PLAYER:
-								obj->w = 24;
-								obj->h = 48;
-								break;
-							
-						}
-						//w (if exist)
-						attribute = strstr(buffer,"width");
-						if (attribute)
-						{
-							attribute = strchr(attribute,'\"');
-							attribute++;
-							obj->w = atoi(attribute);
-						}
-						//h (if exist)
-						attribute = strstr(buffer,"height");
-						if (attribute)
-						{
-							attribute = strchr(attribute,'\"');
-							attribute++;
-							obj->h = atoi(attribute);
-						}
-						//x
-						attribute = strstr(buffer,"x");
-						attribute = strchr(attribute,'\"');
-						attribute++;
-						end_s = strchr(attribute,'\"');
-						obj->x = atoi(attribute) << SP_ACCURACY-5;
-						//y
-						attribute = strstr(buffer,"y");
-						attribute = strchr(attribute,'\"');
-						attribute++;
-						end_s = strchr(attribute,'\"');
-						obj->y = atoi(attribute) - obj->h << SP_ACCURACY-5;
-						printf("    position: %i:%i\n",obj->x >> SP_ACCURACY-5,obj->y >> SP_ACCURACY-5);
 						//type (if exist)
 						attribute = strstr(buffer,"type");
 						if (attribute)
@@ -599,8 +551,26 @@ pLevel loadLevel(char* filename)
 							}
 							end_s[0] = '\"';
 						}						
+						int read_w = 0;
+						int read_h = 0;
+						//w (if exist)
+						attribute = strstr(buffer,"width");
+						if (attribute)
+						{
+							attribute = strchr(attribute,'\"');
+							attribute++;
+							read_w = atoi(attribute);
+						}
+						//h (if exist)
+						attribute = strstr(buffer,"height");
+						if (attribute)
+						{
+							attribute = strchr(attribute,'\"');
+							attribute++;
+							read_h = atoi(attribute);
+						}
 						char* temp;
-						char buffer[256];
+						char meow[256];
 						SDL_Surface* surface;
 						switch (obj->type) //Creating the animation
 						{
@@ -636,8 +606,8 @@ pLevel loadLevel(char* filename)
 								break;
 							case DOOR:
 								obj->animation = spLoadSpriteCollection("./sprites/door.ssc",NULL);
-								sprintf(buffer,"door %i closed",obj->kind);
-								spSelectSprite(obj->animation,buffer);
+								sprintf(meow,"door %i closed",obj->kind);
+								spSelectSprite(obj->animation,meow);
 								break;
 							case UNSELECTABLE:
 								obj->animation = NULL; //!TODO: something nice
@@ -646,14 +616,14 @@ pLevel loadLevel(char* filename)
 								printf("    Creating custom platform\n");
 								obj->animation = spNewSpriteCollection();
 								spAddSpriteToCollection(obj->animation,spNewSprite(NULL));
-								surface = spCreateSurface(obj->w,obj->h);
+								surface = spCreateSurface(read_w,read_h);
 								SDL_FillRect(surface,NULL,12345);
 								spNewSubSpriteNoTiling(spActiveSprite(obj->animation),surface,1000);
 								spDeleteSurface(surface); //For the ref counter
 								break;
 							case TROPHIES:
 								obj->animation = spLoadSpriteCollection(name,NULL); 
-								sprintf(buffer,"collectible0%i",obj->kind);
+								sprintf(meow,"collectible0%i",obj->kind);
 								spSelectSprite(obj->animation,"full");
 								break;
 							case GENERIC:
@@ -672,11 +642,97 @@ pLevel loadLevel(char* filename)
 								break;
 							case COLLECTIBLE:
 								obj->animation = spLoadSpriteCollection(name,NULL); 
-								sprintf(buffer,"%i",obj->kind);
-								spSelectSprite(obj->animation,buffer);
+								sprintf(meow,"%i",obj->kind);
+								spSelectSprite(obj->animation,meow);
 								break;
 						}
+						//Setting the w and h
+						switch (obj->type)
+						{
+							case PLAYER: case NEGA:
+								obj->w = 24;
+								obj->h = 48;
+								break;
+							case BUG:
+								obj->w = 28;
+								obj->h = 16;
+								break;
+							case BOX:
+								obj->w = 24;
+								obj->h = 24;
+								break;
+							case SWITCH:
+								obj->w = 32;
+								obj->h = 32;
+								break;
+							case BUTTON:
+								obj->w = 32;
+								obj->h = 8;
+								break;
+							case DOOR:
+								obj->w = 32;
+								obj->h = 54;
+								break;
+							case PLATFORM: case UNSELECTABLE:
+								obj->w = read_w;
+								obj->h = read_h;
+								break;
+							case TROPHIES:
+								switch (obj->kind)
+								{
+									case 0:
+										obj->w = 72;
+										obj->h = 72;
+										break;
+									case 1:
+										obj->w = 64;
+										obj->h = 100;
+										break;
+									case 2:
+										obj->w = 60;
+										obj->h = 72;
+										break;
+									case 3:
+										obj->w = 96;
+										obj->h = 48;
+										break;
+								}
+								break;
+							case GENERIC: case COLLECTIBLE:
+								obj->w = spActiveSprite(obj->animation)->maxWidth;
+								obj->h = spActiveSprite(obj->animation)->maxHeight;
+								break;
+							default:
+								obj->w = 0;
+								obj->h = 0;
+						}
+						//x
+						attribute = strstr(buffer,"x");
+						attribute = strchr(attribute,'\"');
+						attribute++;
+						end_s = strchr(attribute,'\"');
+						obj->x = atoi(attribute) << SP_ACCURACY-5;
+						//y
+						attribute = strstr(buffer,"y");
+						attribute = strchr(attribute,'\"');
+						attribute++;
+						end_s = strchr(attribute,'\"');
+						obj->y = atoi(attribute) << SP_ACCURACY-5;
 						
+						//the position is correct, if there is no gid and no correction is needed
+						if (strstr(buffer,"gid"))
+						{
+							//position correction. read_w and read_h have to be 0.
+							obj->y -= obj->h << SP_ACCURACY-5;
+						}
+						else
+						if (read_w && read_h)
+						{
+							obj->x += read_w - obj->w >> 1;
+							obj->y += read_h - obj->h >> 1;
+						}
+						printf("  Create object of type %i\n",obj->type);
+						printf("    position: %i:%i\n",obj->x >> SP_ACCURACY-5,obj->y >> SP_ACCURACY-5);						
 					}
 				}					
 			}
