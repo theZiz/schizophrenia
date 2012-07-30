@@ -511,22 +511,24 @@ pLevel loadLevel(char* filename)
 							end_s[0] = '\"';
 						}
 						printf("  Create object of type %i\n",obj->type);
-						//x
-						attribute = strstr(buffer,"x");
-						attribute = strchr(attribute,'\"');
-						attribute++;
-						end_s = strchr(attribute,'\"');
-						end_s[0] = 0;
-						obj->x = atoi(attribute);
-						end_s[0] = '\"';
-						//y
-						attribute = strstr(buffer,"y");
-						attribute = strchr(attribute,'\"');
-						attribute++;
-						end_s = strchr(attribute,'\"');
-						end_s[0] = 0;
-						obj->y = atoi(attribute);
-						end_s[0] = '\"';
+						TODO: Den Unterschied erkennen zwischen Objekten,
+						die also stupide Rahmen definiert werden
+						  - w und h vorhanden
+						  - gid nicht vorhanden
+						  - y = y
+						und denen, die über ein Tile definiert werden
+						  - w und h nicht vorhanden
+						  - vor allem gid vorhanden!
+						  - y = y - h
+						//Setting the default w and h
+						switch (obj->type)
+						{
+							case PLAYER:
+								obj->w = 24;
+								obj->h = 48;
+								break;
+							
+						}
 						//w (if exist)
 						attribute = strstr(buffer,"width");
 						if (attribute)
@@ -535,14 +537,27 @@ pLevel loadLevel(char* filename)
 							attribute++;
 							obj->w = atoi(attribute);
 						}
-						//w (if exist)
+						//h (if exist)
 						attribute = strstr(buffer,"height");
 						if (attribute)
 						{
 							attribute = strchr(attribute,'\"');
 							attribute++;
-							obj->w = atoi(attribute);
+							obj->h = atoi(attribute);
 						}
+						//x
+						attribute = strstr(buffer,"x");
+						attribute = strchr(attribute,'\"');
+						attribute++;
+						end_s = strchr(attribute,'\"');
+						obj->x = atoi(attribute) << SP_ACCURACY-5;
+						//y
+						attribute = strstr(buffer,"y");
+						attribute = strchr(attribute,'\"');
+						attribute++;
+						end_s = strchr(attribute,'\"');
+						obj->y = atoi(attribute) - obj->h << SP_ACCURACY-5;
+						printf("    position: %i:%i\n",obj->x >> SP_ACCURACY-5,obj->y >> SP_ACCURACY-5);
 						//type (if exist)
 						attribute = strstr(buffer,"type");
 						if (attribute)
@@ -681,10 +696,25 @@ pLevel loadLevel(char* filename)
 		SDL_RWclose(file);
 		return NULL;
 	}
-	level->actualCamera.x = width<<SP_ACCURACY-1;
-	level->actualCamera.y = height<<SP_ACCURACY-1;
-	level->targetCamera.x = width<<SP_ACCURACY-1;
-	level->targetCamera.y = height<<SP_ACCURACY-1;
+	//Searching a player
+	pLevelObjectGroup group = level->firstObjectGroup;
+	if (group)
+	{
+		do
+		{
+			if (group->type == PLAYER)
+				break;
+			group = group->next;
+		}
+		while (group != level->firstObjectGroup);
+		level->choosenPlayer = group->firstObject->prev;
+	}
+	else
+		level->choosenPlayer = NULL; //However: If this line is called, it will crash. ^^
+	level->actualCamera.x = level->choosenPlayer->x + (level->choosenPlayer->w << SP_ACCURACY - 6);
+	level->actualCamera.y = level->choosenPlayer->y + (level->choosenPlayer->h << SP_ACCURACY - 6);
+	level->targetCamera.x = level->choosenPlayer->x + (level->choosenPlayer->w << SP_ACCURACY - 6);
+	level->targetCamera.y = level->choosenPlayer->y + (level->choosenPlayer->h << SP_ACCURACY - 6);
 	SDL_RWclose(file);
 	return level;
 }
@@ -786,6 +816,8 @@ void deleteLevel(pLevel level)
 
 void calcCamera(pLevel level,Sint32 steps)
 {
+	level->targetCamera.x = level->choosenPlayer->x + (level->choosenPlayer->w << SP_ACCURACY - 6);
+	level->targetCamera.y = level->choosenPlayer->y + (level->choosenPlayer->h << SP_ACCURACY - 6);	
 	int i;
 	for (i = 0; i < steps; i++)
 	{

@@ -160,5 +160,7 @@
  </objectgroup>
  <objectgroup name="unselectable" width="81" height="20">
   <object x="574" y="198" width="201" height="154"/>
+  <object x="1" y="2" width="47" height="12"/>
+  <object gid="101" x="1" y="50"/>
  </objectgroup>
 </map>
