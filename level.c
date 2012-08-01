@@ -707,13 +707,13 @@ pLevel loadLevel(char* filename)
 								obj->h = 0;
 						}
 						//x
-						attribute = strstr(buffer,"x");
+						attribute = strstr(buffer," x=");
 						attribute = strchr(attribute,'\"');
 						attribute++;
 						end_s = strchr(attribute,'\"');
 						obj->x = atoi(attribute) << SP_ACCURACY-5;
 						//y
-						attribute = strstr(buffer,"y");
+						attribute = strstr(buffer," y=");
 						attribute = strchr(attribute,'\"');
 						attribute++;
 						end_s = strchr(attribute,'\"');
