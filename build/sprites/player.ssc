@@ -1,4 +1,4 @@
-default = run right
+default = stand right
 image = ./images/science_guy_frames01.png
 fps = 10
 framesize = 22, 46

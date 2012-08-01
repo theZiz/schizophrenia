@@ -63,6 +63,7 @@ int calc_test( Uint32 steps )
 	if ( spGetInput()->axis[1] > 0)
 		level->targetCamera.y -= steps*256;
 
+	updateLevelSprites(level,steps);	
 	calcCamera(level,steps);	
 
 	if ( spGetInput()->button[SP_BUTTON_START] )

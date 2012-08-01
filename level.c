@@ -617,7 +617,7 @@ pLevel loadLevel(char* filename)
 								obj->animation = spNewSpriteCollection();
 								spAddSpriteToCollection(obj->animation,spNewSprite(NULL));
 								surface = spCreateSurface(read_w,read_h);
-								SDL_FillRect(surface,NULL,12345);
+								SDL_FillRect(surface,NULL,0);
 								spNewSubSpriteNoTiling(spActiveSprite(obj->animation),surface,1000);
 								spDeleteSurface(surface); //For the ref counter
 								break;
@@ -726,10 +726,9 @@ pLevel loadLevel(char* filename)
 							obj->y -= obj->h << SP_ACCURACY-5;
 						}
 						else
-						if (read_w && read_h)
 						{
-							obj->x += read_w - obj->w >> 1;
-							obj->y += read_h - obj->h >> 1;
+							obj->x += read_w - obj->w << SP_ACCURACY-6;
+							obj->y += read_h - obj->h << SP_ACCURACY-6;
 						}
 						printf("  Create object of type %i\n",obj->type);
 						printf("    position: %i:%i\n",obj->x >> SP_ACCURACY-5,obj->y >> SP_ACCURACY-5);						
@@ -815,8 +814,33 @@ void drawLevel(pLevel level)
 				int positionY = (y-screenTileBeginY)*32+screenHeight/2-((level->actualCamera.y >> SP_ACCURACY -5) & 31);
 				spDrawSprite(positionX,positionY,l,sprite);
 			}
+		if (l == -2) //player layer
+		{
+			//Drawing the objects.
+			pLevelObjectGroup group = level->firstObjectGroup;
+			if (group)
+			do
+			{
+				pLevelObject obj = group->firstObject;
+				if (obj)
+				do
+				{
+					if (obj->animation)
+					{
+						int positionX = (obj->x >> SP_ACCURACY-5)+screenWidth/2-((level->actualCamera.x >> SP_ACCURACY -5));
+						int positionY = (obj->y >> SP_ACCURACY-5)+screenHeight/2-((level->actualCamera.y >> SP_ACCURACY -5));
+						spDrawSprite(positionX,positionY,-2,spActiveSprite(obj->animation));
+					}
+					obj = obj->next;
+				}
+				while (obj != group->firstObject);
+				group = group->next;
+			}
+			while (group != level->firstObjectGroup);
+		}
 	}
 	
+	//DEBUG
 	spLine(screenWidth/2-5,screenHeight/2,-1,screenWidth/2+5,screenHeight/2,-1,0);
 	spLine(screenWidth/2,screenHeight/2-5,-1,screenWidth/2,screenHeight/2+5,-1,0);
 	int dx = level->targetCamera.x-level->actualCamera.x >> SP_ACCURACY - 5;
@@ -872,12 +896,32 @@ void deleteLevel(pLevel level)
 
 void calcCamera(pLevel level,Sint32 steps)
 {
-	level->targetCamera.x = level->choosenPlayer->x + (level->choosenPlayer->w << SP_ACCURACY - 6);
-	level->targetCamera.y = level->choosenPlayer->y + (level->choosenPlayer->h << SP_ACCURACY - 6);	
+	//level->targetCamera.x = level->choosenPlayer->x + (level->choosenPlayer->w << SP_ACCURACY - 6);
+	//level->targetCamera.y = level->choosenPlayer->y + (level->choosenPlayer->h << SP_ACCURACY - 6);	
 	int i;
 	for (i = 0; i < steps; i++)
 	{
 		level->actualCamera.x += (level->targetCamera.x-level->actualCamera.x)>>7;
 		level->actualCamera.y += (level->targetCamera.y-level->actualCamera.y)>>7;
 	}
+}
+
+void updateLevelSprites(pLevel level,int steps)
+{
+	pLevelObjectGroup group = level->firstObjectGroup;
+	if (group)
+	do
+	{
+		pLevelObject obj = group->firstObject;
+		if (obj)
+		do
+		{
+			if (obj->animation)
+				spUpdateSprite(spActiveSprite(obj->animation),steps);
+			obj = obj->next;
+		}
+		while (obj != group->firstObject);
+		group = group->next;
+	}
+	while (group != level->firstObjectGroup);
 }
