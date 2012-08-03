@@ -133,7 +133,7 @@
   <object name="right" gid="509" x="1689" y="311"/>
  </objectgroup>
  <objectgroup name="pair1" width="81" height="20">
-  <object name="platform" type="(0;0),(0;0)" x="456" y="297" width="41" height="10"/>
+  <object name="platform" type="(0;0),(0;0)" x="456" y="297" width="41" height="20"/>
   <object name="button" x="611" y="286"/>
   <object name="switch" x="369" y="272"/>
   <object name="platform" type="(0.0015;0),(0;0)" x="587" y="331" width="43" height="6"/>

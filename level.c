@@ -146,7 +146,7 @@ SDL_Surface* create_platform(int w, int h)
 {
 	SDL_Surface* renderTarget = spGetRenderTarget();
 	SDL_Surface* surface = spCreateSurface(w,h);
-	SDL_Surface* skeleton = spLoadSurface("./images/platform_hor.png");
+	SDL_Surface* skeleton = spLoadSurface("./images/platform.png");
 	SDL_FillRect(surface,NULL,0);
 	spSelectRenderTarget(surface);
 	spSetZSet(0);
@@ -154,7 +154,38 @@ SDL_Surface* create_platform(int w, int h)
 	spSetAlphaTest(0);
 	spSetVerticalOrigin(SP_TOP);
 	spSetHorizontalOrigin(SP_LEFT);
-	spBlitSurface(0,0,-1,skeleton);
+	int rw = spMin(8,w/2+1);
+	int rh = spMin(8,h/2+1);
+	
+	//Left top of the platform
+	spBlitSurfacePart(   0,   0,-1,skeleton,    0,    0,rw,rh);
+	//Center top
+	int i;
+	for (i=rw; i < w-rw; i++)
+	spBlitSurfacePart(   i,   0,-1,skeleton,    8,    0, 1,rh);
+	//Right top
+	spBlitSurfacePart(w-rw,   0,-1,skeleton,16-rw,    0,rw,rh);
+	
+	//Left center
+	int j;
+	for (j=rh; j < h-rh; j++)
+	spBlitSurfacePart(   0,   j,-1,skeleton,    0,    8,rw, 1);	
+	//Center center
+	for (i=rw; i < w-rw; i++)
+	for (j=rh; j < h-rh; j++)
+	spBlitSurfacePart(   i,   j,-1,skeleton,    8,    8, 1, 1);
+	//Right center
+	for (j=rh; j < h-rh; j++)
+	spBlitSurfacePart(w-rw,   j,-1,skeleton,16-rw,    8,rw, 1);
+	
+	//Left bottom
+	spBlitSurfacePart(   0,h-rh,-1,skeleton,    0,16-rh,rw,rh);
+	//Center bottom
+	for (i=rw; i < w-rw; i++)
+	spBlitSurfacePart(   i,h-rh,-1,skeleton,    8,16-rh, 1,rh);
+	//Right bottom
+	spBlitSurfacePart(w-rw,h-rh,-1,skeleton,16-rw,16-rh,rw,rh);
+	
 	
 	spDeleteSurface(skeleton);
 	if (renderTarget)
