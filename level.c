@@ -142,6 +142,26 @@ spSpritePointer get_sprite(int tilenr,pTile_set tile_set,spSpritePointer *table)
 	return NULL;
 }
 
+SDL_Surface* create_platform(int w, int h)
+{
+	SDL_Surface* renderTarget = spGetRenderTarget();
+	SDL_Surface* surface = spCreateSurface(w,h);
+	SDL_Surface* skeleton = spLoadSurface("./images/platform_hor.png");
+	SDL_FillRect(surface,NULL,0);
+	spSelectRenderTarget(surface);
+	spSetZSet(0);
+	spSetZTest(0);
+	spSetAlphaTest(0);
+	spSetVerticalOrigin(SP_TOP);
+	spSetHorizontalOrigin(SP_LEFT);
+	spBlitSurface(0,0,-1,skeleton);
+	
+	spDeleteSurface(skeleton);
+	if (renderTarget)
+		spSelectRenderTarget(renderTarget);
+	return surface;
+}
+
 pLevel loadLevel(char* filename)
 {
 	SDL_RWops *file = SDL_RWFromFile(filename, "rt");
@@ -616,8 +636,7 @@ pLevel loadLevel(char* filename)
 								printf("    Creating custom platform\n");
 								obj->animation = spNewSpriteCollection();
 								spAddSpriteToCollection(obj->animation,spNewSprite(NULL));
-								surface = spCreateSurface(read_w,read_h);
-								SDL_FillRect(surface,NULL,0);
+								surface = create_platform(read_w,read_h);
 								spNewSubSpriteNoTiling(spActiveSprite(obj->animation),surface,1000);
 								spDeleteSurface(surface); //For the ref counter
 								break;
