@@ -19,12 +19,12 @@ DYNAMIC = -lSDL_ttf -lSDL_image -lSDL -lm -lsparrow3d
 
 # CFLAGS defines some globale flags for gcc. Even on the gp2x with only 16 KB
 # CPU Cache, -O3 is faster than -Os. So most things you don't have to change
-CFLAGS = -O3 -fsingle-precision-constant -fPIC 
+CFLAGS = -O2 -fsingle-precision-constant -fPIC 
 
 # GENERAL_TWEAKS are some flags for gcc, which should make the compilation
 # faster, but some of them are just poinsoness snake oil - they may help a bit,
 # but could also kill you. ^^
-GENERAL_TWEAKS = -ffast-math -fgcse-sm -fsched-spec-load -fmodulo-sched -fgcse-las -ftracer -funsafe-loop-optimizations -Wunsafe-loop-optimizations -fvariable-expansion-in-unroller
+GENERAL_TWEAKS = -ffast-math
 
 # every device using SMALL_RESOLUTION_DEVICES in the compilation will enable
 # the faster multiplication and division
@@ -106,11 +106,14 @@ all: schizophrenia
 targets:
 	@echo "gp2x, open2x (like gp2x, but dynamic compiled => smaller), wiz caanoo, dingux, pandora, maemo5, maemo6"
 
-schizophrenia: schizophrenia.c level.o
-	$(CPP) $(CFLAGS) schizophrenia.c level.o $(SDL) $(INCLUDE) $(SDL_INCLUDE) $(SPARROW_INCLUDE) $(LIB) $(SDL_LIB) $(SPARROW_LIB) $(STATIC) $(DYNAMIC) -o $(BUILD_PATH)schizophrenia
+schizophrenia: schizophrenia.c level.o physic.o
+	$(CPP) $(CFLAGS) schizophrenia.c level.o physic.o $(SDL) $(INCLUDE) $(SDL_INCLUDE) $(SPARROW_INCLUDE) $(LIB) $(SDL_LIB) $(SPARROW_LIB) $(STATIC) $(DYNAMIC) -o $(BUILD_PATH)schizophrenia
 
 level.o: level.c level.h
 	$(CPP) $(CFLAGS) -fPIC -c level.c $(SDL) $(INCLUDE) $(SDL_INCLUDE) $(SPARROW_INCLUDE)
+
+physic.o: physic.c physic.h
+	$(CPP) $(CFLAGS) -fPIC -c physic.c $(SDL) $(INCLUDE) $(SDL_INCLUDE) $(SPARROW_INCLUDE)
 
 clean:
 	rm -f *.o
