@@ -49,10 +49,6 @@ ging. Die entsprechenden Element werden zurückgesetzt, aber als
 gravitativ-abhängig markiert => Wenn sie verschoben werden, wird alles
 darüber auch verschoben.
 
-Am Ende werden alles y-Geschwindigkeiten auf 0 gesetzt. Elemente, die
-gefallen aber nicht kollidiert sind, bekommen ihren Fallcounter
-inkrementiert.
-
 Jedes Element wird nun unter Vorbehalt um seine X-Geschwindigkeit bewegt.
 Es erfolgt eine Kollisionskontrolle. Aus naheliegenden Gründen können
 Kollisionen hier nur links oder rechts auftreten.
@@ -73,7 +69,8 @@ Wie auch immer. Am Ende hat man ein verschiebenes und verschobene
 Elemente. Alle bekommen ihre Geschwindigkeit genullt und erhalten
 stattdessen je einen Teil der Geschwindigkeit es Verschiebers. Fällt
 diese Geschwindigkeit unter einen Grenzwert, wird die Geschwindigkeit
-auf 0 gesetzt: Keine Verschiebung.
+auf 0 gesetzt: Keine Verschiebung. Die Ausführung der Verschiebung
+erfolgt im nächsten Schleifenschritt.
 
 "Zerquetschungen" müssen von außen erkannt werden. Wenn eine Platform
 z.B. Verschieben WÜRDE (also am Besten als Funktion definieren, die auch
@@ -86,7 +83,21 @@ auftritt bzw. (worst case) alle Positionen zurückgesetzt sind. Dieser
 Test ist u.U. langsam (Testen!), aber optimierbar (bei Bedarf) und in
 JEDEM Fall: endlich.
 
-Am Ende werden die Geschwindigkeiten auf 0 gesetzt.
+Am Ende werden alle Geschwindigkeiten auf 0 gesetzt. Elemente, die
+gefallen aber nicht kollidiert sind, bekommen ihren Fallcounter
+inkrementiert. Grob sieht es also so aus:
+
+- Für jede vergangen Millisekunde mache:
+  - von außen: Setzen der Geschwindigkeit
+  - solange Kollisionen sind, aber mindestens ein mal:
+		- Ausführung der y-Geschwindigkeit
+		- von außen: Reaktion auf Kollision
+		- Physikinterne y-Kollisionsbehandlung mit Gravitationskettenfindung
+		- Ausführung der x-Geschwindigkeit
+		- von außen: Reaktion auf Kollision
+		- Physikinterne x-Kollisionsbehandlung mit Verschiebungserkennung
+	- Geschwindigkeit auf 0 setzen
+	- Elemente, die fielen, aber nicht kollidierten: Fallcounter++;
 
 3. Abbildung der Elemente
 -------------------------
