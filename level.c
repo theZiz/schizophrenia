@@ -157,7 +157,7 @@ SDL_Surface* create_platform(int w, int h)
 	spSetHorizontalOrigin(SP_LEFT);
 	int rw = spMin(8,w/2+1);
 	int rh = spMin(8,h/2+1);
-	
+
 	//Left top of the platform
 	spBlitSurfacePart(   0,   0,-1,skeleton,    0,    0,rw,rh);
 	//Center top
@@ -166,11 +166,11 @@ SDL_Surface* create_platform(int w, int h)
 	spBlitSurfacePart(   i,   0,-1,skeleton,    8,    0, 1,rh);
 	//Right top
 	spBlitSurfacePart(w-rw,   0,-1,skeleton,16-rw,    0,rw,rh);
-	
+
 	//Left center
 	int j;
 	for (j=rh; j < h-rh; j++)
-	spBlitSurfacePart(   0,   j,-1,skeleton,    0,    8,rw, 1);	
+	spBlitSurfacePart(   0,   j,-1,skeleton,    0,    8,rw, 1);
 	//Center center
 	for (i=rw; i < w-rw; i++)
 	for (j=rh; j < h-rh; j++)
@@ -178,7 +178,7 @@ SDL_Surface* create_platform(int w, int h)
 	//Right center
 	for (j=rh; j < h-rh; j++)
 	spBlitSurfacePart(w-rw,   j,-1,skeleton,16-rw,    8,rw, 1);
-	
+
 	//Left bottom
 	spBlitSurfacePart(   0,h-rh,-1,skeleton,    0,16-rh,rw,rh);
 	//Center bottom
@@ -186,8 +186,8 @@ SDL_Surface* create_platform(int w, int h)
 	spBlitSurfacePart(   i,h-rh,-1,skeleton,    8,16-rh, 1,rh);
 	//Right bottom
 	spBlitSurfacePart(w-rw,h-rh,-1,skeleton,16-rw,16-rh,rw,rh);
-	
-	
+
+
 	spDeleteSurface(skeleton);
 	if (renderTarget)
 		spSelectRenderTarget(renderTarget);
@@ -216,13 +216,13 @@ pLevel loadLevel(char* filename)
 	level->spriteTable = NULL;
 	level->firstObjectGroup = NULL;
 	level->choosenPlayer = NULL;
-	
+
 	//Some values, which will be read and used later
 	int width = 0;
 	int height = 0;
 	pTile_set tile_set = NULL;
 	int physic_basis = 0;
-	
+
 	char buffer[65536];
 	//Reading to the begin of the first tag
 	spReadUntil(file,buffer,65536,'<');
@@ -270,7 +270,7 @@ pLevel loadLevel(char* filename)
 				number_begin++; //now the begin of the number
 				height = atoi(number_begin);
 				printf("Level height is %i\n",height);
-			}			
+			}
 			begin = end;
 		}
 		//Now reading everything, which is between <map …> and </map>
@@ -323,13 +323,13 @@ pLevel loadLevel(char* filename)
 				//Reading the parameters of the tag
 				pTile_set newset = (pTile_set)malloc(sizeof(tTile_set));
 				newset->next = tile_set;
-				tile_set = newset;				
+				tile_set = newset;
 				//firstgid
 				char* attribute = strstr(buffer,"firstgid");
 				attribute = strchr(attribute,'\"');
 				attribute++;
 				char* end_s = strchr(attribute,'\"');
-				end_s[0] = 0;				
+				end_s[0] = 0;
 				newset->firstgid = atoi(attribute);
 				end_s[0] = '\"';
 				//name
@@ -337,7 +337,7 @@ pLevel loadLevel(char* filename)
 				attribute = strchr(attribute,'\"');
 				attribute++;
 				end_s = strchr(attribute,'\"');
-				end_s[0] = 0;				
+				end_s[0] = 0;
 				if (strcmp(attribute,"collision") == 0 || strcmp(attribute,"physic") == 0)
 					physic_basis = newset->firstgid;
 				end_s[0] = '\"';
@@ -346,7 +346,7 @@ pLevel loadLevel(char* filename)
 				attribute = strchr(attribute,'\"');
 				attribute++;
 				end_s = strchr(attribute,'\"');
-				end_s[0] = 0;				
+				end_s[0] = 0;
 				newset->tilewidth = atoi(attribute);
 				end_s[0] = '\"';
 				//tileheight
@@ -354,9 +354,9 @@ pLevel loadLevel(char* filename)
 				attribute = strchr(attribute,'\"');
 				attribute++;
 				end_s = strchr(attribute,'\"');
-				end_s[0] = 0;				
+				end_s[0] = 0;
 				newset->tileheight = atoi(attribute);
-				
+
 				newset->filename = NULL;
 				//Reading the tilesets.
 				while (!end)
@@ -395,7 +395,7 @@ pLevel loadLevel(char* filename)
 					else
 					if (strstr(buffer,"/tileset") == buffer)
 						break;
-				}				
+				}
 			}
 			else
 			if (strstr(buffer,"layer") == buffer)
@@ -474,9 +474,9 @@ pLevel loadLevel(char* filename)
 					else
 						layer->tile[i].sprite = get_sprite(layer->tile[i].nr,tile_set,level->spriteTable);
 					next_number = strchr(next_number,',');
-					
+
 				}
-				
+
 				READ_TIL_TAG_END
 				//endtag data
 				if (strcmp(buffer,"/data"))
@@ -490,12 +490,12 @@ pLevel loadLevel(char* filename)
 			else
 			if (strstr(buffer,"objectgroup") == buffer)
 			{
-				LevelObjectType defaultType = GROUP;
+				LevelObjectType defaultType = LOGICGROUP;
 				char* name = strstr(buffer,"name");
 				name = strchr(name,'\"');
 				name++;
 				char* end_s = strchr(name,'\"');
-				end_s[0] = 0;				
+				end_s[0] = 0;
 				//Which type?
 				if (strcmp(name,"player") == 0)
 					defaultType = PLAYER;
@@ -539,7 +539,7 @@ pLevel loadLevel(char* filename)
 					{
 						LevelObjectType objectType = defaultType;
 						pLevelObject obj = createObject(group,objectType);
-						
+
 						//name (if exist)
 						char* attribute = strstr(buffer,"name");
 						if (attribute)
@@ -565,7 +565,7 @@ pLevel loadLevel(char* filename)
 							if (defaultType == TROPHIES || defaultType == COLLECTIBLE) //TROPHIES, COLLECTIBLE
 								obj->kind = attribute[0]-'0'; //works fine from 0 to 9. :)
 							else
-							if (defaultType == GROUP) //GROUP
+							if (defaultType == LOGICGROUP) //GROUP
 							{
 								if (strcmp(attribute,"switch") == 0)
 									obj->type = SWITCH;
@@ -574,7 +574,7 @@ pLevel loadLevel(char* filename)
 									obj->type = BUTTON;
 								else
 								if (strcmp(attribute,"platform") == 0)
-									obj->type = PLATFORM;								
+									obj->type = PLATFORM;
 							}
 							end_s[0] = '\"';
 						}
@@ -618,7 +618,7 @@ pLevel loadLevel(char* filename)
 								printf("    Setting the second vector (%i:%i)\n",obj->speed.v2.x,obj->speed.v2.y);
 							}
 							end_s[0] = '\"';
-						}						
+						}
 						int read_w = 0;
 						int read_h = 0;
 						//w (if exist)
@@ -689,7 +689,7 @@ pLevel loadLevel(char* filename)
 								spDeleteSurface(surface); //For the ref counter
 								break;
 							case TROPHIES:
-								obj->animation = spLoadSpriteCollection(name,NULL); 
+								obj->animation = spLoadSpriteCollection(name,NULL);
 								sprintf(meow,"collectible0%i",obj->kind);
 								spSelectSprite(obj->animation,"full");
 								break;
@@ -708,7 +708,7 @@ pLevel loadLevel(char* filename)
 									obj->animation = spLoadSpriteCollection(name,NULL);
 								break;
 							case COLLECTIBLE:
-								obj->animation = spLoadSpriteCollection(name,NULL); 
+								obj->animation = spLoadSpriteCollection(name,NULL);
 								sprintf(meow,"%i",obj->kind);
 								spSelectSprite(obj->animation,meow);
 								break;
@@ -785,7 +785,7 @@ pLevel loadLevel(char* filename)
 						attribute++;
 						end_s = strchr(attribute,'\"');
 						obj->y = atoi(attribute) << SP_ACCURACY-5;
-						
+
 						//the position is correct, if there is no gid and no correction is needed
 						if (strstr(buffer,"gid"))
 						{
@@ -798,9 +798,9 @@ pLevel loadLevel(char* filename)
 							obj->y += read_h - obj->h << SP_ACCURACY-6;
 						}
 						printf("  Create object of type %i\n",obj->type);
-						printf("    position: %i:%i\n",obj->x >> SP_ACCURACY-5,obj->y >> SP_ACCURACY-5);						
+						printf("    position: %i:%i\n",obj->x >> SP_ACCURACY-5,obj->y >> SP_ACCURACY-5);
 					}
-				}					
+				}
 			}
 		}
 		printf("Deleting temporary tile_set list\n");
@@ -906,7 +906,7 @@ void drawLevel(pLevel level)
 			while (group != level->firstObjectGroup);
 		}
 	}
-	
+
 	//DEBUG
 	spLine(screenWidth/2-5,screenHeight/2,-1,screenWidth/2+5,screenHeight/2,-1,0);
 	spLine(screenWidth/2,screenHeight/2-5,-1,screenWidth/2,screenHeight/2+5,-1,0);
@@ -917,7 +917,7 @@ void drawLevel(pLevel level)
 
 
 	spSetVerticalOrigin(SP_CENTER);
-	spSetHorizontalOrigin(SP_CENTER);	
+	spSetHorizontalOrigin(SP_CENTER);
 }
 
 void deleteLevel(pLevel level)
@@ -964,7 +964,7 @@ void deleteLevel(pLevel level)
 void calcCamera(pLevel level,Sint32 steps)
 {
 	//level->targetCamera.x = level->choosenPlayer->x + (level->choosenPlayer->w << SP_ACCURACY - 6);
-	//level->targetCamera.y = level->choosenPlayer->y + (level->choosenPlayer->h << SP_ACCURACY - 6);	
+	//level->targetCamera.y = level->choosenPlayer->y + (level->choosenPlayer->h << SP_ACCURACY - 6);
 	int i;
 	for (i = 0; i < steps; i++)
 	{

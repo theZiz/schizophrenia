@@ -43,7 +43,7 @@ typedef enum {
 	GENERIC,     //  9
 	COLLECTIBLE, // 10
 	UNSELECTABLE,// 11
-	GROUP,       // 12
+	LOGICGROUP,  // 12
 	UNKONWN
 } LevelObjectType;
 
@@ -60,7 +60,7 @@ typedef enum {
 } LevelState;
 
 
-#include "physic.h"
+#include "physics.h"
 
 typedef struct sTile {int nr;spSpritePointer sprite;} tTile;
 

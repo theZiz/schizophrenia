@@ -19,7 +19,7 @@
  Alexander Matthes (Ziz) , zizsdl_at_googlemail.com
 */
 
-#include "physic.h"
+#include "physics.h"
 
 pPhysicElement firstMoveableElement = NULL;
 pPhysicElement firstStaticElement = NULL;
@@ -46,7 +46,7 @@ pPhysicElement createPhysicElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,int mov
 	}
 	else
 		element->type = UNKONWN;
-		
+
 	if (moveable)
 	{
 		if (firstMoveableElement)
@@ -88,10 +88,10 @@ void createPhysicFromLevel(pLevel level)
 	int i;
 	for (i = 0; i < level->layer.physic.height * level->layer.physic.width; i++)
 	{
-		
+
 	}
 	//Objects
-	
+
 }
 
 void clearPhysic()
