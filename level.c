@@ -60,6 +60,7 @@ pLevelObject createObject(pLevelObjectGroup group,LevelObjectType type)
 	obj->some_char = NULL;
 	obj->kind = 0;
 	obj->state = OFF;
+	obj->physicElement = NULL;
 	if (group->firstObject)
 	{
 		group->firstObject->prev->next = obj;
@@ -220,6 +221,7 @@ pLevel loadLevel(char* filename)
 	int width = 0;
 	int height = 0;
 	pTile_set tile_set = NULL;
+	int physic_basis = 0;
 	
 	char buffer[65536];
 	//Reading to the begin of the first tag
@@ -330,6 +332,15 @@ pLevel loadLevel(char* filename)
 				end_s[0] = 0;				
 				newset->firstgid = atoi(attribute);
 				end_s[0] = '\"';
+				//name
+				attribute = strstr(buffer,"name");
+				attribute = strchr(attribute,'\"');
+				attribute++;
+				end_s = strchr(attribute,'\"');
+				end_s[0] = 0;				
+				if (strcmp(attribute,"collision") == 0 || strcmp(attribute,"physic") == 0)
+					physic_basis = newset->firstgid;
+				end_s[0] = '\"';
 				//tilewidth
 				attribute = strstr(buffer,"tilewidth");
 				attribute = strchr(attribute,'\"');
@@ -403,6 +414,7 @@ pLevel loadLevel(char* filename)
 				layername++;
 				char* end_s = strchr(layername,'\"');
 				end_s[0] = 0;
+				int physic_layer = 0;
 				if (strstr(layername,"background"))
 				{
 					layer = &(level->layer.background);
@@ -424,6 +436,7 @@ pLevel loadLevel(char* filename)
 				if (strstr(layername,"collision") || strstr(layername,"physic"))
 				{
 					layer = &(level->layer.physic);
+					physic_layer = 1;
 					printf("Loading Physic layer\n");
 				}
 				else
@@ -452,8 +465,12 @@ pLevel loadLevel(char* filename)
 					while (next_number[0] < '0' || next_number[0] > '9')
 						next_number++;
 					layer->tile[i].nr = atoi(next_number);
-					if (layer == &(level->layer.physic))
+					if (physic_layer)
+					{
 						layer->tile[i].sprite = NULL;
+						if (layer->tile[i].nr)
+							layer->tile[i].nr-=physic_basis;
+					}
 					else
 						layer->tile[i].sprite = get_sprite(layer->tile[i].nr,tile_set,level->spriteTable);
 					next_number = strchr(next_number,',');

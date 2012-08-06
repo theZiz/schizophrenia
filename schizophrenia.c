@@ -96,11 +96,13 @@ int main( int argc, char **argv )
 
 	//Loading the first level:
 	level = loadLevel("./level/tile_test.tmx");
+	createPhysicFromLevel(level);
 
 	//All glory the main loop
 	spLoop( draw_test, calc_test, 10, resize, NULL );
 	
 	//Winter Wrap up, Winter Wrap up …
+	clearPhysic();
 	deleteLevel(level);
 	spFontDelete( font );
 	spQuitCore();

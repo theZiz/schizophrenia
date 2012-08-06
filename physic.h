@@ -23,8 +23,35 @@
 #define _PHYSIC_H
 
 #include <sparrow3d.h>
+
+typedef struct sPhysicElement *pPhysicElement;
+typedef struct sPhysicCollision *pPhysicCollision;
+
 #include "level.h"
 
+typedef struct sPhysicElement {
+	struct {Sint32 x,y;} position,backupPosition,speed;
+	Sint32 w,h; //32 pixel == SP_ONE
+	Sint32 sqSize; //The square of the bounding circle of the rectangle; for distance
+	int gravitation;
+	int permeability; //bit,direction: 0,left 1,top 2,right 3,down (0 means solid)
+	int superPower;
+	int freeFallCounter;
+	LevelObjectType type;
+	pLevelObject levelObject;
+	pPhysicElement prev,next;
+} tPhysicElement;
 
+typedef struct sPhysicCollision {
+	pPhysicElement element[2];
+	int hitPosition[2]; //like permeability; always pairs like left/right or top/down
+	pPhysicCollision prev,next;
+} tPhysicCollision;
+
+pPhysicElement createPhysicElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,int moveable,int gravitation,int superPower,pLevelObject levelObject);
+void createPhysicFromLevel(pLevel level);
+void clearPhysic(); //Deletes the whole scene
+void doPhysic(int TimeForOneStep,void ( *setSpeed )( pPhysicElement element ),void ( *gravFeedback )( pPhysicCollision collision ),void ( *yFeedback )( pPhysicCollision collision ),void ( *xFeedback )( pPhysicCollision collision ));
+void updateLevelObjects();
 
 #endif

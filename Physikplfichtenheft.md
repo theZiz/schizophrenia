@@ -10,8 +10,11 @@ Attributen:
 - Geschwindigkeit (für x und y gesondert)
 - Attribute
   - Wirken Kräfte? (Verschieben, Schwerkraft, etc.)
-  - Semipermiabilität für jede der 4 Richtungen
+		- Schwerkraftwirkung als Attribut
+		- "Beweglichkeit" im Allgemeinen als zwei Listen
+  - Semipermeabilität für jede der 4 Richtungen
 - Wie lange schon im freien Fall => Für Gravitation
+- Verschiebt mit voller Kraft?
 Desweiteren besitzt jedes Element eine Sicherung des letzten korrekten
 Zustandes ohne Kollision. Vor allem für das Zurücksetzen z.B. beim
 Laufen gegen eines Wand oder Fallen gegen den Boden.
@@ -31,23 +34,37 @@ dass die Szene KOLLISIONSFREI ist. Desweiteren muss die Geschwindigkeit
 für jedes Element gesetzt werden, da sie NACH der vorherigen
 Physikwirkung auf 0 gesetzt wurde.
 
-Zuerst wird jedes Element unter Vorbehalt um seine Y-Geschwindigkeit
-bewegt. Hierbei wirkt schon Gravitation (wenn sie wirkt).
+Die Physik wird in drei Phasen unterteilt: Gravitation, andere y-Bewegung,
+x-Bewegung.
+
+
+Zuerst wird jedes Element unter Vorbehalt um die Gravitation, die gerade wirkt
+(errechnet aus der "Zeit des freien Falls") bewegt. Bei Kollision wird diese
+Zeit auf 0 zurückgesetzt.
+
+Die Kollisionsergebnisse können nun von außen überprüft (z.B. ob ein Spieler
+was auf die Rübe bekommen hat) und u.U. aus der Kollisionsliste gelöscht werden.
+
+Danach wird für jedes Element gespeichert, welches Element unter ihm
+"kollidiert" wurde (u.U. mehrere). So entstehen Gravitationsabhängigkeiten, wo
+ein Element auf einem anderen "liegt". Wie auch immer: Jedes Element, welches
+kolidiert, wird zurückgesetzt (aber die Gravitationsbindung gespeichert).
+
+Nun wird jedes Element unter Vorbehalt um seine Y-Geschwindigkeit bewegt.
 Nun erfolgt eine Kollisionskontrolle. Aus naheliegenden Gründen können
 diese hier nur oben und unten auftreten. Diese Liste von Kollisionen
 wird gespeichert und nun kann erstmal von außen reagiert werden.
+
 So kann ein Spieler sterben, wenn er von oben eine Kollision
 registriert (aber bitte nicht, wenn er wo gegen springt...). Damit die
 Engine nicht weiter Physik ausführt, muss die Kollision gelöscht und die
-vorherige Position wieder ausgeführt werden. Nun führt die Engine ihre
-Physik aus.
-Kollisionen, wo ein Element "von unten" kommt, können eigentlich
-ignoriert werden. Das einzige, was springt, ist der Spieler und der
-hat eine Abhandlung über eine Kollision oben beim Sterbetest.
-Interessanter sind Kollisionen, wo eine Bewegung nach unten vorweg
-ging. Die entsprechenden Element werden zurückgesetzt, aber als
-gravitativ-abhängig markiert => Wenn sie verschoben werden, wird alles
-darüber auch verschoben.
+vorherige Position wieder ausgeführt werden.
+
+Nun führt die Engine ihre Physik aus. Bei Kollisionen "von unten" wird von unten
+verschoben mithilfe der Gravitationslisten vom 1. Part. Ausgehend vom 1. Part
+(meist eine Platform) wird errechnet, was alles verschoben werden würde. Dann
+wird die Geschwindigkeit aller Teile auf die des 1. Parts gesetzt und verschoben.
+Tritt hier eine neue Kollision auf, werden alle Bewegungen negiert.
 
 Jedes Element wird nun unter Vorbehalt um seine X-Geschwindigkeit bewegt.
 Es erfolgt eine Kollisionskontrolle. Aus naheliegenden Gründen können
@@ -67,10 +84,10 @@ erdacht werden. Was klar ist: Wenn nur ein Element nicht verschoben
 werden kann, steht alles still.
 Wie auch immer. Am Ende hat man ein verschiebenes und verschobene
 Elemente. Alle bekommen ihre Geschwindigkeit genullt und erhalten
-stattdessen je einen Teil der Geschwindigkeit es Verschiebers. Fällt
+stattdessen je einen Teil der Geschwindigkeit des Verschiebers. Fällt
 diese Geschwindigkeit unter einen Grenzwert, wird die Geschwindigkeit
 auf 0 gesetzt: Keine Verschiebung. Die Ausführung der Verschiebung
-erfolgt im nächsten Schleifenschritt.
+erfolgt sofort.
 
 "Zerquetschungen" müssen von außen erkannt werden. Wenn eine Platform
 z.B. Verschieben WÜRDE (also am Besten als Funktion definieren, die auch
@@ -84,18 +101,22 @@ Test ist u.U. langsam (Testen!), aber optimierbar (bei Bedarf) und in
 JEDEM Fall: endlich.
 
 Am Ende werden alle Geschwindigkeiten auf 0 gesetzt. Elemente, die
-gefallen aber nicht kollidiert sind, bekommen ihren Fallcounter
+gefallen aber nicht y-kollidiert sind, bekommen ihren Fallcounter
 inkrementiert. Grob sieht es also so aus:
 
 - Für jede vergangen Millisekunde mache:
   - von außen: Setzen der Geschwindigkeit
+  - Speichern der Position
   - solange Kollisionen sind, aber mindestens ein mal:
+		- Ausführung der Gravitation
+		- von außen: Reaktion auf Kollision
+		- Physikinterne Gravitation-Kollisionsbehandlung mit Gravitationskettenfindung
 		- Ausführung der y-Geschwindigkeit
 		- von außen: Reaktion auf Kollision
-		- Physikinterne y-Kollisionsbehandlung mit Gravitationskettenfindung
+		- Physikinterne y-Kollisionsbehandlung mit y-Verschiebungserkennung
 		- Ausführung der x-Geschwindigkeit
 		- von außen: Reaktion auf Kollision
-		- Physikinterne x-Kollisionsbehandlung mit Verschiebungserkennung
+		- Physikinterne x-Kollisionsbehandlung mit x-Verschiebungserkennung
 	- Geschwindigkeit auf 0 setzen
 	- Elemente, die fielen, aber nicht kollidierten: Fallcounter++;
 

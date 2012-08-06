@@ -20,3 +20,102 @@
 */
 
 #include "physic.h"
+
+pPhysicElement firstMoveableElement = NULL;
+pPhysicElement firstStaticElement = NULL;
+
+pPhysicElement createPhysicElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,int moveable,int gravitation,int superPower,pLevelObject levelObject)
+{
+	pPhysicElement element = (pPhysicElement)malloc(sizeof(tPhysicElement));
+	element->position.x = px;
+	element->position.y = py;
+	element->w = w;
+	element->h = h;
+	element->sqSize = spMulHigh(w,w)+spMulHigh(h,h);
+	element->speed.x = 0;
+	element->speed.y = 0;
+	element->gravitation = gravitation;
+	element->permeability = 0;
+	element->superPower = superPower;
+	element->freeFallCounter = 0;
+	element->levelObject = levelObject;
+	if (levelObject)
+	{
+		levelObject->physicElement = element;
+		element->type = levelObject->type;
+	}
+	else
+		element->type = UNKONWN;
+		
+	if (moveable)
+	{
+		if (firstMoveableElement)
+		{
+			element->prev = firstMoveableElement->prev;
+			firstMoveableElement->prev->next = element;
+			element->next = firstMoveableElement;
+			firstMoveableElement->prev = element;
+		}
+		else
+		{
+			element->next = element;
+			element->prev = element;
+		}
+		firstMoveableElement = element;
+	}
+	else
+	{
+		if (firstStaticElement)
+		{
+			element->prev = firstStaticElement->prev;
+			firstStaticElement->prev->next = element;
+			element->next = firstStaticElement;
+			firstStaticElement->prev = element;
+		}
+		else
+		{
+			element->next = element;
+			element->prev = element;
+		}
+		firstStaticElement = element;
+	}
+	return element;
+}
+
+void createPhysicFromLevel(pLevel level)
+{
+	//Tiles
+	int i;
+	for (i = 0; i < level->layer.physic.height * level->layer.physic.width; i++)
+	{
+		
+	}
+	//Objects
+	
+}
+
+void clearPhysic()
+{
+	pPhysicElement element = firstStaticElement;
+	if (element)
+	do
+	{
+		pPhysicElement next = element->next;
+		if (element->levelObject)
+			element->levelObject->physicElement = NULL;
+		free(element);
+		element = next;
+	}
+	while (element != firstStaticElement);
+	element = firstMoveableElement;
+	if (element)
+	do
+	{
+		pPhysicElement next = element->next;
+		if (element->levelObject)
+			element->levelObject->physicElement = NULL;
+		free(element);
+		element = next;
+	}
+	while (element != firstMoveableElement);
+}

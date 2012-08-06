@@ -25,13 +25,10 @@
 #include <sparrow3d.h>
 
 typedef struct sTile *pTile;
-typedef struct sTile {int nr;spSpritePointer sprite;} tTile;
-
 typedef struct sLayer *pLayer;
-typedef struct sLayer {
-	int width,height;
-	pTile tile;
-} tLayer;
+typedef struct sLevelObject *pLevelObject;
+typedef struct sLevelObjectGroup *pLevelObjectGroup;
+typedef struct sLevel *pLevel;
 
 typedef enum {
 	PLAYER,      //  0
@@ -46,7 +43,8 @@ typedef enum {
 	GENERIC,     //  9
 	COLLECTIBLE, // 10
 	UNSELECTABLE,// 11
-	GROUP        // 12
+	GROUP,       // 12
+	UNKONWN
 } LevelObjectType;
 
 typedef enum {
@@ -61,7 +59,16 @@ typedef enum {
 	ON = 1
 } LevelState;
 
-typedef struct sLevelObject *pLevelObject;
+
+#include "physic.h"
+
+typedef struct sTile {int nr;spSpritePointer sprite;} tTile;
+
+typedef struct sLayer {
+	int width,height;
+	pTile tile;
+} tLayer;
+
 typedef struct sLevelObject {
 	spSpriteCollectionPointer animation;
 	LevelObjectType type;
@@ -72,17 +79,16 @@ typedef struct sLevelObject {
 	char* some_char; //some objects need to save a string as e.g. destiny
 	int kind; //some objects have different kinds. Saved here.
 	LevelState state; //on and off
+	pPhysicElement physicElement;
 	pLevelObject prev,next; //ring of objects in one group
 } tLevelObject;
 
-typedef struct sLevelObjectGroup *pLevelObjectGroup;
 typedef struct sLevelObjectGroup {
 	LevelObjectType type;
 	pLevelObject firstObject;
 	pLevelObjectGroup prev,next; //ring of objects in one group
 } tLevelObjectGroup;
 
-typedef struct sLevel *pLevel;
 typedef struct sLevel {
 	spSpritePointer *spriteTable;
 	int spriteTableCount;
