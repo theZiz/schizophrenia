@@ -143,6 +143,10 @@
 			<Option compilerVar="CC" />
 		</Unit>
 		<Unit filename="level.h" />
+		<Unit filename="physics.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="physics.h" />
 		<Unit filename="schizophrenia.c">
 			<Option compilerVar="CC" />
 		</Unit>
