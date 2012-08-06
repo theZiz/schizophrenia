@@ -21,12 +21,13 @@
 
 #include "physics.h"
 
-pPhysicElement firstMoveableElement = NULL;
-pPhysicElement firstStaticElement = NULL;
+pPhysicsElement firstMoveableElement = NULL;
+pPhysicsElement firstStaticElement = NULL;
 
-pPhysicElement createPhysicElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,int moveable,int gravitation,int superPower,pLevelObject levelObject)
+pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
+			int moveable,int gravitation,int superPower,pLevelObject levelObject)
 {
-	pPhysicElement element = (pPhysicElement)malloc(sizeof(tPhysicElement));
+	pPhysicsElement element = (pPhysicsElement)malloc(sizeof(tPhysicsElement));
 	element->position.x = px;
 	element->position.y = py;
 	element->w = w;
@@ -41,7 +42,7 @@ pPhysicElement createPhysicElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,int mov
 	element->levelObject = levelObject;
 	if (levelObject)
 	{
-		levelObject->physicElement = element;
+		levelObject->physicsElement = element;
 		element->type = levelObject->type;
 	}
 	else
@@ -82,11 +83,11 @@ pPhysicElement createPhysicElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,int mov
 	return element;
 }
 
-void createPhysicFromLevel(pLevel level)
+void createPhysicsFromLevel(pLevel level)
 {
 	//Tiles
 	int i;
-	for (i = 0; i < level->layer.physic.height * level->layer.physic.width; i++)
+	for (i = 0; i < level->layer.physics.height * level->layer.physics.width; i++)
 	{
 
 	}
@@ -94,15 +95,15 @@ void createPhysicFromLevel(pLevel level)
 
 }
 
-void clearPhysic()
+void clearPhysics()
 {
-	pPhysicElement element = firstStaticElement;
+	pPhysicsElement element = firstStaticElement;
 	if (element)
 	do
 	{
-		pPhysicElement next = element->next;
+		pPhysicsElement next = element->next;
 		if (element->levelObject)
-			element->levelObject->physicElement = NULL;
+			element->levelObject->physicsElement = NULL;
 		free(element);
 		element = next;
 	}
@@ -111,9 +112,9 @@ void clearPhysic()
 	if (element)
 	do
 	{
-		pPhysicElement next = element->next;
+		pPhysicsElement next = element->next;
 		if (element->levelObject)
-			element->levelObject->physicElement = NULL;
+			element->levelObject->physicsElement = NULL;
 		free(element);
 		element = next;
 	}

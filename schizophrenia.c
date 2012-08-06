@@ -63,13 +63,13 @@ int calc_test( Uint32 steps )
 	if ( spGetInput()->axis[1] > 0)
 		level->targetCamera.y -= steps*256;
 
-	updateLevelSprites(level,steps);	
-	calcCamera(level,steps);	
+	updateLevelSprites(level,steps);
+	calcCamera(level,steps);
 
 	if ( spGetInput()->button[SP_BUTTON_START] )
 		return 1;
-	
-		
+
+
 	return 0;
 }
 
@@ -96,13 +96,13 @@ int main( int argc, char **argv )
 
 	//Loading the first level:
 	level = loadLevel("./level/tile_test.tmx");
-	createPhysicFromLevel(level);
+	createPhysicsFromLevel(level);
 
 	//All glory the main loop
 	spLoop( draw_test, calc_test, 10, resize, NULL );
-	
+
 	//Winter Wrap up, Winter Wrap up …
-	clearPhysic();
+	clearPhysics();
 	deleteLevel(level);
 	spFontDelete( font );
 	spQuitCore();

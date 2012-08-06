@@ -79,7 +79,7 @@ typedef struct sLevelObject {
 	char* some_char; //some objects need to save a string as e.g. destiny
 	int kind; //some objects have different kinds. Saved here.
 	LevelState state; //on and off
-	pPhysicElement physicElement;
+	pPhysicsElement physicsElement;
 	pLevelObject prev,next; //ring of objects in one group
 } tLevelObject;
 
@@ -92,7 +92,7 @@ typedef struct sLevelObjectGroup {
 typedef struct sLevel {
 	spSpritePointer *spriteTable;
 	int spriteTableCount;
-	struct {tLayer physic,background,player,foreground;} layer;
+	struct {tLayer physics,background,player,foreground;} layer;
 	struct {Sint32 x,y;} targetCamera, actualCamera;
 	Uint16 backgroundColor;
 	pLevelObjectGroup firstObjectGroup;

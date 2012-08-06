@@ -24,12 +24,12 @@
 
 #include <sparrow3d.h>
 
-typedef struct sPhysicElement *pPhysicElement;
-typedef struct sPhysicCollision *pPhysicCollision;
+typedef struct sPhysicsElement *pPhysicsElement;
+typedef struct sPhysicsCollision *pPhysicsCollision;
 
 #include "level.h"
 
-typedef struct sPhysicElement {
+typedef struct sPhysicsElement {
 	struct {Sint32 x,y;} position,backupPosition,speed;
 	Sint32 w,h; //32 pixel == SP_ONE
 	Sint32 sqSize; //The square of the bounding circle of the rectangle; for distance
@@ -39,19 +39,23 @@ typedef struct sPhysicElement {
 	int freeFallCounter;
 	LevelObjectType type;
 	pLevelObject levelObject;
-	pPhysicElement prev,next;
-} tPhysicElement;
+	pPhysicsElement prev,next;
+} tPhysicsElement;
 
-typedef struct sPhysicCollision {
-	pPhysicElement element[2];
+typedef struct sPhysicsCollision {
+	pPhysicsElement element[2];
 	int hitPosition[2]; //like permeability; always pairs like left/right or top/down
-	pPhysicCollision prev,next;
-} tPhysicCollision;
+	pPhysicsCollision prev,next;
+} tPhysicsCollision;
 
-pPhysicElement createPhysicElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,int moveable,int gravitation,int superPower,pLevelObject levelObject);
-void createPhysicFromLevel(pLevel level);
-void clearPhysic(); //Deletes the whole scene
-void doPhysic(int TimeForOneStep,void ( *setSpeed )( pPhysicElement element ),void ( *gravFeedback )( pPhysicCollision collision ),void ( *yFeedback )( pPhysicCollision collision ),void ( *xFeedback )( pPhysicCollision collision ));
+pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
+			int moveable,int gravitation,int superPower,pLevelObject levelObject);
+void createPhysicsFromLevel(pLevel level);
+void clearPhysics(); //Deletes the whole scene
+void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
+			void ( *gravFeedback )( pPhysicsCollision collision ),
+			void ( *yFeedback )( pPhysicsCollision collision ),
+			void ( *xFeedback )( pPhysicsCollision collision ));
 void updateLevelObjects();
 
 #endif
