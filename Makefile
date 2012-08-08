@@ -112,7 +112,7 @@ schizophrenia: schizophrenia.c level.o physics.o
 level.o: level.c level.h
 	$(CPP) $(CFLAGS) -fPIC -c level.c $(SDL) $(INCLUDE) $(SDL_INCLUDE) $(SPARROW_INCLUDE)
 
-physic.o: physic.c physic.h
+physics.o: physics.c physics.h
 	$(CPP) $(CFLAGS) -fPIC -c physics.c $(SDL) $(INCLUDE) $(SDL_INCLUDE) $(SPARROW_INCLUDE)
 
 clean:
