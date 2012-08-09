@@ -53,9 +53,9 @@ pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 void createPhysicsFromLevel(pLevel level);
 void clearPhysics(); //Deletes the whole scene
 void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
-			void ( *gravFeedback )( pPhysicsCollision collision ),
-			void ( *yFeedback )( pPhysicsCollision collision ),
-			void ( *xFeedback )( pPhysicsCollision collision ));
+               void ( *gravFeedback )( pPhysicsCollision collision ),
+               void ( *yFeedback )( pPhysicsCollision collision ),
+               void ( *xFeedback )( pPhysicsCollision collision ));
 void updateLevelObjects();
 
 #endif

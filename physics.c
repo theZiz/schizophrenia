@@ -89,9 +89,47 @@ void createPhysicsFromLevel(pLevel level)
 	int i;
 	for (i = 0; i < level->layer.physics.height * level->layer.physics.width; i++)
 	{
-
+		Sint32 x = i % level->layer.physics.width;
+		Sint32 y = i / level->layer.physics.width;
+		if (level->layer.physics.tile[i].nr)
+		{
+			createPhysicsElement(x,y,SP_ONE,SP_ONE,0,0,0,NULL);
+			//TODO: Semitransparenz!
+		}
 	}
 	//Objects
+	pLevelObjectGroup group = level->firstObjectGroup;
+	if (group)
+	do
+	{
+		pLevelObject obj = group->firstObject;
+		if (obj)
+		do
+		{
+			int moveable = 0;
+			int gravitation = 0;
+			int superPower = 0;
+			switch (obj->type)
+			{
+				case PLAYER: case NEGA: case BOX: case BUG:
+					moveable = 1;
+					gravitation = 1;
+					break;
+				case SWITCH: case BUTTON: case DOOR:
+					gravitation = 1;
+					break;
+				case PLATFORM:
+					moveable = 1;
+					superPower = 1;
+					break;
+			}
+			createPhysicsElement(obj->x,obj->y,obj->w << SP_ACCURACY-5,obj->h << SP_ACCURACY-5,moveable,gravitation,superPower,obj);
+			obj = obj->next;
+		}
+		while (obj != group->firstObject);
+		group = group->next;
+	}
+	while (group != level->firstObjectGroup);
 
 }
 
@@ -108,6 +146,7 @@ void clearPhysics()
 		element = next;
 	}
 	while (element != firstStaticElement);
+	firstStaticElement = NULL;
 	element = firstMoveableElement;
 	if (element)
 	do
@@ -119,4 +158,29 @@ void clearPhysics()
 		element = next;
 	}
 	while (element != firstMoveableElement);
+	firstMoveableElement = NULL;
+}
+
+void updateLevelObjects()
+{
+	pPhysicsElement element = firstMoveableElement;
+	if (element)
+	do
+	{
+		if (element->levelObject)
+		{
+			element->levelObject->x = element->position.x;
+			element->levelObject->y = element->position.y;
+		}
+		element = element->next;
+	}
+	while (element != firstMoveableElement);	
+}
+
+void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
+               void ( *gravFeedback )( pPhysicsCollision collision ),
+               void ( *yFeedback )( pPhysicsCollision collision ),
+               void ( *xFeedback )( pPhysicsCollision collision ))
+{
+	
 }

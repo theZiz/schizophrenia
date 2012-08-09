@@ -21,6 +21,7 @@
 #include <sparrow3d.h>
 #include <SDL_image.h>
 #include "level.h"
+#include "physics.h"
 
 #include "global_defines.h"
 
@@ -51,10 +52,29 @@ void draw_schizo( void )
 
 Sint32 rotation = 0;
 
+void setSpeed( pPhysicsElement element )
+{
+	
+}
+
+void gravFeedback( pPhysicsCollision collision )
+{
+	
+}
+
+void yFeedback( pPhysicsCollision collision )
+{
+	
+}
+
+void xFeedback( pPhysicsCollision collision )
+{
+	
+}
+
 int calc_schizo( Uint32 steps )
 {
-	rotation+=steps*16;
-	
+	//Controls and some Logic (more in setSpeed)
 	if (spGetInput()->button[SP_BUTTON_R])
 	{
 		spGetInput()->button[SP_BUTTON_R] = 0;
@@ -65,14 +85,19 @@ int calc_schizo( Uint32 steps )
 		spGetInput()->button[SP_BUTTON_L] = 0;
 		level->choosenPlayer = level->choosenPlayer->next;
 	}
-	
-	updateLevelSprites(level,steps);
-	calcCamera(level,steps);
-
 	if ( spGetInput()->button[SP_BUTTON_START] )
 		return 1;
-
-
+	
+	//Physics
+	int i;
+	for (i = 0; i < steps; i++)
+		doPhysics(1,setSpeed,gravFeedback,yFeedback,xFeedback);
+	
+	//Visualization stuff
+	rotation+=steps*16;
+	updateLevelObjects();
+	updateLevelSprites(level,steps);
+	calcCamera(level,steps);
 	return 0;
 }
 
