@@ -33,10 +33,12 @@ typedef struct sPhysicsElement {
 	struct {Sint32 x,y;} position,backupPosition,speed;
 	Sint32 w,h; //32 pixel == SP_ONE
 	Sint32 sqSize; //The square of the bounding circle of the rectangle; for distance
-	int gravitation;
-	int permeability; //bit,direction: 0,left 1,top 2,right 3,down (0 means solid)
+	int gravitation; //gravitation moves this element
+	int permeability; //bit,direction: 1,left 2,top 4,right 8,down (0 means solid, 15 transparent (doors, switches...))
+	int moveable; //x and y forces move this element.
 	int superPower;
 	int freeFallCounter;
+	int killed;
 	LevelObjectType type;
 	pLevelObject levelObject;
 	pPhysicsElement prev,next;
@@ -53,9 +55,9 @@ pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 void createPhysicsFromLevel(pLevel level);
 void clearPhysics(); //Deletes the whole scene
 void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
-               void ( *gravFeedback )( pPhysicsCollision collision ),
-               void ( *yFeedback )( pPhysicsCollision collision ),
-               void ( *xFeedback )( pPhysicsCollision collision ));
+               int ( *gravFeedback )( pPhysicsCollision collision ),
+               int ( *yFeedback )( pPhysicsCollision collision ),
+               int ( *xFeedback )( pPhysicsCollision collision ));
 void updateLevelObjects();
 
 #endif

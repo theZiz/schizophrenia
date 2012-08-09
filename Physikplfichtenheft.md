@@ -105,9 +105,9 @@ gefallen aber nicht y-kollidiert sind, bekommen ihren Fallcounter
 inkrementiert. Grob sieht es also so aus:
 
 - Für jede vergangen Millisekunde mache:
-  - von außen: Setzen der Geschwindigkeit
-  - Speichern der Position
-  - solange Kollisionen sind, aber mindestens ein mal:
+	- von außen: Setzen der Geschwindigkeit
+	- Speichern der Position
+	- solange Kollisionen sind, aber mindestens ein mal:
 		- Ausführung der Gravitation
 		- von außen: Reaktion auf Kollision
 		- Physikinterne Gravitation-Kollisionsbehandlung mit Gravitationskettenfindung

@@ -54,22 +54,50 @@ Sint32 rotation = 0;
 
 void setSpeed( pPhysicsElement element )
 {
-	
+	if (element->levelObject == NULL)
+		return;
+	if (element->levelObject == level->choosenPlayer)
+	{
+		//Moving the player
+		if (spGetInput()->axis[0] < 0)
+			element->speed.x = -16;
+		if (spGetInput()->axis[0] > 0)
+			element->speed.x =  16;
+	}
 }
 
-void gravFeedback( pPhysicsCollision collision )
+void removeCollision( pPhysicsCollision collision )
 {
-	
+	collision->prev->next = collision->next;
+	collision->next->prev = collision->prev;
+	free(collision);
 }
 
-void yFeedback( pPhysicsCollision collision )
+int gravFeedback( pPhysicsCollision collision )
 {
-	
+	/*if (collision->element[0]->type == PLAYER && collision->hitPosition[0] == 2) //TOP hit on player
+	{
+		collision->element[0]->killed = 1;
+		removeCollision(collision);
+		return 1;
+	}
+	if (collision->element[1]->type == PLAYER && collision->hitPosition[1] == 2) //TOP hit on player
+	{
+		collision->element[1]->killed = 1;
+		removeCollision(collision);
+		return 1;
+	}*/
+	return 0;
 }
 
-void xFeedback( pPhysicsCollision collision )
+int yFeedback( pPhysicsCollision collision )
 {
-	
+	return 0;
+}
+
+int xFeedback( pPhysicsCollision collision )
+{
+	return 0;
 }
 
 int calc_schizo( Uint32 steps )

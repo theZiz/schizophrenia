@@ -44,7 +44,7 @@ typedef enum {
 	COLLECTIBLE, // 10
 	UNSELECTABLE,// 11
 	LOGICGROUP,  // 12
-	UNKONWN
+	UNKONWN      // 13
 } LevelObjectType;
 
 typedef enum {
