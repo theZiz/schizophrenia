@@ -963,8 +963,8 @@ void deleteLevel(pLevel level)
 
 void calcCamera(pLevel level,Sint32 steps)
 {
-	//level->targetCamera.x = level->choosenPlayer->x + (level->choosenPlayer->w << SP_ACCURACY - 6);
-	//level->targetCamera.y = level->choosenPlayer->y + (level->choosenPlayer->h << SP_ACCURACY - 6);
+	level->targetCamera.x = level->choosenPlayer->x + (level->choosenPlayer->w << SP_ACCURACY - 6);
+	level->targetCamera.y = level->choosenPlayer->y + (level->choosenPlayer->h << SP_ACCURACY - 6);
 	int i;
 	for (i = 0; i < steps; i++)
 	{

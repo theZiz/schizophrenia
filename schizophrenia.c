@@ -28,7 +28,7 @@ SDL_Surface *screen;
 spFontPointer font = NULL;
 pLevel level;
 
-void draw_test( void )
+void draw_schizo( void )
 {
 	RESET_ZBUFFER
 	CLEAN_TARGET(level->backgroundColor)
@@ -51,18 +51,21 @@ void draw_test( void )
 
 Sint32 rotation = 0;
 
-int calc_test( Uint32 steps )
+int calc_schizo( Uint32 steps )
 {
 	rotation+=steps*16;
-	if ( spGetInput()->axis[0] < 0)
-		level->targetCamera.x -= steps*256;
-	if ( spGetInput()->axis[0] > 0)
-		level->targetCamera.x += steps*256;
-	if ( spGetInput()->axis[1] < 0)
-		level->targetCamera.y += steps*256;
-	if ( spGetInput()->axis[1] > 0)
-		level->targetCamera.y -= steps*256;
-
+	
+	if (spGetInput()->button[SP_BUTTON_R])
+	{
+		spGetInput()->button[SP_BUTTON_R] = 0;
+		level->choosenPlayer = level->choosenPlayer->prev;
+	}
+	if (spGetInput()->button[SP_BUTTON_L])
+	{
+		spGetInput()->button[SP_BUTTON_L] = 0;
+		level->choosenPlayer = level->choosenPlayer->next;
+	}
+	
 	updateLevelSprites(level,steps);
 	calcCamera(level,steps);
 
@@ -99,7 +102,7 @@ int main( int argc, char **argv )
 	createPhysicsFromLevel(level);
 
 	//All glory the main loop
-	spLoop( draw_test, calc_test, 10, resize, NULL );
+	spLoop( draw_schizo, calc_schizo, 10, resize, NULL );
 
 	//Winter Wrap up, Winter Wrap up …
 	clearPhysics();
