@@ -445,9 +445,9 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	if (collision)
 	do
 	{
-		if (collision->hitPosition[0] == 8) //DOWN
+		if (collision->hitPosition[0] == 8 && collision->element[0]->gravitation) //DOWN
 			collision->element[0]->position.y = collision->element[0]->backupPosition.y;
-		if (collision->hitPosition[1] == 8) //DOWN
+		if (collision->hitPosition[1] == 8 && collision->element[1]->gravitation) //DOWN
 			collision->element[1]->position.y = collision->element[1]->backupPosition.y;
 		collision = collision->next;
 	}
@@ -529,17 +529,17 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	while (collision != firstCollision);	
 	
 	//III: internal collision handling
-	/*collision = firstCollision;
+	collision = firstCollision;
 	if (collision)
 	do
 	{
-		if (collision->hitPosition[0] == 8) //DOWN
-			collision->element[0]->position.y = collision->element[0]->backupPosition.y;
-		if (collision->hitPosition[1] == 8) //DOWN
-			collision->element[1]->position.y = collision->element[1]->backupPosition.y;
+		if (collision->element[0]->moveable)
+			collision->element[0]->position.x = collision->element[0]->backupPosition.x;
+		if (collision->element[1]->moveable)
+			collision->element[1]->position.x = collision->element[1]->backupPosition.x;
 		collision = collision->next;
 	}
-	while (collision != firstCollision);	*/
+	while (collision != firstCollision);
 
 	//III: Removing killed elements (and the level objects if exist)	
 	somewhat_killed = 1;
