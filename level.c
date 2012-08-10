@@ -61,6 +61,7 @@ pLevelObject createObject(pLevelObjectGroup group,LevelObjectType type)
 	obj->kind = 0;
 	obj->state = OFF;
 	obj->physicsElement = NULL;
+	obj->group = group;
 	if (group->firstObject)
 	{
 		group->firstObject->prev->next = obj;
@@ -75,6 +76,26 @@ pLevelObject createObject(pLevelObjectGroup group,LevelObjectType type)
 	}
 	group->firstObject = obj;
 	return obj;
+}
+
+void removeObject(pLevelObject obj,pLevel level)
+{
+	if (obj == level->choosenPlayer)
+		level->choosenPlayer = level->choosenPlayer->next;
+	if (obj->some_char)
+		free(obj->some_char);
+	if (obj->animation)
+		spDeleteSpriteCollection(obj->animation,0);
+	if (obj == obj->next)
+	{
+		obj->group->firstObject = NULL;
+	}
+	else
+	{
+		obj->next->prev = obj->prev;
+		obj->prev->next = obj->next;
+	}	
+	free(obj);	
 }
 
 void allocLayer(pLayer layer,int width, int height)

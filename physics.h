@@ -34,7 +34,7 @@ typedef struct sPhysicsElement {
 	Sint32 w,h; //32 pixel == SP_ONE
 	Sint32 sqSize; //The square of the bounding circle of the rectangle; for distance
 	int gravitation; //gravitation moves this element
-	int permeability; //bit,direction: 1,left 2,top 4,right 8,down (0 means solid, 15 transparent (doors, switches...))
+	int permeability; //bit,direction: 1,left 2,top 4,right 8,down (15 means solid, 0 transparent (doors, switches...))
 	int moveable; //x and y forces move this element.
 	int superPower;
 	int freeFallCounter;
@@ -57,7 +57,7 @@ void clearPhysics(); //Deletes the whole scene
 void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
                int ( *gravFeedback )( pPhysicsCollision collision ),
                int ( *yFeedback )( pPhysicsCollision collision ),
-               int ( *xFeedback )( pPhysicsCollision collision ));
+               int ( *xFeedback )( pPhysicsCollision collision ), pLevel level);
 void updateLevelObjects();
 
 #endif

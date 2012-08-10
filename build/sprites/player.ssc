@@ -1,7 +1,7 @@
 default = stand right
 image = ./images/science_guy_frames01.png
 fps = 10
-framesize = 22, 46
+framesize = 24, 48
 bordersize = 24, 48
 
 [stand right]

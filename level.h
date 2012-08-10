@@ -79,6 +79,7 @@ typedef struct sLevelObject {
 	char* some_char; //some objects need to save a string as e.g. destiny
 	int kind; //some objects have different kinds. Saved here.
 	LevelState state; //on and off
+	pLevelObjectGroup group;
 	pPhysicsElement physicsElement;
 	pLevelObject prev,next; //ring of objects in one group
 } tLevelObject;
@@ -100,6 +101,7 @@ typedef struct sLevel {
 } tLevel;
 
 pLevel loadLevel(char* filename);
+void removeObject(pLevelObject obj,pLevel level);
 void drawLevel(pLevel level);
 void calcCamera(pLevel level,Sint32 steps);
 void updateLevelSprites(pLevel level,int steps);

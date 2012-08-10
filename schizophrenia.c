@@ -51,6 +51,7 @@ void draw_schizo( void )
 }
 
 Sint32 rotation = 0;
+Sint32 last_run = 0;
 
 void setSpeed( pPhysicsElement element )
 {
@@ -60,22 +61,60 @@ void setSpeed( pPhysicsElement element )
 	{
 		//Moving the player
 		if (spGetInput()->axis[0] < 0)
-			element->speed.x = -16;
+		{
+			if (last_run >= 0)
+			{
+				spSelectSprite(level->choosenPlayer->animation,"run left");
+				last_run = 0;
+			}
+			last_run--;
+			if (last_run > -128)
+				element->speed.x = last_run*2;
+			else
+				element->speed.x = -256;
+		}
+		else
 		if (spGetInput()->axis[0] > 0)
-			element->speed.x =  16;
+		{
+			if (last_run <= 0)
+			{
+				spSelectSprite(level->choosenPlayer->animation,"run right");
+				last_run = 0;
+			}
+			last_run++;
+			if (last_run < 128)
+				element->speed.x = last_run*2;
+			else
+				element->speed.x = 256;
+		}
+		else
+		if (last_run < 0)
+		{
+			spSelectSprite(level->choosenPlayer->animation,"stand left");
+			last_run = 0;
+		}
+		else
+		if (last_run > 0)
+		{
+			spSelectSprite(level->choosenPlayer->animation,"stand right");
+			last_run = 0;
+		}
 	}
 }
 
 void removeCollision( pPhysicsCollision collision )
 {
-	collision->prev->next = collision->next;
-	collision->next->prev = collision->prev;
+	if (collision != collision->next)
+	{
+		collision->prev->next = collision->next;
+		collision->next->prev = collision->prev;
+	}
 	free(collision);
 }
 
 int gravFeedback( pPhysicsCollision collision )
 {
-	/*if (collision->element[0]->type == PLAYER && collision->hitPosition[0] == 2) //TOP hit on player
+	if (collision->element[0]->type == PLAYER && collision->hitPosition[0] == 2) //TOP hit on player
 	{
 		collision->element[0]->killed = 1;
 		removeCollision(collision);
@@ -86,7 +125,7 @@ int gravFeedback( pPhysicsCollision collision )
 		collision->element[1]->killed = 1;
 		removeCollision(collision);
 		return 1;
-	}*/
+	}
 	return 0;
 }
 
@@ -119,7 +158,7 @@ int calc_schizo( Uint32 steps )
 	//Physics
 	int i;
 	for (i = 0; i < steps; i++)
-		doPhysics(1,setSpeed,gravFeedback,yFeedback,xFeedback);
+		doPhysics(1,setSpeed,gravFeedback,yFeedback,xFeedback,level);
 	
 	//Visualization stuff
 	rotation+=steps*16;
