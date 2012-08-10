@@ -122,6 +122,8 @@ int getHexSign(char sign)
 
 Uint16 hex2color(char* value)
 {
+	if (value[0] == '#')
+		value++;
 	if (strlen(value) < 6)
 		return 0;
 	int r = getHexSign(value[0])*16+getHexSign(value[1]);
@@ -715,18 +717,28 @@ pLevel loadLevel(char* filename)
 								spSelectSprite(obj->animation,"full");
 								break;
 							case GENERIC:
-								temp = strchr(name,'@');
+								temp = strchr(obj->some_char,'@');
 								if (temp)
 								{
 									temp[0] = 0;
-									obj->animation = spLoadSpriteCollection(name,NULL);
-									printf("    Creating animation %s",name);
+									obj->animation = spLoadSpriteCollection(obj->some_char,NULL);
+									if (obj->animation == NULL)
+									{
+										printf("ERROR: Coudln't load %s\n.",obj->some_char);
+										break;
+									}
+									printf("    Creating animation %s",obj->some_char);
 									temp[0] = '@';
 									spSelectSprite(obj->animation,&(temp[1]));
 									printf(" with default=\"%s\"\n",&(temp[1]));
 								}
 								else
-									obj->animation = spLoadSpriteCollection(name,NULL);
+								{
+									obj->animation = spLoadSpriteCollection(obj->some_char,NULL);
+									printf("    Loading animation %s (%p)\n",obj->some_char,obj->animation);
+									if (obj->animation == NULL)
+										printf("ERROR: Coudln't load %s\n.",obj->some_char);
+								}
 								break;
 							case COLLECTIBLE:
 								obj->animation = spLoadSpriteCollection(name,NULL);
@@ -787,6 +799,8 @@ pLevel loadLevel(char* filename)
 								}
 								break;
 							case GENERIC: case COLLECTIBLE:
+								if (obj->animation == NULL)
+									break;
 								obj->w = spActiveSprite(obj->animation)->maxWidth;
 								obj->h = spActiveSprite(obj->animation)->maxHeight;
 								break;

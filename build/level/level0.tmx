@@ -50,11 +50,11 @@
 </data>
  </layer>
  <objectgroup name="player" width="85" height="6">
-  <object x="48" y="142"/>
+  <object x="48" y="130"/>
  </objectgroup>
  <objectgroup name="generic" width="85" height="6">
-  <object name="./sprites/title.scc" x="184" y="-24"/>
-  <object name="./sprites/credits.scc" x="608" y="-24"/>
+  <object name="./sprites/title.ssc" x="184" y="-24"/>
+  <object name="./sprites/credits.ssc" x="608" y="-24"/>
  </objectgroup>
  <objectgroup name="door" width="85" height="6">
   <object name="level1-1.tmx" type="0" x="1104" y="160"/>

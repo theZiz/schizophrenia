@@ -1,6 +1,7 @@
 default = title
 fps = 1
 image = ./images/title.png
+
 [title]
 framesize  = 320, 114
 bordersize = 320, 114

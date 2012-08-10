@@ -118,7 +118,7 @@
 </data>
  </layer>
  <objectgroup name="player" width="50" height="20">
-  <object x="85" y="593"/>
+  <object x="85" y="580"/>
  </objectgroup>
  <objectgroup name="box" width="50" height="20">
   <object x="193" y="512"/>

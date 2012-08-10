@@ -115,7 +115,7 @@
   <object name="platform" type="(0;-0.001),(0;0.001)" x="96" y="480" width="64" height="16"/>
  </objectgroup>
  <objectgroup name="player" width="60" height="18">
-  <object x="1140" y="433"/>
+  <object x="1140" y="420"/>
  </objectgroup>
  <objectgroup name="box" width="60" height="18">
   <object x="1408" y="448"/>

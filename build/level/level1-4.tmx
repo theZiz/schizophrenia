@@ -102,7 +102,7 @@
 </data>
  </layer>
  <objectgroup name="player" width="31" height="16">
-  <object x="575" y="399"/>
+  <object x="575" y="380"/>
  </objectgroup>
  <objectgroup name="collectible00" width="31" height="16">
   <object name="3" x="272" y="208"/>

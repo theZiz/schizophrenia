@@ -143,6 +143,8 @@ int xFeedback( pPhysicsCollision collision )
 
 int calc_schizo( Uint32 steps )
 {
+	if (steps > 20)
+	printf("%i\n",steps);
 	//Controls and some Logic (more in setSpeed)
 	if (spGetInput()->button[SP_BUTTON_R])
 	{
@@ -193,7 +195,10 @@ int main( int argc, char **argv )
 	resize( screen->w, screen->h );
 
 	//Loading the first level:
-	level = loadLevel("./level/tile_test.tmx");
+	if (argc < 2)
+		level = loadLevel("./level/tile_test.tmx");
+	else
+		level = loadLevel(argv[1]);
 	createPhysicsFromLevel(level);
 
 	//All glory the main loop
