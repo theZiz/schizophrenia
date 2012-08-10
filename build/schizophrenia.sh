@@ -1,2 +1,2 @@
 #!/bin/sh
-LD_LIBRARY_PATH=. ./schizophrenia
+LD_LIBRARY_PATH=. ./schizophrenia $*

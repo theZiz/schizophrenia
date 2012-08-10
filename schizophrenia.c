@@ -44,7 +44,7 @@ void draw_schizo( void )
 	spSetZTest( 0 );
 	spSetAlphaTest( 1 );
 	char buffer[256];
-	sprintf( buffer, "camera X: %i\ncamera Y: %i\nfps: %i", level->actualCamera.x >> SP_ACCURACY-5,level->actualCamera.y >> SP_ACCURACY-5,spGetFPS() );
+	sprintf( buffer, "camera X: %i\ncamera Y: %i\ncollisiontests: %i\nfps: %i", level->actualCamera.x >> SP_ACCURACY-5,level->actualCamera.y >> SP_ACCURACY-5,getCollisionCount(),spGetFPS() );
 	spFontDrawRight( screen->w-1, screen->h-font->maxheight*3, -1, buffer, font );
 
 	spFlip();
