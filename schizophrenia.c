@@ -52,6 +52,8 @@ void draw_schizo( void )
 
 Sint32 rotation = 0;
 Sint32 last_run = 0;
+#define PHYSICS_STEP 10
+int rest = 0;
 
 void setSpeed( pPhysicsElement element )
 {
@@ -67,7 +69,7 @@ void setSpeed( pPhysicsElement element )
 				spSelectSprite(level->choosenPlayer->animation,"run left");
 				last_run = 0;
 			}
-			last_run--;
+			last_run-=PHYSICS_STEP;
 			if (last_run > -128)
 				element->speed.x = last_run*2;
 			else
@@ -81,7 +83,7 @@ void setSpeed( pPhysicsElement element )
 				spSelectSprite(level->choosenPlayer->animation,"run right");
 				last_run = 0;
 			}
-			last_run++;
+			last_run+=PHYSICS_STEP;
 			if (last_run < 128)
 				element->speed.x = last_run*2;
 			else
@@ -157,9 +159,10 @@ int calc_schizo( Uint32 steps )
 	
 	//Physics
 	int i;
-	for (i = 0; i < steps; i++)
-		doPhysics(1,setSpeed,gravFeedback,yFeedback,xFeedback,level);
-	
+	int physics_steps = (steps + rest) / PHYSICS_STEP;
+	for (i = 0; i < physics_steps; i++)
+			doPhysics(PHYSICS_STEP,setSpeed,gravFeedback,yFeedback,xFeedback,level);
+	rest = (steps + rest) % PHYSICS_STEP;
 	//Visualization stuff
 	rotation+=steps*16;
 	updateLevelObjects();
