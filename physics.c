@@ -30,6 +30,8 @@ pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 	pPhysicsElement element = (pPhysicsElement)malloc(sizeof(tPhysicsElement));
 	element->position.x = px;
 	element->position.y = py;
+	element->backupPosition.x = px;
+	element->backupPosition.y = py;
 	element->w = w;
 	element->h = h;
 	element->sqSize = spMulHigh(w,w)+spMulHigh(h,h);
@@ -198,7 +200,9 @@ pPhysicsCollision getYCollision(pPhysicsElement element)
 		{
 			pPhysicsCollision collision = NULL;
 			//partner over element
-			if (element->position.y >= partner->position.y && element->position.y < partner->position.y + partner->h)
+			//if (element->position.y >= partner->position.y && element->position.y < partner->position.y + partner->h)
+			if (element->backupPosition.y >  partner->backupPosition.y + partner->h &&
+			    element->      position.y <=  partner->      position.y + partner->h)
 			{
 				if ((element->permeability & 2) && (partner->permeability & 8))
 				{
@@ -210,7 +214,9 @@ pPhysicsCollision getYCollision(pPhysicsElement element)
 				}
 			}
 			else
-			if (partner->position.y >= element->position.y && partner->position.y < element->position.y + element->h)
+			//if (partner->position.y >= element->position.y && partner->position.y < element->position.y + element->h)
+			if (partner->backupPosition.y >  element->backupPosition.y + element->h &&
+			    partner->      position.y <=  element->      position.y + element->h)
 			{
 				if ((element->permeability & 8) && (partner->permeability & 2))
 				{
@@ -288,7 +294,9 @@ pPhysicsCollision getXCollision(pPhysicsElement element)
 		{
 			pPhysicsCollision collision = NULL;
 			//partner left of element
-			if (element->position.x >= partner->position.x && element->position.x < partner->position.x + partner->w)
+			//if (element->position.x >= partner->position.x && element->position.x < partner->position.x + partner->w)
+			if (element->backupPosition.x >  partner->backupPosition.x + partner->w &&
+			    element->      position.x <= partner->      position.x + partner->w)
 			{
 				if ((element->permeability & 1) && (partner->permeability & 4))
 				{
@@ -300,7 +308,9 @@ pPhysicsCollision getXCollision(pPhysicsElement element)
 				}
 			}
 			else
-			if (partner->position.x >= element->position.x && partner->position.x < element->position.x + element->w)
+			//if (partner->position.x >= element->position.x && partner->position.x < element->position.x + element->w)
+			if (partner->backupPosition.x >  element->backupPosition.x + element->w &&
+			    partner->      position.x <= element->      position.x + element->w)
 			{
 				if ((element->permeability & 4) && (partner->permeability & 1))
 				{
