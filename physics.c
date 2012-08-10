@@ -385,18 +385,8 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
                int ( *yFeedback )( pPhysicsCollision collision ),
                int ( *xFeedback )( pPhysicsCollision collision ), pLevel level)
 {
-	//Settings every elements speed.
-	pPhysicsElement element = firstMoveableElement;
-	if (element)
-	do
-	{
-		setSpeed(element);
-		element = element->next;
-	}
-	while (element != firstMoveableElement);
-	
 	//Backup the position and killing
-	element = firstMoveableElement;
+	pPhysicsElement element = firstMoveableElement;
 	if (element)
 	do
 	{
@@ -407,6 +397,18 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	}
 	while (element != firstMoveableElement);
 	
+	//Settings every elements speed.
+	element = firstMoveableElement;
+	if (element)
+	do
+	{
+		element->speed.x = 0;
+		element->speed.y = 0;
+		setSpeed(element);
+		element = element->next;
+	}
+	while (element != firstMoveableElement);
+
 	/////////////////////////
 	// Step I: Gravitation //
 	/////////////////////////
@@ -421,75 +423,82 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
-	
-	//I: collision detecting
-	pPhysicsCollision firstCollision = getYCollisionChain();
-	
-	//I: external collision handling
-	pPhysicsCollision collision = firstCollision;
-	if (collision)
-	do
+		
+	int collision_detected = 1;
+	while (collision_detected)
 	{
-		pPhysicsCollision next = collision->next; //Saving because maybe it will be freeed by the feedback function
-		if (gravFeedback(collision) && collision == next) //deleted AND only one collision
-		{
-			firstCollision = NULL;
-			break;
-		}
-		collision = next;
-	}
-	while (collision != firstCollision);	
-	
-	//I: internal collision handling
-	collision = firstCollision;
-	if (collision)
-	do
-	{
-		if (collision->hitPosition[0] == 8 && collision->element[0]->gravitation) //DOWN
-			collision->element[0]->position.y = collision->element[0]->backupPosition.y;
-		if (collision->hitPosition[1] == 8 && collision->element[1]->gravitation) //DOWN
-			collision->element[1]->position.y = collision->element[1]->backupPosition.y;
-		collision = collision->next;
-	}
-	while (collision != firstCollision);	
-
-	//I: Removing killed elements (and the level objects if exist)	
-	int somewhat_killed = 1;
-	while (somewhat_killed)
-	{
-		somewhat_killed = 0;
-		element = firstMoveableElement;
-		if (element)
+		collision_detected = 0;
+		//I: collision detecting
+		pPhysicsCollision firstCollision = getYCollisionChain();
+		
+		//I: external collision handling
+		pPhysicsCollision collision = firstCollision;
+		if (collision)
 		do
 		{
-			pPhysicsElement next = element->next;
-			if (element->killed)
+			pPhysicsCollision next = collision->next; //Saving because maybe it will be freeed by the feedback function
+			if (gravFeedback(collision) && collision == next) //deleted AND only one collision
 			{
-				if (element == element->next)
-					firstMoveableElement = NULL;
-				else
-				{
-					element->prev->next = element->next;
-					element->next->prev = element->prev;
-					if (firstMoveableElement == element)
-						firstMoveableElement = element->next;
-				}
-				if (element->levelObject)
-				{
-					removeObject(element->levelObject,level);
-				}
-				free(element);
-				somewhat_killed = 1;
+				firstCollision = NULL;
 				break;
 			}
-			element = next;
+			collision = next;
 		}
-		while (element != firstMoveableElement);
+		while (collision != firstCollision);	
+		
+		//I: internal collision handling
+		collision = firstCollision;
+		if (collision)
+		{
+			collision_detected = 1;
+			do
+			{
+				if (collision->hitPosition[0] == 8 && collision->element[0]->gravitation) //DOWN
+					collision->element[0]->position.y = collision->element[0]->backupPosition.y;
+				if (collision->hitPosition[1] == 8 && collision->element[1]->gravitation) //DOWN
+					collision->element[1]->position.y = collision->element[1]->backupPosition.y;
+				collision = collision->next;
+			}
+			while (collision != firstCollision);	
+		}
+
+		//I: Removing killed elements (and the level objects if exist)	
+		int somewhat_killed = 1;
+		while (somewhat_killed)
+		{
+			somewhat_killed = 0;
+			element = firstMoveableElement;
+			if (element)
+			do
+			{
+				pPhysicsElement next = element->next;
+				if (element->killed)
+				{
+					if (element == element->next)
+						firstMoveableElement = NULL;
+					else
+					{
+						element->prev->next = element->next;
+						element->next->prev = element->prev;
+						if (firstMoveableElement == element)
+							firstMoveableElement = element->next;
+					}
+					if (element->levelObject)
+					{
+						removeObject(element->levelObject,level);
+					}
+					free(element);
+					somewhat_killed = 1;
+					break;
+				}
+				element = next;
+			}
+			while (element != firstMoveableElement);
+		}
+		
+		//I: Removing the chain
+		clearCollisionChain(firstCollision);
 	}
-	
-	//I: Removing the chain
-	clearCollisionChain(firstCollision);
-	
 	/////////////////////////
 	// Step II: Y-Movement //
 	/////////////////////////
@@ -510,82 +519,78 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	}
 	while (element != firstMoveableElement);
 	
-	//III: collision detecting
-	firstCollision = getXCollisionChain();
-	
-	//III: external collision handling
-	collision = firstCollision;
-	if (collision)
-	do
+	collision_detected = 1;
+	while (collision_detected)
 	{
-		pPhysicsCollision next = collision->next; //Saving because maybe it will be freeed by the feedback function
-		if (xFeedback(collision) && collision == next) //deleted AND only one collision
-		{
-			firstCollision = NULL;
-			break;
-		}
-		collision = next;
-	}
-	while (collision != firstCollision);	
-	
-	//III: internal collision handling
-	collision = firstCollision;
-	if (collision)
-	do
-	{
-		if (collision->element[0]->moveable)
-			collision->element[0]->position.x = collision->element[0]->backupPosition.x;
-		if (collision->element[1]->moveable)
-			collision->element[1]->position.x = collision->element[1]->backupPosition.x;
-		collision = collision->next;
-	}
-	while (collision != firstCollision);
-
-	//III: Removing killed elements (and the level objects if exist)	
-	somewhat_killed = 1;
-	while (somewhat_killed)
-	{
-		somewhat_killed = 0;
-		element = firstMoveableElement;
-		if (element)
+		collision_detected = 0;
+		//III: collision detecting
+		pPhysicsCollision firstCollision = getXCollisionChain();
+		
+		//III: external collision handling
+		pPhysicsCollision collision = firstCollision;
+		if (collision)
 		do
 		{
-			pPhysicsElement next = element->next;
-			if (element->killed)
+			pPhysicsCollision next = collision->next; //Saving because maybe it will be freeed by the feedback function
+			if (xFeedback(collision) && collision == next) //deleted AND only one collision
 			{
-				if (element == element->next)
-					firstMoveableElement = NULL;
-				else
-				{
-					element->prev->next = element->next;
-					element->next->prev = element->prev;
-					if (firstMoveableElement == element)
-						firstMoveableElement = element->next;
-				}
-				if (element->levelObject)
-				{
-					removeObject(element->levelObject,level);
-				}
-				free(element);
-				somewhat_killed = 1;
+				firstCollision = NULL;
 				break;
 			}
-			element = next;
+			collision = next;
 		}
-		while (element != firstMoveableElement);
+		while (collision != firstCollision);	
+		
+		//III: internal collision handling
+		collision = firstCollision;
+		if (collision)
+		{
+			collision_detected = 1;
+			do
+			{
+				if (collision->element[0]->moveable)
+					collision->element[0]->position.x = collision->element[0]->backupPosition.x;
+				if (collision->element[1]->moveable)
+					collision->element[1]->position.x = collision->element[1]->backupPosition.x;
+				collision = collision->next;
+			}
+			while (collision != firstCollision);
+		}
+		//III: Removing killed elements (and the level objects if exist)	
+		int somewhat_killed = 1;
+		while (somewhat_killed)
+		{
+			somewhat_killed = 0;
+			element = firstMoveableElement;
+			if (element)
+			do
+			{
+				pPhysicsElement next = element->next;
+				if (element->killed)
+				{
+					if (element == element->next)
+						firstMoveableElement = NULL;
+					else
+					{
+						element->prev->next = element->next;
+						element->next->prev = element->prev;
+						if (firstMoveableElement == element)
+							firstMoveableElement = element->next;
+					}
+					if (element->levelObject)
+					{
+						removeObject(element->levelObject,level);
+					}
+					free(element);
+					somewhat_killed = 1;
+					break;
+				}
+				element = next;
+			}
+			while (element != firstMoveableElement);
+		}
+		
+		//III: Removing the chain
+		clearCollisionChain(firstCollision);
 	}
-	
-	//III: Removing the chain
-	clearCollisionChain(firstCollision);
-	
-	//Reseting every elements speed.
-	element = firstMoveableElement;
-	if (element)
-	do
-	{
-		element->speed.x = 0;
-		element->speed.y = 0;
-		element = element->next;
-	}
-	while (element != firstMoveableElement);	
 }
