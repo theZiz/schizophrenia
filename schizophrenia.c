@@ -66,7 +66,7 @@ void setSpeed( pPhysicsElement element )
 		return;
 	if (element->levelObject == level->choosenPlayer)
 	{
-		printf("%i\n",element->freeFallCounter);
+		//printf("%i\n",element->freeFallCounter);
 		//Moving the player Y
 		if (spGetInput()->button[SP_BUTTON_LEFT] || (in_jump && in_jump <= MIN_JUMP_TIME))
 		{
