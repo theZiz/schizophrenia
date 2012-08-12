@@ -44,8 +44,12 @@ void draw_schizo( void )
 	spSetZTest( 0 );
 	spSetAlphaTest( 1 );
 	char buffer[256];
-	sprintf( buffer, "camera X: %i\ncamera Y: %i\ncollisiontests: %i\nfps: %i", level->actualCamera.x >> SP_ACCURACY-5,level->actualCamera.y >> SP_ACCURACY-5,getCollisionCount(),spGetFPS() );
-	spFontDrawRight( screen->w-1, screen->h-font->maxheight*3, -1, buffer, font );
+	sprintf( buffer, "camera X: %i\ncamera Y: %i\ncollisiontests: %i\nfps: %i\nspeed:%.5i,%.5i",
+			level->actualCamera.x >> SP_ACCURACY-5,level->actualCamera.y >> SP_ACCURACY-5,
+			getCollisionCount(),spGetFPS(),
+			level->choosenPlayer->physicsElement->position.x - level->choosenPlayer->physicsElement->backupPosition.x,
+			level->choosenPlayer->physicsElement->position.y - level->choosenPlayer->physicsElement->backupPosition.y);
+	spFontDrawRight( screen->w-1, screen->h-font->maxheight*5, -1, buffer, font );
 
 	spFlip();
 }
@@ -53,11 +57,16 @@ void draw_schizo( void )
 Sint32 rotation = 0;
 Sint32 last_run = 0;
 Sint32 in_jump = 0;
+int can_jump = 1;
 #define PHYSICS_STEP 2
-#define MIN_JUMP_TIME 150
-#define JUMP_HIGH 400
-#define JUMP_LINEAR 300
-#define JUMP_END 400
+#define JUMP_FORCE 2*GRAVITY_MAX
+// Times are consecutive (relative, not absolute)
+#define JUMP_MIN_TIME 100
+#define JUMP_UPWARDS_TIME 300
+#define JUMP_END_TIME 550
+#define MAX_MOVEMENT_FORCE 350
+#define MOVEMENT_ACCEL 2
+
 int rest = 0;
 
 void setSpeed( pPhysicsElement element )
@@ -67,43 +76,62 @@ void setSpeed( pPhysicsElement element )
 	if (element->levelObject == level->choosenPlayer)
 	{
 		//printf("%i\n",element->freeFallCounter);
+
 		//Moving the player Y
-		if (spGetInput()->button[SP_BUTTON_LEFT] || (in_jump && in_jump <= MIN_JUMP_TIME))
+		if ( spGetInput()->button[SP_BUTTON_LEFT] )
 		{
-			int i;
-			for (i = 0; i < PHYSICS_STEP; i++)
-			{
-				if (element->had_collision & 2) //collision on top
-					in_jump = 0;
-				else
-				if (in_jump)
-				{
-					if (in_jump < JUMP_LINEAR)
-					{
-						in_jump++;
-						element->speed.y-=JUMP_HIGH;
-						element->freeFallCounter = 0;
-					}
-					else
-					if (in_jump < JUMP_END)
-					{
-						in_jump++;
-						element->speed.y-=JUMP_HIGH*(JUMP_END-in_jump)/(JUMP_END-JUMP_LINEAR);
-						element->freeFallCounter = 0;
-					}
-					else
-						in_jump = 0;
-				}
-				else
-				if (element->had_collision & 8) //ground collision
-					in_jump = 1;
-				else
-				if (in_jump > MIN_JUMP_TIME)
-					in_jump = 0;
-			}
+			if ( in_jump == 0 && can_jump ) // start the jump
+				in_jump = 1;
 		}
 		else
-			in_jump = 0;
+		{
+			if ( in_jump >= JUMP_MIN_TIME && can_jump ) // start turn-around
+			{
+				in_jump = JUMP_UPWARDS_TIME;
+				can_jump = 0;
+			}
+			if ( in_jump == 0 ) // allow another jump only after another press of the button
+				can_jump = 1;
+		}
+
+		int i;
+		for (i = 0; i < PHYSICS_STEP; i++)
+		{
+			if (element->had_collision & 2 && can_jump) //collision on top
+			{
+				// start turn-around
+				in_jump = JUMP_UPWARDS_TIME;
+				can_jump = 0;
+			}
+			else
+			if (in_jump)
+			{
+				if (in_jump < JUMP_UPWARDS_TIME) // moving upwards
+				{
+					in_jump++;
+					element->speed.y-=JUMP_FORCE;
+					element->freeFallCounter = 0;
+				}
+				else
+				if (in_jump < JUMP_END_TIME) // smooth turn-around (peak of jump)
+				{
+					in_jump++;
+					element->speed.y-=GRAVITY_MAX*(JUMP_END_TIME-in_jump)/(JUMP_END_TIME-JUMP_UPWARDS_TIME);
+					element->freeFallCounter = 0;
+					can_jump = 0;
+				}
+				else // end jump
+				{
+					in_jump = 0;
+					can_jump = 0;
+				}
+			}
+			else
+			if (element->had_collision & 8) //ground collision
+			{
+				in_jump = 0;
+			}
+		}
 
 		//Moving the player X
 		if (spGetInput()->axis[0] < 0)
@@ -115,10 +143,10 @@ void setSpeed( pPhysicsElement element )
 			if (last_run >= 0)
 				last_run = 0;
 			last_run-=PHYSICS_STEP;
-			if (last_run > -128)
-				element->speed.x = last_run*2;
+			if (last_run > -(MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
+				element->speed.x = last_run*MOVEMENT_ACCEL;
 			else
-				element->speed.x = -256;
+				element->speed.x = -MAX_MOVEMENT_FORCE;
 		}
 		else
 		if (spGetInput()->axis[0] > 0)
@@ -130,10 +158,10 @@ void setSpeed( pPhysicsElement element )
 			if (last_run <= 0)
 				last_run = 0;
 			last_run+=PHYSICS_STEP;
-			if (last_run < 128)
-				element->speed.x = last_run*2;
+			if (last_run < (MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
+				element->speed.x = last_run*MOVEMENT_ACCEL;
 			else
-				element->speed.x = 256;
+				element->speed.x = MAX_MOVEMENT_FORCE;
 		}
 		else
 		{
@@ -237,14 +265,14 @@ int calc_schizo( Uint32 steps )
 	}
 	if ( spGetInput()->button[SP_BUTTON_START] )
 		return 1;
-	
+
 	//Physics
 	int i;
 	int physics_steps = (steps + rest) / PHYSICS_STEP;
 	for (i = 0; i < physics_steps; i++)
 			doPhysics(PHYSICS_STEP,setSpeed,gravFeedback,yFeedback,xFeedback,level);
 	rest = (steps + rest) % PHYSICS_STEP;
-	
+
 	//Visualization stuff
 	rotation+=steps*16;
 	updateLevelObjects();
