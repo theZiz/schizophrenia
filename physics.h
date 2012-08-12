@@ -38,6 +38,7 @@ typedef struct sPhysicsElement {
 	int superPower;
 	int freeFallCounter;
 	int killed;
+	int had_collision; //saved hitPositions
 	LevelObjectType type;
 	pLevelObject levelObject;
 	pPhysicsElement prev,next;

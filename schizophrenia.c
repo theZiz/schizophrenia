@@ -52,7 +52,12 @@ void draw_schizo( void )
 
 Sint32 rotation = 0;
 Sint32 last_run = 0;
+Sint32 in_jump = 0;
 #define PHYSICS_STEP 10
+#define MIN_JUMP_TIME 150
+#define JUMP_HIGH 400
+#define JUMP_LINEAR 300
+#define JUMP_END 400
 int rest = 0;
 
 void setSpeed( pPhysicsElement element )
@@ -61,7 +66,45 @@ void setSpeed( pPhysicsElement element )
 		return;
 	if (element->levelObject == level->choosenPlayer)
 	{
-		//Moving the player
+		//Moving the player Y
+		if (spGetInput()->button[SP_BUTTON_LEFT] || (in_jump && in_jump <= MIN_JUMP_TIME))
+		{
+			int i;
+			for (i = 0; i < PHYSICS_STEP; i++)
+			{
+				if (element->had_collision & 2) //collision on top
+					in_jump = 0;
+				else
+				if (in_jump)
+				{
+					if (in_jump < JUMP_LINEAR)
+					{
+						in_jump++;
+						element->speed.y-=JUMP_HIGH;
+						element->freeFallCounter = 0;
+					}
+					else
+					if (in_jump < JUMP_END)
+					{
+						in_jump++;
+						element->speed.y-=JUMP_HIGH*(JUMP_END-in_jump)/(JUMP_END-JUMP_LINEAR);
+						element->freeFallCounter = 0;
+					}
+					else
+						in_jump = 0;
+				}
+				else
+				if (element->had_collision & 8) //ground collision
+					in_jump = 1;
+				else
+				if (in_jump > MIN_JUMP_TIME)
+					in_jump = 0;
+			}
+		}
+		else
+			in_jump = 0;
+
+		//Moving the player X
 		if (spGetInput()->axis[0] < 0)
 		{
 			if (last_run >= 0)
@@ -165,6 +208,7 @@ int calc_schizo( Uint32 steps )
 	for (i = 0; i < physics_steps; i++)
 			doPhysics(PHYSICS_STEP,setSpeed,gravFeedback,yFeedback,xFeedback,level);
 	rest = (steps + rest) % PHYSICS_STEP;
+	
 	//Visualization stuff
 	rotation+=steps*16;
 	updateLevelObjects();

@@ -25,10 +25,10 @@ Ziz:
 - In-Game Hilfe in ersten Leveln zum Klonen (kein Text, entweder Pfeil-Overlays "Klick here to clone this" oder Bilder im Hintergrund)
 
 Physics (in German, because Chatlog):
-- wichtig, dass jede Beschleunigung limitiert und das sogar recht
++ wichtig, dass jede Beschleunigung limitiert und das sogar recht
   strinkt, also üblicherweise fällt man nie schneller als man
   hochspringt oder sich vorwärts bewegt
-- Bewegungen in der Horizontalen sollten Beschleunigt sein, aber
++ Bewegungen in der Horizontalen sollten Beschleunigt sein, aber
   wirklich nur minimal, d.h. das man nach wenigen Frames schon bei
   Maximalgeschwindigkeit ist
 - Springen sollte variabel sein, d.h. die Figur sollte aufhören zu
@@ -36,7 +36,7 @@ Physics (in German, because Chatlog):
   frames noch nach oben abbremsen), der Sprung kann dabei ruhig ein
   paar Frames dauern (d.h. nicht zu schnell steigen), damit man Zeit hat
   das zu steuern, der Umkehrpunkt sollte aber nicht zu lange dauern
-- eine gewisse Mindestsprunghöhe ist noch ganz sinnvoll
++ eine gewisse Mindestsprunghöhe ist noch ganz sinnvoll
 
 Foxblock:
 - Teamlogo

@@ -233,6 +233,8 @@ pPhysicsCollision getYCollision(pPhysicsElement element)
 			}
 			if (collision)
 			{
+				collision->element[0]->had_collision = collision->element[0]->had_collision | collision->hitPosition[0];
+				collision->element[1]->had_collision = collision->element[1]->had_collision | collision->hitPosition[1];
 				if (firstCollision)
 				{
 					collision->next = firstCollision->next;
@@ -296,6 +298,8 @@ pPhysicsCollision getXCollision(pPhysicsElement element)
 			}
 			if (collision)
 			{
+				collision->element[0]->had_collision = collision->element[0]->had_collision | collision->hitPosition[0];
+				collision->element[1]->had_collision = collision->element[1]->had_collision | collision->hitPosition[1];
 				if (firstCollision)
 				{
 					collision->next = firstCollision->next;
@@ -318,7 +322,7 @@ pPhysicsCollision getXCollision(pPhysicsElement element)
 	return firstCollision;
 }
 
-pPhysicsCollision getYCollisionChain()
+pPhysicsCollision getCollisionChain(pPhysicsCollision (*getCollisionFunction) (pPhysicsElement element))
 {
 	pPhysicsCollision firstCollision = NULL;
 	pPhysicsElement element = firstMoveableElement;
@@ -328,39 +332,7 @@ pPhysicsCollision getYCollisionChain()
 		if (element->gravitation)
 		{
 			//Searching the possible collision partners:
-			pPhysicsCollision first = getYCollision(element);
-			if (first)
-			{
-				pPhysicsCollision last = first->prev;
-				if (firstCollision)
-				{
-					firstCollision->prev->next = first;
-					first->prev = firstCollision->prev;
-					last->next = firstCollision;
-					firstCollision->prev = last;
-					firstCollision = first;
-				}
-				else
-					firstCollision = first;
-			}
-		}
-		element = element->next;
-	}
-	while (element != firstMoveableElement);	
-	return firstCollision;
-}
-
-pPhysicsCollision getXCollisionChain()
-{
-	pPhysicsCollision firstCollision = NULL;
-	pPhysicsElement element = firstMoveableElement;
-	if (element)
-	do
-	{
-		if (element->gravitation)
-		{
-			//Searching the possible collision partners:
-			pPhysicsCollision first = getXCollision(element);
+			pPhysicsCollision first = getCollisionFunction(element);
 			if (first)
 			{
 				pPhysicsCollision last = first->prev;
@@ -423,6 +395,7 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 		element->speed.x = 0;
 		element->speed.y = 0;
 		setSpeed(element);
+		element->had_collision = 0;
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
@@ -437,7 +410,17 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	do
 	{
 		if (element->gravitation)
-			element->position.y += 128*TimeForOneStep; //TODO: real gravitation!
+		{
+			int i;
+			for (i = 0; i<TimeForOneStep; i++)
+			{
+				if (element->freeFallCounter < 200)
+					element->position.y += element->freeFallCounter*2;
+				else
+					element->position.y += 400;
+				element->freeFallCounter++;
+			}
+		}
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
@@ -447,7 +430,7 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	{
 		collision_detected = 0;
 		//I: collision detecting
-		pPhysicsCollision firstCollision = getYCollisionChain();
+		pPhysicsCollision firstCollision = getCollisionChain(getYCollision);
 		
 		//I: external collision handling
 		pPhysicsCollision collision = firstCollision;
@@ -521,6 +504,92 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	// Step II: Y-Movement //
 	/////////////////////////
 	
+	//II: force impact
+	element = firstMoveableElement;
+	if (element)
+	do
+	{
+		if (element->moveable)
+			element->position.y += element->speed.y;
+		element = element->next;
+	}
+	while (element != firstMoveableElement);
+		
+	collision_detected = 1;
+	while (collision_detected)
+	{
+		collision_detected = 0;
+		//II: collision detecting
+		pPhysicsCollision firstCollision = getCollisionChain(getYCollision);
+		
+		//II: external collision handling
+		pPhysicsCollision collision = firstCollision;
+		if (collision)
+		do
+		{
+			pPhysicsCollision next = collision->next; //Saving because maybe it will be freeed by the feedback function
+			if (yFeedback(collision) && collision == next) //deleted AND only one collision
+			{
+				firstCollision = NULL;
+				break;
+			}
+			collision = next;
+		}
+		while (collision != firstCollision);	
+		
+		//II: internal collision handling
+		collision = firstCollision;
+		if (collision)
+		{
+			collision_detected = 1;
+			do
+			{
+				if (collision->element[0]->moveable)
+					collision->element[0]->position.y = collision->element[0]->backupPosition.y;
+				if (collision->element[1]->moveable)
+					collision->element[1]->position.y = collision->element[1]->backupPosition.y;
+				collision = collision->next;
+			}
+			while (collision != firstCollision);	
+		}
+
+		//II: Removing killed elements (and the level objects if exist)	
+		int somewhat_killed = 1;
+		while (somewhat_killed)
+		{
+			somewhat_killed = 0;
+			element = firstMoveableElement;
+			if (element)
+			do
+			{
+				pPhysicsElement next = element->next;
+				if (element->killed)
+				{
+					if (element == element->next)
+						firstMoveableElement = NULL;
+					else
+					{
+						element->prev->next = element->next;
+						element->next->prev = element->prev;
+						if (firstMoveableElement == element)
+							firstMoveableElement = element->next;
+					}
+					if (element->levelObject)
+					{
+						removeObject(element->levelObject,level);
+					}
+					free(element);
+					somewhat_killed = 1;
+					break;
+				}
+				element = next;
+			}
+			while (element != firstMoveableElement);
+		}
+		
+		//II: Removing the chain
+		clearCollisionChain(firstCollision);
+	}
 	
 	//////////////////////////
 	// Step III: X-Movement //
@@ -542,7 +611,7 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	{
 		collision_detected = 0;
 		//III: collision detecting
-		pPhysicsCollision firstCollision = getXCollisionChain();
+		pPhysicsCollision firstCollision = getCollisionChain(getXCollision);
 		
 		//III: external collision handling
 		pPhysicsCollision collision = firstCollision;
@@ -611,6 +680,20 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 		//III: Removing the chain
 		clearCollisionChain(firstCollision);
 	}
+	
+	//Setting the free fall counter
+	element = firstMoveableElement;
+	if (element)
+	do
+	{
+		if (element->gravitation)
+		{
+			if (element->had_collision & 8) //ground collision
+				element->freeFallCounter = 0;
+		}
+		element = element->next;
+	}
+	while (element != firstMoveableElement);	
 }
 
 #ifdef COUNT_COLLISION
