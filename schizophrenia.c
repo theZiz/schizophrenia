@@ -66,6 +66,7 @@ void setSpeed( pPhysicsElement element )
 		return;
 	if (element->levelObject == level->choosenPlayer)
 	{
+		printf("%i\n",element->freeFallCounter);
 		//Moving the player Y
 		if (spGetInput()->button[SP_BUTTON_LEFT] || (in_jump && in_jump <= MIN_JUMP_TIME))
 		{
@@ -107,11 +108,12 @@ void setSpeed( pPhysicsElement element )
 		//Moving the player X
 		if (spGetInput()->axis[0] < 0)
 		{
-			if (last_run >= 0)
-			{
+			if (in_jump || element->freeFallCounter)
+				spSelectSprite(level->choosenPlayer->animation,"jump left");
+			else
 				spSelectSprite(level->choosenPlayer->animation,"run left");
+			if (last_run >= 0)
 				last_run = 0;
-			}
 			last_run-=PHYSICS_STEP;
 			if (last_run > -128)
 				element->speed.x = last_run*2;
@@ -121,11 +123,12 @@ void setSpeed( pPhysicsElement element )
 		else
 		if (spGetInput()->axis[0] > 0)
 		{
-			if (last_run <= 0)
-			{
+			if (in_jump || element->freeFallCounter)
+				spSelectSprite(level->choosenPlayer->animation,"jump right");
+			else
 				spSelectSprite(level->choosenPlayer->animation,"run right");
+			if (last_run <= 0)
 				last_run = 0;
-			}
 			last_run+=PHYSICS_STEP;
 			if (last_run < 128)
 				element->speed.x = last_run*2;
@@ -133,16 +136,47 @@ void setSpeed( pPhysicsElement element )
 				element->speed.x = 256;
 		}
 		else
-		if (last_run < 0)
 		{
-			spSelectSprite(level->choosenPlayer->animation,"stand left");
-			last_run = 0;
+			if (element->lastDirection < 0)
+			{
+				if (in_jump || element->freeFallCounter)
+					spSelectSprite(element->levelObject->animation,"jump left");
+				else
+					spSelectSprite(element->levelObject->animation,"stand left");
+			}
+			else
+			if (element->lastDirection > 0)
+			{
+				if (in_jump || element->freeFallCounter)
+					spSelectSprite(element->levelObject->animation,"jump right");
+				else
+					spSelectSprite(element->levelObject->animation,"stand right");
+			}
+			if (last_run < 0)
+				last_run = 0;
+			else
+			if (last_run > 0)
+				last_run = 0;
+		}
+	}
+	//Setting the correct sprite
+	else
+	if (element->levelObject->type == PLAYER)
+	{
+		if (element->lastDirection < 0)
+		{
+			if (element->freeFallCounter)
+				spSelectSprite(element->levelObject->animation,"jump left");
+			else
+				spSelectSprite(element->levelObject->animation,"stand left");
 		}
 		else
-		if (last_run > 0)
+		if (element->lastDirection > 0)
 		{
-			spSelectSprite(level->choosenPlayer->animation,"stand right");
-			last_run = 0;
+			if (element->freeFallCounter)
+				spSelectSprite(element->levelObject->animation,"jump right");
+			else
+				spSelectSprite(element->levelObject->animation,"stand right");
 		}
 	}
 }
@@ -193,11 +227,13 @@ int calc_schizo( Uint32 steps )
 	{
 		spGetInput()->button[SP_BUTTON_R] = 0;
 		level->choosenPlayer = level->choosenPlayer->prev;
+		in_jump = 0;
 	}
 	if (spGetInput()->button[SP_BUTTON_L])
 	{
 		spGetInput()->button[SP_BUTTON_L] = 0;
 		level->choosenPlayer = level->choosenPlayer->next;
+		in_jump = 0;
 	}
 	if ( spGetInput()->button[SP_BUTTON_START] )
 		return 1;

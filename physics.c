@@ -32,6 +32,7 @@ pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 	element->position.y = py;
 	element->backupPosition.x = px;
 	element->backupPosition.y = py;
+	element->lastDirection = 1;
 	element->w = w;
 	element->h = h;
 	element->speed.x = 0;
@@ -375,20 +376,9 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	#ifdef COUNT_COLLISION
 	collision_tests = 0;
 	#endif
-	//Backup the position and killing
+
+	//Settings every elements speed; Backup the position and killing
 	pPhysicsElement element = firstMoveableElement;
-	if (element)
-	do
-	{
-		element->backupPosition.x = element->position.x;
-		element->backupPosition.y = element->position.y;
-		element->killed = 0;
-		element = element->next;
-	}
-	while (element != firstMoveableElement);
-	
-	//Settings every elements speed.
-	element = firstMoveableElement;
 	if (element)
 	do
 	{
@@ -396,6 +386,9 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 		element->speed.y = 0;
 		setSpeed(element);
 		element->had_collision = 0;
+		element->backupPosition.x = element->position.x;
+		element->backupPosition.y = element->position.y;
+		element->killed = 0;
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
@@ -414,8 +407,8 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 			int i;
 			for (i = 0; i<TimeForOneStep; i++)
 			{
-				if (element->freeFallCounter < 200)
-					element->position.y += element->freeFallCounter*2;
+				if (element->freeFallCounter < 100)
+					element->position.y += element->freeFallCounter*4;
 				else
 					element->position.y += 400;
 				element->freeFallCounter++;
@@ -601,7 +594,11 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	do
 	{
 		if (element->moveable)
+		{
 			element->position.x += element->speed.x*TimeForOneStep;
+			if (element->speed.x)
+				element->lastDirection = element->speed.x;
+		}
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
@@ -689,7 +686,12 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 		if (element->gravitation)
 		{
 			if (element->had_collision & 8) //ground collision
-				element->freeFallCounter = 0;
+			{
+				if (element->freeFallCounter > TimeForOneStep+1)
+					element->freeFallCounter = 1;
+				else
+					element->freeFallCounter = 0;
+			}
 		}
 		element = element->next;
 	}
