@@ -942,15 +942,6 @@ void drawLevel(pLevel level)
 		}
 	}
 
-	//DEBUG
-	spLine(screenWidth/2-5,screenHeight/2,-1,screenWidth/2+5,screenHeight/2,-1,0);
-	spLine(screenWidth/2,screenHeight/2-5,-1,screenWidth/2,screenHeight/2+5,-1,0);
-	int dx = level->targetCamera.x-level->actualCamera.x >> SP_ACCURACY - 5;
-	int dy = level->targetCamera.y-level->actualCamera.y >> SP_ACCURACY - 5;
-	spLine(screenWidth/2-5+dx,screenHeight/2+dy,-1,screenWidth/2+5+dx,screenHeight/2+dy,-1,0);
-	spLine(screenWidth/2+dx,screenHeight/2-5+dy,-1,screenWidth/2+dx,screenHeight/2+5+dy,-1,12345);
-
-
 	spSetVerticalOrigin(SP_CENTER);
 	spSetHorizontalOrigin(SP_CENTER);
 }

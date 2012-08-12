@@ -53,7 +53,7 @@ void draw_schizo( void )
 Sint32 rotation = 0;
 Sint32 last_run = 0;
 Sint32 in_jump = 0;
-#define PHYSICS_STEP 10
+#define PHYSICS_STEP 2
 #define MIN_JUMP_TIME 150
 #define JUMP_HIGH 400
 #define JUMP_LINEAR 300
