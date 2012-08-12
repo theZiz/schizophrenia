@@ -57,7 +57,7 @@ Sint32 in_jump = 0;
 #define MIN_JUMP_TIME 150
 #define JUMP_HIGH 400
 #define JUMP_LINEAR 300
-#define JUMP_END 400
+#define JUMP_END 500
 int rest = 0;
 
 void setSpeed( pPhysicsElement element )
