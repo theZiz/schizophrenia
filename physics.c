@@ -214,8 +214,8 @@ inline void testAndAddCollisionY(pPhysicsElement element,pPhysicsElement partner
 	{
 		pPhysicsCollision collision = NULL;
 		//partner over element
-		if (element->backupPosition.y >= partner->backupPosition.y + partner->h &&
-			element->      position.y <  partner->      position.y + partner->h)
+		if (element->backupPosition.y + EXTRA_GRAVITATION_GAP >= partner->backupPosition.y + partner->h &&
+			element->      position.y + EXTRA_GRAVITATION_GAP <  partner->      position.y + partner->h)
 		{
 			if ((element->permeability & 2) && (partner->permeability & 8))
 			{
@@ -227,8 +227,8 @@ inline void testAndAddCollisionY(pPhysicsElement element,pPhysicsElement partner
 			}
 		}
 		else
-		if (partner->backupPosition.y >= element->backupPosition.y + element->h &&
-			partner->      position.y <  element->      position.y + element->h)
+		if (partner->backupPosition.y + EXTRA_GRAVITATION_GAP >= element->backupPosition.y + element->h &&
+			partner->      position.y + EXTRA_GRAVITATION_GAP <  element->      position.y + element->h)
 		{
 			if ((element->permeability & 8) && (partner->permeability & 2))
 			{
@@ -266,8 +266,8 @@ inline void testAndAddCollisionX(pPhysicsElement element,pPhysicsElement partner
 	#ifdef COUNT_COLLISION
 	collision_tests++;
 	#endif
-	if (element->position.y >= partner->position.y && element->position.y < partner->position.y + partner->h ||
-			partner->position.y >= element->position.y && partner->position.y < element->position.y + element->h)
+	if (element->position.y + EXTRA_GRAVITATION_GAP >= partner->position.y && element->position.y + EXTRA_GRAVITATION_GAP < partner->position.y + partner->h ||
+	    partner->position.y + EXTRA_GRAVITATION_GAP >= element->position.y && partner->position.y + EXTRA_GRAVITATION_GAP < element->position.y + element->h)
 	{
 		pPhysicsCollision collision = NULL;
 		//partner left of element

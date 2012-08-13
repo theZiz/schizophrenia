@@ -58,14 +58,6 @@ Sint32 rotation = 0;
 Sint32 last_run = 0;
 Sint32 in_jump = 0;
 int can_jump = 1;
-#define PHYSICS_STEP 1
-#define JUMP_FORCE 2*GRAVITY_MAX
-// Times are consecutive (relative, not absolute)
-#define JUMP_MIN_TIME 100
-#define JUMP_UPWARDS_TIME 300
-#define JUMP_END_TIME 550
-#define MAX_MOVEMENT_FORCE 350
-#define MOVEMENT_ACCEL 2
 
 int rest = 0;
 

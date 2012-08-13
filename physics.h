@@ -23,9 +23,7 @@
 #define _PHYSIC_H
 
 #include <sparrow3d.h>
-
-#define GRAVITY_MAX 600
-#define GRAVITY_COUNTER 0
+#include "global_defines.h"
 
 typedef struct sPhysicsElement *pPhysicsElement;
 typedef struct sPhysicsCollision *pPhysicsCollision;
