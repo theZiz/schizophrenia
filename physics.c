@@ -458,8 +458,6 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 		element->backupPosition.x = element->position.x;
 		element->backupPosition.y = element->position.y;
 		element->killed = 0;
-		element->was_moved.x = 0;
-		element->was_moved.y = 0;
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
