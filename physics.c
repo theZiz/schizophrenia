@@ -23,6 +23,8 @@
 
 pPhysicsElement firstMoveableElement = NULL;
 pPhysicsElement firstStaticElement = NULL;
+pPhysicsElement *staticElementLoopUp = NULL;
+int staticElementLoopUpX,staticElementLoopUpY;
 
 pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 			int moveable,int gravitation,int superPower,pLevelObject levelObject)
@@ -89,6 +91,9 @@ pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 void createPhysicsFromLevel(pLevel level)
 {
 	//Tiles
+	staticElementLoopUpX = level->layer.physics.width;
+	staticElementLoopUpY = level->layer.physics.height;
+	staticElementLoopUp = (pPhysicsElement*)malloc(sizeof(pPhysicsElement)*staticElementLoopUpX*staticElementLoopUpY);
 	int i;
 	for (i = 0; i < level->layer.physics.height * level->layer.physics.width; i++)
 	{
@@ -98,7 +103,10 @@ void createPhysicsFromLevel(pLevel level)
 		{
 			pPhysicsElement element = createPhysicsElement(x,y,SP_ONE,SP_ONE,0,0,0,NULL);
 			element->permeability = level->layer.physics.tile[i].nr;
+			staticElementLoopUp[i] = element;
 		}
+		else
+			staticElementLoopUp[i] = NULL;
 	}
 	//Objects
 	pLevelObjectGroup group = level->firstObjectGroup;
@@ -171,6 +179,8 @@ void clearPhysics()
 	}
 	while (element != firstMoveableElement);
 	firstMoveableElement = NULL;
+	if (staticElementLoopUp)
+		free(staticElementLoopUp);
 }
 
 void updateLevelObjects()
@@ -194,203 +204,207 @@ void updateLevelObjects()
 int collision_tests;
 #endif
 
-pPhysicsCollision getGravCollision(pPhysicsElement element)
+inline void testAndAddCollisionY(pPhysicsElement element,pPhysicsElement partner,pPhysicsCollision *firstCollision)
 {
-	if (element->gravitation == 0)
-		return NULL;
-	pPhysicsCollision firstCollision = NULL;
-	pPhysicsElement partner = firstStaticElement;
-	while (partner != firstMoveableElement)
+	#ifdef COUNT_COLLISION
+	collision_tests++;
+	#endif
+	if (element->position.x >= partner->position.x && element->position.x < partner->position.x + partner->w ||
+		partner->position.x >= element->position.x && partner->position.x < element->position.x + element->w)
 	{
-		#ifdef COUNT_COLLISION
-		collision_tests++;
-		#endif
-		if (element->position.x >= partner->position.x && element->position.x < partner->position.x + partner->w ||
-				partner->position.x >= element->position.x && partner->position.x < element->position.x + element->w)
+		pPhysicsCollision collision = NULL;
+		//partner over element
+		if (element->backupPosition.y >= partner->backupPosition.y + partner->h &&
+			element->      position.y <  partner->      position.y + partner->h)
 		{
-			pPhysicsCollision collision = NULL;
-			//partner over element
-			if (element->backupPosition.y >= partner->backupPosition.y + partner->h &&
-					element->      position.y <   partner->      position.y + partner->h)
+			if ((element->permeability & 2) && (partner->permeability & 8))
 			{
-				if ((element->permeability & 2) && (partner->permeability & 8))
-				{
-					collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
-					collision->element[0] = element;
-					collision->hitPosition[0] = 2; //UP
-					collision->element[1] = partner;
-					collision->hitPosition[1] = 8; //DOWN
-				}
-			}
-			else
-			if (partner->backupPosition.y >= element->backupPosition.y + element->h &&
-					partner->      position.y <   element->      position.y + element->h)
-			{
-				if ((element->permeability & 8) && (partner->permeability & 2))
-				{
-					collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
-					collision->element[0] = element;
-					collision->hitPosition[0] = 8; //DOWN
-					collision->element[1] = partner;
-					collision->hitPosition[1] = 2; //UP
-				}
-			}
-			if (collision)
-			{
-				collision->element[0]->had_collision = collision->element[0]->had_collision | collision->hitPosition[0];
-				collision->element[1]->had_collision = collision->element[1]->had_collision | collision->hitPosition[1];
-				if (firstCollision)
-				{
-					collision->next = firstCollision->next;
-					collision->prev = firstCollision->prev;
-					firstCollision->prev->next = collision;
-					firstCollision->next->prev = collision;
-				}
-				else
-				{
-					collision->next = collision;
-					collision->prev = collision;
-				}
-				firstCollision = collision;
+				collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
+				collision->element[0] = element;
+				collision->hitPosition[0] = 2; //UP
+				collision->element[1] = partner;
+				collision->hitPosition[1] = 8; //DOWN
 			}
 		}
-		partner = partner->next;
-		if (partner == firstStaticElement)
-			partner = element->next;
+		else
+		if (partner->backupPosition.y >= element->backupPosition.y + element->h &&
+			partner->      position.y <  element->      position.y + element->h)
+		{
+			if ((element->permeability & 8) && (partner->permeability & 2))
+			{
+				collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
+				collision->element[0] = element;
+				collision->hitPosition[0] = 8; //DOWN
+				collision->element[1] = partner;
+				collision->hitPosition[1] = 2; //UP
+			}
+		}
+		if (collision)
+		{
+			collision->element[0]->had_collision = collision->element[0]->had_collision | collision->hitPosition[0];
+			collision->element[1]->had_collision = collision->element[1]->had_collision | collision->hitPosition[1];
+			if (*firstCollision)
+			{
+				collision->next = (*firstCollision)->next;
+				collision->prev = (*firstCollision)->prev;
+				(*firstCollision)->prev->next = collision;
+				(*firstCollision)->next->prev = collision;
+			}
+			else
+			{
+				collision->next = collision;
+				collision->prev = collision;
+			}
+			(*firstCollision) = collision;
+		}
 	}
-	return firstCollision;
+
+}
+
+inline void testAndAddCollisionX(pPhysicsElement element,pPhysicsElement partner,pPhysicsCollision *firstCollision)
+{
+	#ifdef COUNT_COLLISION
+	collision_tests++;
+	#endif
+	if (element->position.y >= partner->position.y && element->position.y < partner->position.y + partner->h ||
+			partner->position.y >= element->position.y && partner->position.y < element->position.y + element->h)
+	{
+		pPhysicsCollision collision = NULL;
+		//partner left of element
+		if (element->backupPosition.x >= partner->backupPosition.x + partner->w &&
+				element->      position.x <  partner->      position.x + partner->w)
+		{
+			if ((element->permeability & 1) && (partner->permeability & 4))
+			{
+				collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
+				collision->element[0] = element;
+				collision->hitPosition[0] = 1; //LEFT
+				collision->element[1] = partner;
+				collision->hitPosition[1] = 4; //RIGHT
+			}
+		}
+		else
+		if (partner->backupPosition.x >= element->backupPosition.x + element->w &&
+				partner->      position.x <  element->      position.x + element->w)
+		{
+			if ((element->permeability & 4) && (partner->permeability & 1))
+			{
+				collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
+				collision->element[0] = element;
+				collision->hitPosition[0] = 4; //RIGHT
+				collision->element[1] = partner;
+				collision->hitPosition[1] = 1; //LEFT
+			}
+		}
+		if (collision)
+		{
+			collision->element[0]->had_collision = collision->element[0]->had_collision | collision->hitPosition[0];
+			collision->element[1]->had_collision = collision->element[1]->had_collision | collision->hitPosition[1];
+			if (*firstCollision)
+			{
+				collision->next = (*firstCollision)->next;
+				collision->prev = (*firstCollision)->prev;
+				(*firstCollision)->prev->next = collision;
+				(*firstCollision)->next->prev = collision;
+			}
+			else
+			{
+				collision->next = collision;
+				collision->prev = collision;
+			}
+			(*firstCollision) = collision;
+		}
+	}	
 }
 
 pPhysicsCollision getYCollision(pPhysicsElement element)
 {
-	if (element->speed.y == 0)
-		return NULL;
 	pPhysicsCollision firstCollision = NULL;
-	pPhysicsElement partner = firstStaticElement;
+	//movable collision
+	pPhysicsElement partner = element->next;
 	while (partner != firstMoveableElement)
 	{
-		#ifdef COUNT_COLLISION
-		collision_tests++;
-		#endif
-		if (element->position.x >= partner->position.x && element->position.x < partner->position.x + partner->w ||
-				partner->position.x >= element->position.x && partner->position.x < element->position.x + element->w)
-		{
-			pPhysicsCollision collision = NULL;
-			//partner over element
-			if (element->backupPosition.y >= partner->backupPosition.y + partner->h &&
-					element->      position.y <   partner->      position.y + partner->h)
-			{
-				if ((element->permeability & 2) && (partner->permeability & 8))
-				{
-					collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
-					collision->element[0] = element;
-					collision->hitPosition[0] = 2; //UP
-					collision->element[1] = partner;
-					collision->hitPosition[1] = 8; //DOWN
-				}
-			}
-			else
-			if (partner->backupPosition.y >= element->backupPosition.y + element->h &&
-					partner->      position.y <   element->      position.y + element->h)
-			{
-				if ((element->permeability & 8) && (partner->permeability & 2))
-				{
-					collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
-					collision->element[0] = element;
-					collision->hitPosition[0] = 8; //DOWN
-					collision->element[1] = partner;
-					collision->hitPosition[1] = 2; //UP
-				}
-			}
-			if (collision)
-			{
-				collision->element[0]->had_collision = collision->element[0]->had_collision | collision->hitPosition[0];
-				collision->element[1]->had_collision = collision->element[1]->had_collision | collision->hitPosition[1];
-				if (firstCollision)
-				{
-					collision->next = firstCollision->next;
-					collision->prev = firstCollision->prev;
-					firstCollision->prev->next = collision;
-					firstCollision->next->prev = collision;
-				}
-				else
-				{
-					collision->next = collision;
-					collision->prev = collision;
-				}
-				firstCollision = collision;
-			}
-		}
+		testAndAddCollisionY(element,partner,&firstCollision);
 		partner = partner->next;
-		if (partner == firstStaticElement)
-			partner = element->next;
+	}
+	//static collision
+	if (staticElementLoopUp)
+	{
+		//Searching the near static elements
+		int x_start = (element->position.x >> SP_ACCURACY)-1;
+		int y_start = (element->position.y >> SP_ACCURACY)-1;
+		int x_end = (element->position.x + element->w >> SP_ACCURACY)+1;
+		int y_end = (element->position.y + element->h >> SP_ACCURACY)+1;
+
+		if (x_start >= staticElementLoopUpX)
+			return firstCollision;
+		if (y_start >= staticElementLoopUpY)
+			return firstCollision;
+		if (x_start < 0)
+			x_start = 0;
+		if (y_start < 0)
+			y_start = 0;
+			
+		if (x_end < 0)
+			return firstCollision;
+		if (y_end < 0)
+			return firstCollision;
+		if (x_end >= staticElementLoopUpX)
+			x_end = staticElementLoopUpX-1;
+		if (y_end >= staticElementLoopUpY)
+			y_end = staticElementLoopUpY-1;
+		
+		int x,y;
+		for (x = x_start; x <= x_end; x++)
+			for (y = y_start; y <= y_end; y++)
+				if (staticElementLoopUp[x+y*staticElementLoopUpX])
+					testAndAddCollisionY(element,staticElementLoopUp[x+y*staticElementLoopUpX],&firstCollision);
 	}
 	return firstCollision;
 }
 
 pPhysicsCollision getXCollision(pPhysicsElement element)
 {
-	if (element->speed.x == 0)
-		return NULL;
 	pPhysicsCollision firstCollision = NULL;
-	pPhysicsElement partner = firstStaticElement;
+	//movable collision
+	pPhysicsElement partner = element->next;
 	while (partner != firstMoveableElement)
 	{
-		#ifdef COUNT_COLLISION
-		collision_tests++;
-		#endif
-		if (element->position.y >= partner->position.y && element->position.y < partner->position.y + partner->h ||
-				partner->position.y >= element->position.y && partner->position.y < element->position.y + element->h)
-		{
-			pPhysicsCollision collision = NULL;
-			//partner left of element
-			if (element->backupPosition.x >= partner->backupPosition.x + partner->w &&
-					element->      position.x <  partner->      position.x + partner->w)
-			{
-				if ((element->permeability & 1) && (partner->permeability & 4))
-				{
-					collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
-					collision->element[0] = element;
-					collision->hitPosition[0] = 1; //LEFT
-					collision->element[1] = partner;
-					collision->hitPosition[1] = 4; //RIGHT
-				}
-			}
-			else
-			if (partner->backupPosition.x >= element->backupPosition.x + element->w &&
-					partner->      position.x <  element->      position.x + element->w)
-			{
-				if ((element->permeability & 4) && (partner->permeability & 1))
-				{
-					collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
-					collision->element[0] = element;
-					collision->hitPosition[0] = 4; //RIGHT
-					collision->element[1] = partner;
-					collision->hitPosition[1] = 1; //LEFT
-				}
-			}
-			if (collision)
-			{
-				collision->element[0]->had_collision = collision->element[0]->had_collision | collision->hitPosition[0];
-				collision->element[1]->had_collision = collision->element[1]->had_collision | collision->hitPosition[1];
-				if (firstCollision)
-				{
-					collision->next = firstCollision->next;
-					collision->prev = firstCollision->prev;
-					firstCollision->prev->next = collision;
-					firstCollision->next->prev = collision;
-				}
-				else
-				{
-					collision->next = collision;
-					collision->prev = collision;
-				}
-				firstCollision = collision;
-			}
-		}
+		testAndAddCollisionX(element,partner,&firstCollision);
 		partner = partner->next;
-		if (partner == firstStaticElement)
-			partner = element->next;
+	}
+	//static collision
+	if (staticElementLoopUp)
+	{
+		//Searching the near static elements
+		int x_start = (element->position.x >> SP_ACCURACY)-1;
+		int y_start = (element->position.y >> SP_ACCURACY)-1;
+		int x_end = (element->position.x + element->w >> SP_ACCURACY)+1;
+		int y_end = (element->position.y + element->h >> SP_ACCURACY)+1;
+
+		if (x_start >= staticElementLoopUpX)
+			return firstCollision;
+		if (y_start >= staticElementLoopUpY)
+			return firstCollision;
+		if (x_start < 0)
+			x_start = 0;
+		if (y_start < 0)
+			y_start = 0;
+			
+		if (x_end < 0)
+			return firstCollision;
+		if (y_end < 0)
+			return firstCollision;
+		if (x_end >= staticElementLoopUpX)
+			x_end = staticElementLoopUpX-1;
+		if (y_end >= staticElementLoopUpY)
+			y_end = staticElementLoopUpY-1;
+		
+		int x,y;
+		for (x = x_start; x <= x_end; x++)
+			for (y = y_start; y <= y_end; y++)
+				if (staticElementLoopUp[x+y*staticElementLoopUpX])
+					testAndAddCollisionX(element,staticElementLoopUp[x+y*staticElementLoopUpX],&firstCollision);
 	}
 	return firstCollision;
 }
@@ -494,7 +508,7 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	{
 		collision_detected = 0;
 		//I: collision detecting
-		pPhysicsCollision firstCollision = getCollisionChain(getGravCollision);
+		pPhysicsCollision firstCollision = getCollisionChain(getYCollision);
 
 		//I: external collision handling
 		pPhysicsCollision collision = firstCollision;
