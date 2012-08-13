@@ -24,6 +24,9 @@
 
 #include <sparrow3d.h>
 
+#define GRAVITY_MAX 600
+#define GRAVITY_COUNTER 0
+
 typedef struct sPhysicsElement *pPhysicsElement;
 typedef struct sPhysicsCollision *pPhysicsCollision;
 
@@ -35,6 +38,7 @@ typedef struct sPhysicsElement {
 	int gravitation; //gravitation moves this element
 	int permeability; //bit,direction: 1,left 2,top 4,right 8,down (15 means solid, 0 transparent (doors, switches...))
 	int moveable; //x and y forces move this element.
+	struct {int x,y;} was_moved; //says, whether the element was moved an needs a collision check
 	int superPower;
 	int freeFallCounter;
 	int killed;

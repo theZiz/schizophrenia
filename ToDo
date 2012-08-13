@@ -3,6 +3,7 @@ Ziz:
 - Spieler stirbt, wenn ihn _irgendwas_ von oben trifft
 - Fade In/Out
 - Scale2x für die Pandora und PC
+  -> Resize des Fensters verändert nicht den Bildausschnitt sondern den Skalierungsfaktor mit dem gezeichnet wird
 - Quantenverschränktheit
 - freie Steuerungskonfiguration
 - Sound- und Bildeffekt wenn ein Physiker stirbt oder gelöscht wird
@@ -17,7 +18,7 @@ Ziz:
 - Nur klonen wenn man fest auf dem Boden steht (ist sonst zu leicht explotable), auf Platformen evtl auch
   -> Nur klonen wenn das zu klonende Objekt fest auf dem Boden steht
 - Nicht-klonbare Objekte und Bereiche durch Effekt darstellen (in der normalen Ansicht)
-  -> Klonbare Objekte besser hervorheben (Spieler haben nicht kapiert was sie zu tun haben), evtl Tips einblenden 
+  -> Klonbare Objekte besser hervorheben (Spieler haben nicht kapiert was sie zu tun haben), evtl Tips einblenden
      wenn Spieler länger stillsteht oder bei ersten Klonvorgängen "assistieren" (zB Markierung von nahen, klonbaren
      Objekten - "clone me")
 - Quantenverschränkte Objekte durch Effekt darstellen
