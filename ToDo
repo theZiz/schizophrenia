@@ -8,9 +8,11 @@ Ziz:
 - Energieanzeige
 - Klonbarparameter
 - Klonbare Objekte markieren
+  - Nichtklonbare auch?
 - Löschen
 - Klonen
 - Beachten von Nichtlöschenbereichen
+  - Zeichnen als beliebigfarbiges Schwirren von 1-Pixel-Partikeln
 - Puzzleteile anzeigen (+ gesammelte)
 - Puzzleteile sammeln
 
