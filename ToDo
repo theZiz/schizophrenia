@@ -14,6 +14,15 @@ Ziz:
 - Puzzleteile anzeigen (+ gesammelte)
 - Puzzleteile sammeln
 
+Foxblock:
+- Teamlogo
+- Vielleicht für die Collectibles noch eine Art "Schattenbild". Also nur die
+  Kontur, als eine Art... "Rahmen", wo die dann eingefügt werden, wenn man sie
+  findet.
+- Box-Todes Ani
+- Quantenverschränktheit-Effekt
+- Nicht-Klonbar-Effekt
+
 Details, die man irgendwann mal machen kann, was aber spieltechnisch kaum was ändert:
 - Scale2x für die Pandora und PC
 - Todesanimation abspielen wenn Objekt/Spieler stirbt
@@ -25,8 +34,6 @@ Details, die man irgendwann mal machen kann, was aber spieltechnisch kaum was ä
 - Musik
 - Cursor-Reichweite anzeigen
 	- Anzeige des Klon-Radius (Halbtransparenter Kreis)
-- Nur klonen wenn man fest auf dem Boden steht (ist sonst zu leicht explotable), auf Platformen evtl auch
-  -> Nur klonen wenn das zu klonende Objekt fest auf dem Boden steht
 - Nicht-klonbare Objekte und Bereiche durch Effekt darstellen (in der normalen Ansicht)
   -> Klonbare Objekte besser hervorheben (Spieler haben nicht kapiert was sie zu tun haben), evtl Tips einblenden 
      wenn Spieler länger stillsteht oder bei ersten Klonvorgängen "assistieren" (zB Markierung von nahen, klonbaren
@@ -34,15 +41,6 @@ Details, die man irgendwann mal machen kann, was aber spieltechnisch kaum was ä
 - Quantenverschränkte Objekte durch Effekt darstellen
 - Erzeuge Partikel wenn etwas zerstört wird, welche dann zur Fernbedienung fliegen (-> Verdeutlichung, dass diese dadurch aufgeladen wird)
 - In-Game Hilfe in ersten Leveln zum Klonen (kein Text, entweder Pfeil-Overlays "Klick here to clone this" oder Bilder im Hintergrund)
-
-Foxblock:
-- Teamlogo
-- Vielleicht für die Collectibles noch eine Art "Schattenbild". Also nur die
-  Kontur, als eine Art... "Rahmen", wo die dann eingefügt werden, wenn man sie
-  findet.
-- Box-Todes Ani
-- Quantenverschränktheit-Effekt
-- Nicht-Klonbar-Effekt
 
 Level:
 - Ideen? (Anspielungen, Themen aus der Physik, etc.)
@@ -52,3 +50,5 @@ Level:
 - freie Steuerungskonfiguration
 - Keine freie Bewegung des Klon/Destroy-Fadenkreuzes, sondern direkte Auswahl der Objekte in der Umgebung ???
 - Hintergründe? Oder doch sich selbst sehen? Würde das zumindest gerne mal ausprobieren.
+- Nur klonen wenn man fest auf dem Boden steht (ist sonst zu leicht explotable), auf Platformen evtl auch
+  -> Nur klonen wenn das zu klonende Objekt fest auf dem Boden steht
