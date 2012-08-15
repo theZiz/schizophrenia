@@ -70,7 +70,7 @@ void setSpeed( pPhysicsElement element )
 		//Moving the player Y
 		if ( spGetInput()->button[SP_BUTTON_LEFT] )
 		{
-			if ( in_jump == 0 && can_jump ) // start the jump
+			if ( in_jump == 0 && can_jump && (element->had_collision & 8) ) // start the jump
 				in_jump = 1;
 		}
 		else
