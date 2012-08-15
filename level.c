@@ -929,27 +929,52 @@ void drawLevel(pLevel level)
 				{
 					if (obj->animation)
 					{
-						int positionX = (obj->x >> SP_ACCURACY-5)+screenWidth/2-((level->actualCamera.x >> SP_ACCURACY -5));
-						int positionY = (obj->y >> SP_ACCURACY-5)+screenHeight/2-((level->actualCamera.y >> SP_ACCURACY -5));
+						int positionX = (obj->x >> SP_ACCURACY-5)+screenWidth/2
+						              - ((level->actualCamera.x >> SP_ACCURACY -5));
+						int positionY = (obj->y >> SP_ACCURACY-5)+screenHeight/2
+						              - ((level->actualCamera.y >> SP_ACCURACY -5));
 						spDrawSprite(positionX,positionY,-2,spActiveSprite(obj->animation));
-						//DEBUG INFORMATION
+						#ifdef DEBUG
 						if (obj->physicsElement)
 						{
 							int i;
 							for (i = 0; i < 4;i++)
 							{
+								int px=0,py=0;
+								switch (i)
+								{
+									case 0: py=-1; break;
+									case 1: px=-1; break;
+									case 2: py= 1; break;
+									case 3: px= 1; break;
+								}
+								Uint16 color = 0;
+								switch (i)
+								{
+									case 0: color = spGetRGB(255,0,0); break;
+									case 1: color = spGetRGB(0,255,0); break;
+									case 2: color = spGetRGB(0,0,255); break;
+									case 3: color = spGetRGB(255,255,0); break;
+								}
 								pPhysicsCollisionChain chain = obj->physicsElement->collisionChain[i];
 								while (chain)
 								{
 									pPhysicsElement partner = chain->element;
-									int partnerX = (partner->position.x >> SP_ACCURACY-5)+screenWidth/2-((level->actualCamera.x >> SP_ACCURACY -5));
-									int partnerY = (partner->position.y >> SP_ACCURACY-5)+screenHeight/2-((level->actualCamera.y >> SP_ACCURACY -5));
-									spLine(positionX+obj->w/2,positionY+obj->h/2,-2,
-										   partnerX+(partner->w >> SP_ACCURACY-5)/2,partnerY+(partner->h >> SP_ACCURACY-5)/2,-2,65535);
+									int partnerX = (partner->position.x >> SP_ACCURACY-5)
+									             +  screenWidth / 2
+									             - ((level->actualCamera.x >> SP_ACCURACY -5));
+									int partnerY = (partner->position.y >> SP_ACCURACY-5)
+									             + screenHeight/2
+									             - ((level->actualCamera.y >> SP_ACCURACY -5));
+									spLine(positionX+obj->w/2+px,
+									       positionY+obj->h/2+py,-2,
+									       partnerX+(partner->w >> SP_ACCURACY-5)/2+px,
+									       partnerY+(partner->h >> SP_ACCURACY-5)/2+py,-2,color);
 									chain = chain->next;
 								}
 							}
 						}
+						#endif
 					}
 					obj = obj->next;
 				}

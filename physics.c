@@ -215,6 +215,14 @@ void updateLevelObjects()
 int collision_tests;
 #endif
 
+#define deleteCollisionChain(first) \
+	while (first) \
+	{\
+		pPhysicsCollisionChain next = first->next; \
+		free(first); \
+		first = next; \
+	}
+
 inline void updateCollisionChain(pPhysicsElement element,pPhysicsElement partner,int hitPosition)
 {
 	//Choosing the chain of element
@@ -503,12 +511,7 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 		element->killed = 0;
 		int i;
 		for (i = 0; i < 4;i++)
-			while (element->collisionChain[i])
-			{
-				pPhysicsCollisionChain next = element->collisionChain[i]->next;
-				free(element->collisionChain[i]);
-				element->collisionChain[i] = next;
-			}
+			deleteCollisionChain(element->collisionChain[i]);
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
