@@ -45,6 +45,9 @@ pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 	element->freeFallCounter = 0;
 	element->moveable = moveable;
 	element->levelObject = levelObject;
+	int i;
+	for (i = 0; i < 4; i++)
+		element->collisionChain[i] = NULL;
 	if (levelObject)
 	{
 		levelObject->physicsElement = element;
@@ -174,6 +177,14 @@ void clearPhysics()
 		pPhysicsElement next = element->next;
 		if (element->levelObject)
 			element->levelObject->physicsElement = NULL;
+		int i;
+		for (i = 0; i < 4;i++)
+			while (element->collisionChain[i])
+			{
+				pPhysicsCollisionChain next = element->collisionChain[i]->next;
+				free(element->collisionChain[i]);
+				element->collisionChain[i] = next;
+			}
 		free(element);
 		element = next;
 	}
@@ -204,6 +215,48 @@ void updateLevelObjects()
 int collision_tests;
 #endif
 
+inline void updateCollisionChain(pPhysicsElement element,pPhysicsElement partner,int hitPosition)
+{
+	//Choosing the chain of element
+	pPhysicsCollisionChain* first = NULL;
+	switch (hitPosition)
+	{
+		case 1: first = &(element->collisionChain[0]); break;
+		case 2: first = &(element->collisionChain[1]); break;
+		case 4: first = &(element->collisionChain[2]); break;
+		case 8: first = &(element->collisionChain[3]); break;
+	}
+	//Searching partner in the chain
+	pPhysicsCollisionChain chain = (*first);
+	while (chain)
+	{
+		if (chain->element == partner)
+			break;
+		chain = chain->next;
+	}
+	if (chain == NULL) //not found, adding
+	{
+		chain = (pPhysicsCollisionChain)malloc(sizeof(tPhysicsCollisionChain));
+		chain->element = partner;
+		chain->next = (*first);
+		(*first) = chain;
+	}
+}
+
+inline pPhysicsCollision createCollision(pPhysicsElement element,pPhysicsElement partner,int elementHitPosition,int partnerHitPosition)
+{
+	pPhysicsCollision collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
+	collision->element[0] = element;
+	collision->hitPosition[0] = elementHitPosition;
+	collision->element[1] = partner;
+	collision->hitPosition[1] = partnerHitPosition;
+	
+	updateCollisionChain(element,partner,elementHitPosition);
+	updateCollisionChain(element,partner,partnerHitPosition);
+	
+	return collision;
+}
+
 inline void testAndAddCollisionY(pPhysicsElement element,pPhysicsElement partner,pPhysicsCollision *firstCollision)
 {
 	#ifdef COUNT_COLLISION
@@ -218,28 +271,16 @@ inline void testAndAddCollisionY(pPhysicsElement element,pPhysicsElement partner
 			element->      position.y + EXTRA_GRAVITATION_GAP <  partner->      position.y + partner->h)
 		{
 			if ((element->permeability & 2) && (partner->permeability & 8))
-			{
-				collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
-				collision->element[0] = element;
-				collision->hitPosition[0] = 2; //UP
-				collision->element[1] = partner;
-				collision->hitPosition[1] = 8; //DOWN
-			}
+				collision = createCollision(element,partner,2,8);
 		}
 		else
 		if (partner->backupPosition.y + EXTRA_GRAVITATION_GAP >= element->backupPosition.y + element->h &&
 			partner->      position.y + EXTRA_GRAVITATION_GAP <  element->      position.y + element->h)
 		{
 			if ((element->permeability & 8) && (partner->permeability & 2))
-			{
-				collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
-				collision->element[0] = element;
-				collision->hitPosition[0] = 8; //DOWN
-				collision->element[1] = partner;
-				collision->hitPosition[1] = 2; //UP
-			}
+				collision = createCollision(element,partner,8,2);
 		}
-		if (collision)
+		if (collision) //Inserting in the chain
 		{
 			collision->element[0]->had_collision = collision->element[0]->had_collision | collision->hitPosition[0];
 			collision->element[1]->had_collision = collision->element[1]->had_collision | collision->hitPosition[1];
@@ -275,28 +316,16 @@ inline void testAndAddCollisionX(pPhysicsElement element,pPhysicsElement partner
 				element->      position.x <  partner->      position.x + partner->w)
 		{
 			if ((element->permeability & 1) && (partner->permeability & 4))
-			{
-				collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
-				collision->element[0] = element;
-				collision->hitPosition[0] = 1; //LEFT
-				collision->element[1] = partner;
-				collision->hitPosition[1] = 4; //RIGHT
-			}
+				collision = createCollision(element,partner,1,4);
 		}
 		else
 		if (partner->backupPosition.x >= element->backupPosition.x + element->w &&
 				partner->      position.x <  element->      position.x + element->w)
 		{
 			if ((element->permeability & 4) && (partner->permeability & 1))
-			{
-				collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollision));
-				collision->element[0] = element;
-				collision->hitPosition[0] = 4; //RIGHT
-				collision->element[1] = partner;
-				collision->hitPosition[1] = 1; //LEFT
-			}
+				collision = createCollision(element,partner,4,1);
 		}
-		if (collision)
+		if (collision) //Inserting in the chain
 		{
 			collision->element[0]->had_collision = collision->element[0]->had_collision | collision->hitPosition[0];
 			collision->element[1]->had_collision = collision->element[1]->had_collision | collision->hitPosition[1];
@@ -472,6 +501,14 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 		element->backupPosition.x = element->position.x;
 		element->backupPosition.y = element->position.y;
 		element->killed = 0;
+		int i;
+		for (i = 0; i < 4;i++)
+			while (element->collisionChain[i])
+			{
+				pPhysicsCollisionChain next = element->collisionChain[i]->next;
+				free(element->collisionChain[i]);
+				element->collisionChain[i] = next;
+			}
 		element = element->next;
 	}
 	while (element != firstMoveableElement);

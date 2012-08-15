@@ -932,6 +932,24 @@ void drawLevel(pLevel level)
 						int positionX = (obj->x >> SP_ACCURACY-5)+screenWidth/2-((level->actualCamera.x >> SP_ACCURACY -5));
 						int positionY = (obj->y >> SP_ACCURACY-5)+screenHeight/2-((level->actualCamera.y >> SP_ACCURACY -5));
 						spDrawSprite(positionX,positionY,-2,spActiveSprite(obj->animation));
+						//DEBUG INFORMATION
+						if (obj->physicsElement)
+						{
+							int i;
+							for (i = 0; i < 4;i++)
+							{
+								pPhysicsCollisionChain chain = obj->physicsElement->collisionChain[i];
+								while (chain)
+								{
+									pPhysicsElement partner = chain->element;
+									int partnerX = (partner->position.x >> SP_ACCURACY-5)+screenWidth/2-((level->actualCamera.x >> SP_ACCURACY -5));
+									int partnerY = (partner->position.y >> SP_ACCURACY-5)+screenHeight/2-((level->actualCamera.y >> SP_ACCURACY -5));
+									spLine(positionX+obj->w/2,positionY+obj->h/2,-2,
+										   partnerX+(partner->w >> SP_ACCURACY-5)/2,partnerY+(partner->h >> SP_ACCURACY-5)/2,-2,65535);
+									chain = chain->next;
+								}
+							}
+						}
 					}
 					obj = obj->next;
 				}
