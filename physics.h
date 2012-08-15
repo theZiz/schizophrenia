@@ -23,8 +23,10 @@
 #define _PHYSIC_H
 
 #include <sparrow3d.h>
+#include "global_defines.h"
 
 typedef struct sPhysicsElement *pPhysicsElement;
+typedef struct sPhysicsCollisionChain *pPhysicsCollisionChain;
 typedef struct sPhysicsCollision *pPhysicsCollision;
 
 #include "level.h"
@@ -42,8 +44,14 @@ typedef struct sPhysicsElement {
 	int lastDirection;
 	LevelObjectType type;
 	pLevelObject levelObject;
+	pPhysicsCollisionChain collisionChain[4]; //left,up,right,down
 	pPhysicsElement prev,next;
 } tPhysicsElement;
+
+typedef struct sPhysicsCollisionChain {
+	pPhysicsElement element;
+	pPhysicsCollisionChain next;
+} tPhysicsCollisionChain;
 
 typedef struct sPhysicsCollision {
 	pPhysicsElement element[2];

@@ -32,3 +32,19 @@
 /* At some point, if everywhere tiles are drawn, this define should be erased,
    so, that no (unnecessary) cleaning is done anymore */
 #define CLEAN_TARGET(color) spClearTarget(color);
+
+#define GRAVITY_MAX 600
+#define GRAVITY_COUNTER 0
+
+#define PHYSICS_STEP 1
+#define JUMP_FORCE 2*GRAVITY_MAX
+// Times are consecutive (relative, not absolute)
+#define JUMP_MIN_TIME 100
+#define JUMP_UPWARDS_TIME 300
+#define JUMP_END_TIME 550
+#define MAX_MOVEMENT_FORCE 350
+#define MOVEMENT_ACCEL 2
+
+//A dirty fix constanst for the gap between object and ground...
+#define EXTRA_GRAVITATION_GAP 1000
+

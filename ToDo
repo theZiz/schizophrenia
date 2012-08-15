@@ -37,7 +37,7 @@ Details, die man irgendwann mal machen kann, was aber spieltechnisch kaum was ä
 - Cursor-Reichweite anzeigen
 	- Anzeige des Klon-Radius (Halbtransparenter Kreis)
 - Nicht-klonbare Objekte und Bereiche durch Effekt darstellen (in der normalen Ansicht)
-  -> Klonbare Objekte besser hervorheben (Spieler haben nicht kapiert was sie zu tun haben), evtl Tips einblenden 
+  -> Klonbare Objekte besser hervorheben (Spieler haben nicht kapiert was sie zu tun haben), evtl Tips einblenden
      wenn Spieler länger stillsteht oder bei ersten Klonvorgängen "assistieren" (zB Markierung von nahen, klonbaren
      Objekten - "clone me")
 - Quantenverschränkte Objekte durch Effekt darstellen
