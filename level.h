@@ -48,15 +48,15 @@ typedef enum {
 } LevelObjectType;
 
 typedef enum {
-	LEFT,
+	LEFT = 0,
 	UP,
 	RIGHT,
 	DOWN
 } LevelDirection;
 
 typedef enum {
-	OFF = 0,
-	ON = 1
+	OFF = 0,DIRECTION1 = 0,
+	ON = 1,DIRECTION2 = 1
 } LevelState;
 
 
@@ -72,13 +72,17 @@ typedef struct sLayer {
 typedef struct sLevelObject {
 	spSpriteCollectionPointer animation;
 	LevelObjectType type;
-	Sint32 x,y; //one tile == SP_ONE, so (because of 32x32 tiles) x>>SP_ACCURACY-5 is the pixel position
+	/* Position. one tile == SP_ONE, so (because of 32x32 tiles) x>>SP_ACCURACY-5
+	 * is the pixel position */
+	Sint32 x,y; 
 	int w,h; //pixel! not used by all objects
-	struct {struct {Sint32 x,y;} v1,v2;} speed; //speed in positionchange / 1 ms. Not used by all objects
+	/* speed in positionchange / 1 ms. Not used by all objects */
+	struct {struct {Sint32 x,y;} v1,v2;} speed;
 	LevelDirection direction; //direction. Not used by all objects
-	char* some_char; //some objects need to save a string as e.g. destiny
-	int kind; //some objects have different kinds. Saved here.
-	LevelState state; //on and off
+	/* Saved strings like destiny of a door. Not used by all objects */
+	char* some_char; 
+	int kind; //Different kinds of a object. Not used by all objects
+	LevelState state; //on and off. Not used by all objects
 	pLevelObjectGroup group;
 	pPhysicsElement physicsElement;
 	pLevelObject prev,next; //ring of objects in one group

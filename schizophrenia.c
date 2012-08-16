@@ -65,6 +65,20 @@ void setSpeed( pPhysicsElement element )
 {
 	if (element->levelObject == NULL)
 		return;
+	if (element->type == PLATFORM)
+	{
+		if (element->levelObject->direction == 0)
+		{
+			element->speed.x = element->levelObject->speed.v1.x;
+			element->speed.y = element->levelObject->speed.v1.y;
+		}
+		else
+		{
+			element->speed.x = element->levelObject->speed.v2.x;
+			element->speed.y = element->levelObject->speed.v2.y;
+		}	
+	}
+	else
 	if (element->levelObject == level->choosenPlayer)
 	{
 		//Moving the player Y
@@ -233,6 +247,31 @@ int yFeedback( pPhysicsCollision collision )
 
 int xFeedback( pPhysicsCollision collision )
 {
+	int remove = 0;
+	if (collision->element[0]->type == PLATFORM)
+	{
+		if ((collision->element[0]->speed.x > 0 &&
+		     collision->hitPosition[0] == 4) || //Moving right and collision on rightside
+				(collision->element[0]->speed.x < 0 &&
+		     collision->hitPosition[0] == 1)) //Moving left and collision on leftside
+		{
+			collision->element[0]->levelObject->direction = 1 - collision->element[0]->levelObject->direction;
+			collision->element[0]->speed.x = 0;
+			collision->element[0]->position.x = collision->element[0]->backupPosition.x;
+		}
+	}
+	if (collision->element[1]->type == PLATFORM)
+	{
+		if ((collision->element[1]->speed.x > 0 &&
+		     collision->hitPosition[1] == 4) || //Moving right and collision on rightside
+				(collision->element[1]->speed.x < 0 &&
+		     collision->hitPosition[1] == 1)) //Moving left and collision on leftside
+		{
+			collision->element[1]->levelObject->direction = 1 - collision->element[1]->levelObject->direction;
+			collision->element[1]->speed.x = 0;
+			collision->element[1]->position.x = collision->element[1]->backupPosition.x;
+		}
+	}
 	return 0;
 }
 

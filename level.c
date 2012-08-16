@@ -56,7 +56,7 @@ pLevelObject createObject(pLevelObjectGroup group,LevelObjectType type)
 	obj->speed.v1.y = 0;
 	obj->speed.v2.x = 0;
 	obj->speed.v2.y = 0;
-	obj->direction = RIGHT;
+	obj->direction = 0;
 	obj->some_char = NULL;
 	obj->kind = 0;
 	obj->state = OFF;

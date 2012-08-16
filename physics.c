@@ -27,7 +27,7 @@ pPhysicsElement *staticElementLoopUp = NULL;
 int staticElementLoopUpX,staticElementLoopUpY;
 
 pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
-			int moveable,int gravitation,int superPower,pLevelObject levelObject)
+			int moveable,int moves,int gravitation,int superPower,pLevelObject levelObject)
 {
 	pPhysicsElement element = (pPhysicsElement)malloc(sizeof(tPhysicsElement));
 	element->position.x = px;
@@ -44,6 +44,7 @@ pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 	element->superPower = superPower;
 	element->freeFallCounter = 0;
 	element->moveable = moveable;
+	element->moves = moves;
 	element->levelObject = levelObject;
 	int i;
 	for (i = 0; i < 4; i++)
@@ -56,7 +57,7 @@ pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 	else
 		element->type = UNKONWN;
 
-	if (moveable || gravitation)
+	if (moveable || gravitation || moves)
 	{
 		if (firstMoveableElement)
 		{
@@ -104,7 +105,7 @@ void createPhysicsFromLevel(pLevel level)
 		Sint32 y = i / level->layer.physics.width << SP_ACCURACY;
 		if (level->layer.physics.tile[i].nr)
 		{
-			pPhysicsElement element = createPhysicsElement(x,y,SP_ONE,SP_ONE,0,0,0,NULL);
+			pPhysicsElement element = createPhysicsElement(x,y,SP_ONE,SP_ONE,0,0,0,0,NULL);
 			element->permeability = level->layer.physics.tile[i].nr;
 			staticElementLoopUp[i] = element;
 		}
@@ -121,6 +122,7 @@ void createPhysicsFromLevel(pLevel level)
 		do
 		{
 			int moveable = 0;
+			int moves = 0;
 			int gravitation = 0;
 			int superPower = 0;
 			switch (obj->type)
@@ -130,17 +132,15 @@ void createPhysicsFromLevel(pLevel level)
 					continue;
 				case PLAYER: case NEGA: case BOX: case BUG:
 					moveable = 1;
+					moves = 1;
 					gravitation = 1;
 					break;
-				case SWITCH: case BUTTON: case DOOR:
-					gravitation = 0;
-					break;
 				case PLATFORM:
-					moveable = 1;
+					moves = 1;
 					superPower = 1;
 					break;
 			}
-			pPhysicsElement element = createPhysicsElement(obj->x,obj->y,obj->w << SP_ACCURACY-5,obj->h << SP_ACCURACY-5,moveable,gravitation,superPower,obj);
+			pPhysicsElement element = createPhysicsElement(obj->x,obj->y,obj->w << SP_ACCURACY-5,obj->h << SP_ACCURACY-5,moveable,moves,gravitation,superPower,obj);
 			switch (obj->type)
 			{
 				case SWITCH: case BUTTON: case DOOR: case COLLECTIBLE:
@@ -718,7 +718,7 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	if (element)
 	do
 	{
-		if (element->moveable)
+		if (element->moves)
 		{
 			element->position.x += element->speed.x*TimeForOneStep;
 			if (element->speed.x)

@@ -36,7 +36,8 @@ typedef struct sPhysicsElement {
 	Sint32 w,h; //32 pixel == SP_ONE
 	int gravitation; //gravitation moves this element
 	int permeability; //bit,direction: 1,left 2,top 4,right 8,down (15 means solid, 0 transparent (doors, switches...))
-	int moveable; //x and y forces move this element.
+	int moves; //x and y forces move this element.
+	int moveable; //can be moved from out
 	int superPower;
 	int freeFallCounter;
 	int killed;
@@ -60,7 +61,7 @@ typedef struct sPhysicsCollision {
 } tPhysicsCollision;
 
 pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
-			int moveable,int gravitation,int superPower,pLevelObject levelObject);
+			int moveable,int moves,int gravitation,int superPower,pLevelObject levelObject);
 void createPhysicsFromLevel(pLevel level);
 void clearPhysics(); //Deletes the whole scene
 void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
