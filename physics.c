@@ -627,7 +627,7 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	if (element)
 	do
 	{
-		if (element->moveable)
+		if (element->moves)
 			element->position.y += element->speed.y;
 		element = element->next;
 	}

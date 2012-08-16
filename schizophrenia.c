@@ -242,12 +242,39 @@ int gravFeedback( pPhysicsCollision collision )
 
 int yFeedback( pPhysicsCollision collision )
 {
+	if (collision->element[0]->type == PLATFORM)
+	{
+		if ((collision->element[0]->speed.y > 0 &&
+		     collision->hitPosition[0] == 8) || //Moving down and collision on downside
+				(collision->element[0]->speed.y < 0 &&
+		     collision->hitPosition[0] == 2)) //Moving up and collision on upside
+		{
+			collision->element[0]->levelObject->direction = 1 - collision->element[0]->levelObject->direction;
+			collision->element[0]->speed.x = 0;
+			collision->element[0]->speed.y = 0;
+			collision->element[0]->position.x = collision->element[0]->backupPosition.x;
+			collision->element[0]->position.y = collision->element[0]->backupPosition.y;
+		}
+	}
+	if (collision->element[1]->type == PLATFORM)
+	{
+		if ((collision->element[1]->speed.y > 0 &&
+		     collision->hitPosition[1] == 8) || //Moving down and collision on downside
+				(collision->element[1]->speed.y < 0 &&
+		     collision->hitPosition[1] == 2)) //Moving up and collision on upside
+		{
+			collision->element[1]->levelObject->direction = 1 - collision->element[1]->levelObject->direction;
+			collision->element[1]->speed.x = 0;
+			collision->element[1]->speed.y = 0;
+			collision->element[1]->position.x = collision->element[1]->backupPosition.x;
+			collision->element[1]->position.y = collision->element[1]->backupPosition.y;
+		}
+	}
 	return 0;
 }
 
 int xFeedback( pPhysicsCollision collision )
 {
-	int remove = 0;
 	if (collision->element[0]->type == PLATFORM)
 	{
 		if ((collision->element[0]->speed.x > 0 &&
@@ -257,7 +284,9 @@ int xFeedback( pPhysicsCollision collision )
 		{
 			collision->element[0]->levelObject->direction = 1 - collision->element[0]->levelObject->direction;
 			collision->element[0]->speed.x = 0;
+			collision->element[0]->speed.y = 0;
 			collision->element[0]->position.x = collision->element[0]->backupPosition.x;
+			collision->element[0]->position.y = collision->element[0]->backupPosition.y;
 		}
 	}
 	if (collision->element[1]->type == PLATFORM)
@@ -269,7 +298,9 @@ int xFeedback( pPhysicsCollision collision )
 		{
 			collision->element[1]->levelObject->direction = 1 - collision->element[1]->levelObject->direction;
 			collision->element[1]->speed.x = 0;
+			collision->element[1]->speed.y = 0;
 			collision->element[1]->position.x = collision->element[1]->backupPosition.x;
+			collision->element[1]->position.y = collision->element[1]->backupPosition.y;
 		}
 	}
 	return 0;
