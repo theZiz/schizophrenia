@@ -59,8 +59,6 @@ Sint32 last_run = 0;
 Sint32 in_jump = 0;
 int can_jump = 1;
 
-int rest = 0;
-
 void setSpeed( pPhysicsElement element )
 {
 	if (element->levelObject == NULL)
@@ -98,43 +96,39 @@ void setSpeed( pPhysicsElement element )
 				can_jump = 1;
 		}
 
-		int i;
-		for (i = 0; i < PHYSICS_STEP; i++)
+		if (element->had_collision & 2 && can_jump) //collision on top
 		{
-			if (element->had_collision & 2 && can_jump) //collision on top
+			// start turn-around
+			in_jump = JUMP_UPWARDS_TIME;
+			can_jump = 0;
+		}
+		else
+		if (in_jump)
+		{
+			if (in_jump < JUMP_UPWARDS_TIME) // moving upwards
 			{
-				// start turn-around
-				in_jump = JUMP_UPWARDS_TIME;
+				in_jump++;
+				element->speed.y-=JUMP_FORCE;
+				element->freeFallCounter = 0;
+			}
+			else
+			if (in_jump < JUMP_END_TIME) // smooth turn-around (peak of jump)
+			{
+				in_jump++;
+				element->speed.y-=GRAVITY_MAX*(JUMP_END_TIME-in_jump)/(JUMP_END_TIME-JUMP_UPWARDS_TIME);
+				element->freeFallCounter = 0;
 				can_jump = 0;
 			}
-			else
-			if (in_jump)
-			{
-				if (in_jump < JUMP_UPWARDS_TIME) // moving upwards
-				{
-					in_jump++;
-					element->speed.y-=JUMP_FORCE;
-					element->freeFallCounter = 0;
-				}
-				else
-				if (in_jump < JUMP_END_TIME) // smooth turn-around (peak of jump)
-				{
-					in_jump++;
-					element->speed.y-=GRAVITY_MAX*(JUMP_END_TIME-in_jump)/(JUMP_END_TIME-JUMP_UPWARDS_TIME);
-					element->freeFallCounter = 0;
-					can_jump = 0;
-				}
-				else // end jump
-				{
-					in_jump = 0;
-					can_jump = 0;
-				}
-			}
-			else
-			if (element->had_collision & 8) //ground collision
+			else // end jump
 			{
 				in_jump = 0;
+				can_jump = 0;
 			}
+		}
+		else
+		if (element->had_collision & 8) //ground collision
+		{
+			in_jump = 0;
 		}
 
 		//Moving the player X
@@ -146,7 +140,7 @@ void setSpeed( pPhysicsElement element )
 				spSelectSprite(level->choosenPlayer->animation,"run left");
 			if (last_run >= 0)
 				last_run = 0;
-			last_run-=PHYSICS_STEP;
+			last_run-=1;
 			if (last_run > -(MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
 				element->speed.x = last_run*MOVEMENT_ACCEL;
 			else
@@ -161,7 +155,7 @@ void setSpeed( pPhysicsElement element )
 				spSelectSprite(level->choosenPlayer->animation,"run right");
 			if (last_run <= 0)
 				last_run = 0;
-			last_run+=PHYSICS_STEP;
+			last_run+=1;
 			if (last_run < (MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
 				element->speed.x = last_run*MOVEMENT_ACCEL;
 			else
@@ -226,17 +220,9 @@ void removeCollision( pPhysicsCollision collision )
 int gravFeedback( pPhysicsCollision collision )
 {
 	if (collision->element[0]->type == PLAYER && collision->hitPosition[0] == 2) //TOP hit on player
-	{
 		collision->element[0]->killed = 1;
-		removeCollision(collision);
-		return 1;
-	}
 	if (collision->element[1]->type == PLAYER && collision->hitPosition[1] == 2) //TOP hit on player
-	{
 		collision->element[1]->killed = 1;
-		removeCollision(collision);
-		return 1;
-	}
 	return 0;
 }
 
@@ -244,10 +230,11 @@ int yFeedback( pPhysicsCollision collision )
 {
 	if (collision->element[0]->type == PLATFORM)
 	{
-		if ((collision->element[0]->speed.y > 0 &&
-		     collision->hitPosition[0] == 8) || //Moving down and collision on downside
-				(collision->element[0]->speed.y < 0 &&
-		     collision->hitPosition[0] == 2)) //Moving up and collision on upside
+		if (((collision->element[0]->speed.y > 0 &&
+		      collision->hitPosition[0] == 8) || //Moving down and collision on downside
+				 (collision->element[0]->speed.y < 0 &&
+		      collision->hitPosition[0] == 2)) && //Moving up and collision on upside
+		    collision->element[1]->moveable == 0)
 		{
 			collision->element[0]->levelObject->direction = 1 - collision->element[0]->levelObject->direction;
 			collision->element[0]->speed.x = 0;
@@ -258,10 +245,11 @@ int yFeedback( pPhysicsCollision collision )
 	}
 	if (collision->element[1]->type == PLATFORM)
 	{
-		if ((collision->element[1]->speed.y > 0 &&
+		if (((collision->element[1]->speed.y > 0 &&
 		     collision->hitPosition[1] == 8) || //Moving down and collision on downside
 				(collision->element[1]->speed.y < 0 &&
-		     collision->hitPosition[1] == 2)) //Moving up and collision on upside
+		     collision->hitPosition[1] == 2)) && //Moving up and collision on upside
+		   collision->element[0]->moveable == 0)
 		{
 			collision->element[1]->levelObject->direction = 1 - collision->element[1]->levelObject->direction;
 			collision->element[1]->speed.x = 0;
@@ -277,10 +265,11 @@ int xFeedback( pPhysicsCollision collision )
 {
 	if (collision->element[0]->type == PLATFORM)
 	{
-		if ((collision->element[0]->speed.x > 0 &&
+		if (((collision->element[0]->speed.x > 0 &&
 		     collision->hitPosition[0] == 4) || //Moving right and collision on rightside
 				(collision->element[0]->speed.x < 0 &&
-		     collision->hitPosition[0] == 1)) //Moving left and collision on leftside
+		     collision->hitPosition[0] == 1)) && //Moving left and collision on leftside
+		   collision->element[1]->moveable == 0)
 		{
 			collision->element[0]->levelObject->direction = 1 - collision->element[0]->levelObject->direction;
 			collision->element[0]->speed.x = 0;
@@ -291,10 +280,11 @@ int xFeedback( pPhysicsCollision collision )
 	}
 	if (collision->element[1]->type == PLATFORM)
 	{
-		if ((collision->element[1]->speed.x > 0 &&
+		if (((collision->element[1]->speed.x > 0 &&
 		     collision->hitPosition[1] == 4) || //Moving right and collision on rightside
 				(collision->element[1]->speed.x < 0 &&
-		     collision->hitPosition[1] == 1)) //Moving left and collision on leftside
+		     collision->hitPosition[1] == 1)) && //Moving left and collision on leftside
+		   collision->element[0]->moveable == 0)
 		{
 			collision->element[1]->levelObject->direction = 1 - collision->element[1]->levelObject->direction;
 			collision->element[1]->speed.x = 0;
@@ -326,10 +316,8 @@ int calc_schizo( Uint32 steps )
 
 	//Physics
 	int i;
-	int physics_steps = (steps + rest) / PHYSICS_STEP;
-	for (i = 0; i < physics_steps; i++)
-			doPhysics(PHYSICS_STEP,setSpeed,gravFeedback,yFeedback,xFeedback,level);
-	rest = (steps + rest) % PHYSICS_STEP;
+	for (i = 0; i < steps; i++)
+			doPhysics(setSpeed,gravFeedback,yFeedback,xFeedback,level);
 
 	//Visualization stuff
 	rotation+=steps*16;

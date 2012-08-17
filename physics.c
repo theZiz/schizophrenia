@@ -26,6 +26,14 @@ pPhysicsElement firstStaticElement = NULL;
 pPhysicsElement *staticElementLoopUp = NULL;
 int staticElementLoopUpX,staticElementLoopUpY;
 
+#define deleteCollisionChain(first) \
+	while (first) \
+	{\
+		pPhysicsCollisionChain next = first->next; \
+		free(first); \
+		first = next; \
+	}
+
 pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 			int moveable,int moves,int gravitation,int superPower,pLevelObject levelObject)
 {
@@ -47,7 +55,7 @@ pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 	element->moves = moves;
 	element->levelObject = levelObject;
 	int i;
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < 5; i++)
 		element->collisionChain[i] = NULL;
 	if (levelObject)
 	{
@@ -178,13 +186,8 @@ void clearPhysics()
 		if (element->levelObject)
 			element->levelObject->physicsElement = NULL;
 		int i;
-		for (i = 0; i < 4;i++)
-			while (element->collisionChain[i])
-			{
-				pPhysicsCollisionChain next = element->collisionChain[i]->next;
-				free(element->collisionChain[i]);
-				element->collisionChain[i] = next;
-			}
+		for (i = 0; i < 5;i++)
+			deleteCollisionChain(element->collisionChain[i]);
 		free(element);
 		element = next;
 	}
@@ -214,14 +217,26 @@ void updateLevelObjects()
 #ifdef COUNT_COLLISION
 int collision_tests;
 #endif
-
-#define deleteCollisionChain(first) \
-	while (first) \
-	{\
-		pPhysicsCollisionChain next = first->next; \
-		free(first); \
-		first = next; \
+	
+inline int addToCollisionChain(pPhysicsCollisionChain* first,pPhysicsElement to_add)
+{
+	pPhysicsCollisionChain chain = (*first);
+	while (chain)
+	{
+		if (chain->element == to_add)
+			break;
+		chain = chain->next;
 	}
+	if (chain == NULL) //not found, adding
+	{
+		chain = (pPhysicsCollisionChain)malloc(sizeof(tPhysicsCollisionChain));
+		chain->element = to_add;
+		chain->next = (*first);
+		(*first) = chain;
+		return 1;
+	}
+	return 0;
+}
 
 inline void updateCollisionChain(pPhysicsElement element,pPhysicsElement partner,int hitPosition)
 {
@@ -235,20 +250,7 @@ inline void updateCollisionChain(pPhysicsElement element,pPhysicsElement partner
 		case 8: first = &(element->collisionChain[3]); break;
 	}
 	//Searching partner in the chain
-	pPhysicsCollisionChain chain = (*first);
-	while (chain)
-	{
-		if (chain->element == partner)
-			break;
-		chain = chain->next;
-	}
-	if (chain == NULL) //not found, adding
-	{
-		chain = (pPhysicsCollisionChain)malloc(sizeof(tPhysicsCollisionChain));
-		chain->element = partner;
-		chain->next = (*first);
-		(*first) = chain;
-	}
+	addToCollisionChain(first,partner);
 }
 
 inline pPhysicsCollision createCollision(pPhysicsElement element,pPhysicsElement partner,int elementHitPosition,int partnerHitPosition)
@@ -258,9 +260,9 @@ inline pPhysicsCollision createCollision(pPhysicsElement element,pPhysicsElement
 	collision->hitPosition[0] = elementHitPosition;
 	collision->element[1] = partner;
 	collision->hitPosition[1] = partnerHitPosition;
-	
+
 	updateCollisionChain(element,partner,elementHitPosition);
-	updateCollisionChain(element,partner,partnerHitPosition);
+	updateCollisionChain(partner,element,partnerHitPosition);
 	
 	return collision;
 }
@@ -294,10 +296,10 @@ inline void testAndAddCollisionY(pPhysicsElement element,pPhysicsElement partner
 			collision->element[1]->had_collision = collision->element[1]->had_collision | collision->hitPosition[1];
 			if (*firstCollision)
 			{
-				collision->next = (*firstCollision)->next;
+				collision->next = (*firstCollision);
 				collision->prev = (*firstCollision)->prev;
 				(*firstCollision)->prev->next = collision;
-				(*firstCollision)->next->prev = collision;
+				(*firstCollision)->prev = collision;
 			}
 			else
 			{
@@ -339,10 +341,10 @@ inline void testAndAddCollisionX(pPhysicsElement element,pPhysicsElement partner
 			collision->element[1]->had_collision = collision->element[1]->had_collision | collision->hitPosition[1];
 			if (*firstCollision)
 			{
-				collision->next = (*firstCollision)->next;
+				collision->next = (*firstCollision);
 				collision->prev = (*firstCollision)->prev;
 				(*firstCollision)->prev->next = collision;
-				(*firstCollision)->next->prev = collision;
+				(*firstCollision)->prev = collision;
 			}
 			else
 			{
@@ -488,7 +490,20 @@ void clearCollisionChain(pPhysicsCollision firstCollision)
 	while (collision != firstCollision);
 }
 
-void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
+int createUniqueChainOfOneDirection(pPhysicsCollisionChain* first,pPhysicsElement element,int direction)
+{
+	int count = 0;
+	pPhysicsCollisionChain chain = element->collisionChain[direction];
+	while (chain)
+	{
+		count += addToCollisionChain(first,chain->element); //hitPosition doesn't matter
+		count += createUniqueChainOfOneDirection(first,chain->element,direction);
+		chain = chain->next;
+	}
+	return count;
+}
+
+void doPhysics(void ( *setSpeed )( pPhysicsElement element ),
                int ( *gravFeedback )( pPhysicsCollision collision ),
                int ( *yFeedback )( pPhysicsCollision collision ),
                int ( *xFeedback )( pPhysicsCollision collision ), pLevel level)
@@ -510,7 +525,7 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 		element->backupPosition.y = element->position.y;
 		element->killed = 0;
 		int i;
-		for (i = 0; i < 4;i++)
+		for (i = 0; i < 5;i++)
 			deleteCollisionChain(element->collisionChain[i]);
 		element = element->next;
 	}
@@ -527,17 +542,13 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	{
 		if (element->gravitation)
 		{
-			int i;
-			for (i = 0; i<TimeForOneStep; i++)
-			{
-				#if (GRAVITY_COUNTER > 0)
-				if (element->freeFallCounter < GRAVITY_COUNTER)
-					element->position.y += element->freeFallCounter * ( GRAVITY_MAX / GRAVITY_COUNTER );
-				else
-				#endif
-					element->position.y += GRAVITY_MAX;
-				element->freeFallCounter++;
-			}
+			#if (GRAVITY_COUNTER > 0)
+			if (element->freeFallCounter < GRAVITY_COUNTER)
+				element->position.y += element->freeFallCounter * ( GRAVITY_MAX / GRAVITY_COUNTER );
+			else
+			#endif
+				element->position.y += GRAVITY_MAX;
+			element->freeFallCounter++;
 		}
 		element = element->next;
 	}
@@ -581,40 +592,23 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 			while (collision != firstCollision);
 		}
 
-		//I: Removing killed elements (and the level objects if exist)
-		int somewhat_killed = 1;
-		while (somewhat_killed)
+		//I: Setting the Gravitation collision chain (5)
+		collision = firstCollision;
+		if (collision)
 		{
-			somewhat_killed = 0;
-			element = firstMoveableElement;
-			if (element)
 			do
 			{
-				pPhysicsElement next = element->next;
-				if (element->killed)
-				{
-					if (element == element->next)
-						firstMoveableElement = NULL;
-					else
-					{
-						element->prev->next = element->next;
-						element->next->prev = element->prev;
-						if (firstMoveableElement == element)
-							firstMoveableElement = element->next;
-					}
-					if (element->levelObject)
-					{
-						removeObject(element->levelObject,level);
-					}
-					free(element);
-					somewhat_killed = 1;
-					break;
-				}
-				element = next;
+				createUniqueChainOfOneDirection(&(collision->element[0]->collisionChain[4]),collision->element[0],1);
+				createUniqueChainOfOneDirection(&(collision->element[1]->collisionChain[4]),collision->element[1],1);
+				deleteCollisionChain((collision->element[0]->collisionChain[1]));
+				deleteCollisionChain((collision->element[0]->collisionChain[3]));
+				deleteCollisionChain((collision->element[1]->collisionChain[1]));
+				deleteCollisionChain((collision->element[1]->collisionChain[3]));
+				collision = collision->next;
 			}
-			while (element != firstMoveableElement);
+			while (collision != firstCollision);
 		}
-
+		
 		//I: Removing the chain
 		clearCollisionChain(firstCollision);
 	}
@@ -627,8 +621,18 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	if (element)
 	do
 	{
-		if (element->moves)
+		if (element->moves && element->speed.y)
+		{
 			element->position.y += element->speed.y;
+			//All elements in the gravitation list should move, too
+			pPhysicsCollisionChain mom = element->collisionChain[4];
+			while (mom)
+			{
+				if (mom->element->moveable)
+					mom->element->position.y += element->speed.y;
+				mom = mom->next;
+			}
+		}
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
@@ -671,40 +675,6 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 			while (collision != firstCollision);
 		}
 
-		//II: Removing killed elements (and the level objects if exist)
-		int somewhat_killed = 1;
-		while (somewhat_killed)
-		{
-			somewhat_killed = 0;
-			element = firstMoveableElement;
-			if (element)
-			do
-			{
-				pPhysicsElement next = element->next;
-				if (element->killed)
-				{
-					if (element == element->next)
-						firstMoveableElement = NULL;
-					else
-					{
-						element->prev->next = element->next;
-						element->next->prev = element->prev;
-						if (firstMoveableElement == element)
-							firstMoveableElement = element->next;
-					}
-					if (element->levelObject)
-					{
-						removeObject(element->levelObject,level);
-					}
-					free(element);
-					somewhat_killed = 1;
-					break;
-				}
-				element = next;
-			}
-			while (element != firstMoveableElement);
-		}
-
 		//II: Removing the chain
 		clearCollisionChain(firstCollision);
 	}
@@ -718,11 +688,17 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 	if (element)
 	do
 	{
-		if (element->moves)
+		if (element->moves && element->speed.x)
 		{
-			element->position.x += element->speed.x*TimeForOneStep;
-			if (element->speed.x)
-				element->lastDirection = element->speed.x;
+			element->position.x += element->speed.x;
+			//All elements in the gravitation list should move, too
+			pPhysicsCollisionChain mom = element->collisionChain[4];
+			while (mom)
+			{
+				if (mom->element->moveable)
+					mom->element->position.x += element->speed.x;
+				mom = mom->next;
+			}
 		}
 		element = element->next;
 	}
@@ -757,50 +733,54 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 			collision_detected = 1;
 			do
 			{
-				if (collision->element[0]->moveable)
+				if (collision->element[0]->moveable || collision->element[0]->moves)
 					collision->element[0]->position.x = collision->element[0]->backupPosition.x;
-				if (collision->element[1]->moveable)
+				if (collision->element[1]->moveable || collision->element[1]->moves)
 					collision->element[1]->position.x = collision->element[1]->backupPosition.x;
 				collision = collision->next;
 			}
 			while (collision != firstCollision);
 		}
-		//III: Removing killed elements (and the level objects if exist)
-		int somewhat_killed = 1;
-		while (somewhat_killed)
-		{
-			somewhat_killed = 0;
-			element = firstMoveableElement;
-			if (element)
-			do
-			{
-				pPhysicsElement next = element->next;
-				if (element->killed)
-				{
-					if (element == element->next)
-						firstMoveableElement = NULL;
-					else
-					{
-						element->prev->next = element->next;
-						element->next->prev = element->prev;
-						if (firstMoveableElement == element)
-							firstMoveableElement = element->next;
-					}
-					if (element->levelObject)
-					{
-						removeObject(element->levelObject,level);
-					}
-					free(element);
-					somewhat_killed = 1;
-					break;
-				}
-				element = next;
-			}
-			while (element != firstMoveableElement);
-		}
 
 		//III: Removing the chain
 		clearCollisionChain(firstCollision);
+	}
+
+	//Removing killed elements (and the level objects if exist)
+	int somewhat_killed = 1;
+	while (somewhat_killed)
+	{
+		somewhat_killed = 0;
+		element = firstMoveableElement;
+		if (element)
+		do
+		{
+			pPhysicsElement next = element->next;
+			if (element->killed)
+			{
+				if (element == element->next)
+					firstMoveableElement = NULL;
+				else
+				{
+					element->prev->next = element->next;
+					element->next->prev = element->prev;
+					if (firstMoveableElement == element)
+						firstMoveableElement = element->next;
+				}
+				if (element->levelObject)
+				{
+					removeObject(element->levelObject,level);
+				}
+				int i;
+				for (i = 0; i < 5; i++)
+					deleteCollisionChain(element->collisionChain[i]);
+				free(element);
+				somewhat_killed = 1;
+				break;
+			}
+			element = next;
+		}
+		while (element != firstMoveableElement);
 	}
 
 	//Setting the free fall counter
@@ -812,7 +792,7 @@ void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
 		{
 			if (element->had_collision & 8) //ground collision
 			{
-				if (element->freeFallCounter > TimeForOneStep+1)
+				if (element->freeFallCounter > 2)
 					element->freeFallCounter = 1;
 				else
 					element->freeFallCounter = 0;

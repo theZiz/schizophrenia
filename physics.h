@@ -45,7 +45,7 @@ typedef struct sPhysicsElement {
 	int lastDirection;
 	LevelObjectType type;
 	pLevelObject levelObject;
-	pPhysicsCollisionChain collisionChain[4]; //left,up,right,down
+	pPhysicsCollisionChain collisionChain[5]; //left,up,right,down,grav
 	pPhysicsElement prev,next;
 } tPhysicsElement;
 
@@ -64,7 +64,7 @@ pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 			int moveable,int moves,int gravitation,int superPower,pLevelObject levelObject);
 void createPhysicsFromLevel(pLevel level);
 void clearPhysics(); //Deletes the whole scene
-void doPhysics(int TimeForOneStep,void ( *setSpeed )( pPhysicsElement element ),
+void doPhysics(void ( *setSpeed )( pPhysicsElement element ),
                int ( *gravFeedback )( pPhysicsCollision collision ),
                int ( *yFeedback )( pPhysicsCollision collision ),
                int ( *xFeedback )( pPhysicsCollision collision ), pLevel level);

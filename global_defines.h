@@ -36,7 +36,6 @@
 #define GRAVITY_MAX 600
 #define GRAVITY_COUNTER 0
 
-#define PHYSICS_STEP 1
 #define JUMP_FORCE 2*GRAVITY_MAX
 // Times are consecutive (relative, not absolute)
 #define JUMP_MIN_TIME 100
@@ -47,4 +46,6 @@
 
 //A dirty fix constanst for the gap between object and ground...
 #define EXTRA_GRAVITATION_GAP 1000
+
+#define MIN_SHIFT_SPEED 128
 

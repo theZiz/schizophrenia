@@ -87,13 +87,13 @@ void removeObject(pLevelObject obj,pLevel level)
 	if (obj->animation)
 		spDeleteSpriteCollection(obj->animation,0);
 	if (obj == obj->next)
-	{
 		obj->group->firstObject = NULL;
-	}
 	else
 	{
 		obj->next->prev = obj->prev;
 		obj->prev->next = obj->next;
+		if (obj == obj->group->firstObject)
+			obj->group->firstObject = obj->next;
 	}	
 	free(obj);	
 }
@@ -938,7 +938,7 @@ void drawLevel(pLevel level)
 						if (obj->physicsElement)
 						{
 							int i;
-							for (i = 0; i < 4;i++)
+							for (i = 0; i < 5;i++)
 							{
 								int px=0,py=0;
 								switch (i)
@@ -955,6 +955,7 @@ void drawLevel(pLevel level)
 									case 1: color = spGetRGB(0,255,0); break;
 									case 2: color = spGetRGB(0,0,255); break;
 									case 3: color = spGetRGB(255,255,0); break;
+									case 4: color = spGetRGB(0,255,255); break;
 								}
 								pPhysicsCollisionChain chain = obj->physicsElement->collisionChain[i];
 								while (chain)
