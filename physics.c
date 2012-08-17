@@ -490,38 +490,16 @@ void clearCollisionChain(pPhysicsCollision firstCollision)
 	while (collision != firstCollision);
 }
 
-int createUniqueChainOfOneDirection_DEBUG(pPhysicsCollisionChain* first,pPhysicsElement element,int direction)
-{
-	int count = 0;
-	pPhysicsCollisionChain chain = element->collisionChain[direction];
-	printf("C ");
-	while (chain)
-	{
-		printf("%i ",chain->element->type);
-		count += addToCollisionChain(first,chain->element);
-		count += createUniqueChainOfOneDirection(first,chain->element,direction);
-		chain = chain->next;
-	}
-	return count;
-}
-
 int createUniqueChainOfOneDirection(pPhysicsCollisionChain* first,pPhysicsElement element,int direction)
 {
 	int count = 0;
 	pPhysicsCollisionChain chain = element->collisionChain[direction];
 	while (chain)
 	{
-		if (element->type == PLATFORM)
-			printf("%i ",chain->element->type);
 		count += addToCollisionChain(first,chain->element);
-		if (element->type == PLATFORM)
-			count += createUniqueChainOfOneDirection_DEBUG(first,chain->element,direction);
-		else
-			count += createUniqueChainOfOneDirection(first,chain->element,direction);
+		count += createUniqueChainOfOneDirection(first,chain->element,direction);
 		chain = chain->next;
 	}
-	if (element->type == PLATFORM)
-		printf("\n");
 	return count;
 }
 
@@ -557,7 +535,6 @@ void doPhysics(void ( *setSpeed )( pPhysicsElement element ),
 	/////////////////////////
 	// Step I: Gravitation //
 	/////////////////////////
-  printf("-------\n");
 	//I: force impact
 	element = firstMoveableElement;
 	if (element)
@@ -606,7 +583,6 @@ void doPhysics(void ( *setSpeed )( pPhysicsElement element ),
 			collision_detected = 1;
 			do
 			{
-				printf("-> %i %i\n",collision->element[0]->type,collision->element[1]->type);
 				if (collision->hitPosition[0] == 8 && collision->element[0]->gravitation) //DOWN
 					collision->element[0]->position.y = collision->element[0]->backupPosition.y;
 				if (collision->hitPosition[1] == 8 && collision->element[1]->gravitation) //DOWN
@@ -632,6 +608,7 @@ void doPhysics(void ( *setSpeed )( pPhysicsElement element ),
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
+	
 	/////////////////////////
 	// Step II: Y-Movement //
 	/////////////////////////
