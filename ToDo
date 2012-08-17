@@ -1,10 +1,10 @@
 Ziz:
-- Bewegung der Platformen
-- Bewegung in Abhängigkeit von gedrückten Schaltern
-- Gravitationskollisionsketten
++ Bewegung der Platformen
++ Gravitationskollisionsketten
 - Schubkollisionsketten
 - Y-Verschub
 - X-Verschub
+- Bewegung in Abhängigkeit von gedrückten Schaltern
 - Energieanzeige
 - Klonbarparameter
 - Klonbare Objekte markieren

@@ -152,6 +152,7 @@
   <object x="2323" y="255"/>
   <object x="2259" y="320"/>
   <object x="290" y="194" width="20" height="20"/>
+  <object x="600" y="310"/>
  </objectgroup>
  <objectgroup name="door" width="81" height="20">
   <object name="level1-1.tmx" type="1" gid="501" x="178" y="288"/>

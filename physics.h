@@ -31,11 +31,15 @@ typedef struct sPhysicsCollision *pPhysicsCollision;
 
 #include "level.h"
 
+#define COLLISION_CHAIN_COUNT 6
+
 typedef struct sPhysicsElement {
 	struct {Sint32 x,y;} position,backupPosition,speed;
 	Sint32 w,h; //32 pixel == SP_ONE
 	int gravitation; //gravitation moves this element
-	int permeability; //bit,direction: 1,left 2,top 4,right 8,down (15 means solid, 0 transparent (doors, switches...))
+	/* bit,direction: 1,left 2,top 4,right 8,down (15 means solid, 0 transparent
+	 * (doors, switches...)) */
+	int permeability; 
 	int moves; //x and y forces move this element.
 	int moveable; //can be moved from out
 	int superPower;
@@ -45,7 +49,8 @@ typedef struct sPhysicsElement {
 	int lastDirection;
 	LevelObjectType type;
 	pLevelObject levelObject;
-	pPhysicsCollisionChain collisionChain[5]; //left,up,right,down,grav
+	/* left,up,right,down,grav_up,grav_down */
+	pPhysicsCollisionChain collisionChain[COLLISION_CHAIN_COUNT]; 
 	pPhysicsElement prev,next;
 } tPhysicsElement;
 
@@ -56,7 +61,8 @@ typedef struct sPhysicsCollisionChain {
 
 typedef struct sPhysicsCollision {
 	pPhysicsElement element[2];
-	int hitPosition[2]; //like permeability; always pairs like left/right or top/down
+	/* like permeability; always pairs like left/right or top/down */
+	int hitPosition[2]; 
 	pPhysicsCollision prev,next;
 } tPhysicsCollision;
 

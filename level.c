@@ -938,7 +938,7 @@ void drawLevel(pLevel level)
 						if (obj->physicsElement)
 						{
 							int i;
-							for (i = 0; i < 5;i++)
+							for (i = 0; i < COLLISION_CHAIN_COUNT;i++)
 							{
 								int px=0,py=0;
 								switch (i)
@@ -947,6 +947,8 @@ void drawLevel(pLevel level)
 									case 1: px=-1; break;
 									case 2: py= 1; break;
 									case 3: px= 1; break;
+									case 4: px=-2; break;
+									case 5: px= 2; break;
 								}
 								Uint16 color = 0;
 								switch (i)
@@ -956,6 +958,7 @@ void drawLevel(pLevel level)
 									case 2: color = spGetRGB(0,0,255); break;
 									case 3: color = spGetRGB(255,255,0); break;
 									case 4: color = spGetRGB(0,255,255); break;
+									case 5: color = spGetRGB(240,0,255); break;
 								}
 								pPhysicsCollisionChain chain = obj->physicsElement->collisionChain[i];
 								while (chain)
