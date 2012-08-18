@@ -627,17 +627,17 @@ pLevel loadLevel(char* filename)
 								//Searching the first "("
 								char* temp = strchr(attribute,'(');
 								temp++;
-								obj->speed.v1.x = (Sint32)(atof(temp)*SP_ACCURACY_FACTOR);
+								obj->speed.v1.x = spAtof(temp);
 								temp = strchr(temp,';');
 								temp++;
-								obj->speed.v1.y = (Sint32)(atof(temp)*SP_ACCURACY_FACTOR);
+								obj->speed.v1.y = spAtof(temp);
 								printf("    Setting the first vector (%i:%i)\n",obj->speed.v1.x,obj->speed.v1.y);
 								temp = strchr(temp,'(');
 								temp++;
-								obj->speed.v2.x = (Sint32)(atof(temp)*SP_ACCURACY_FACTOR);
+								obj->speed.v2.x = spAtof(temp);
 								temp = strchr(temp,';');
 								temp++;
-								obj->speed.v2.y = (Sint32)(atof(temp)*SP_ACCURACY_FACTOR);
+								obj->speed.v2.y = spAtof(temp);
 								printf("    Setting the second vector (%i:%i)\n",obj->speed.v2.x,obj->speed.v2.y);
 							}
 							end_s[0] = '\"';
