@@ -108,14 +108,17 @@ all: schizophrenia
 targets:
 	@echo "gp2x, open2x (like gp2x, but dynamic compiled => smaller), wiz caanoo, dingux, pandora, maemo5, maemo6"
 
-schizophrenia: schizophrenia.c level.o physics.o
-	$(CPP) $(CFLAGS) schizophrenia.c level.o physics.o $(SDL) $(INCLUDE) $(SDL_INCLUDE) $(SPARROW_INCLUDE) $(LIB) $(SDL_LIB) $(SPARROW_LIB) $(STATIC) $(DYNAMIC) -o $(BUILD_PATH)schizophrenia
+schizophrenia: schizophrenia.c level.o physics.o feedback.o
+	$(CPP) $(CFLAGS) schizophrenia.c level.o physics.o feedback.o $(SDL) $(INCLUDE) $(SDL_INCLUDE) $(SPARROW_INCLUDE) $(LIB) $(SDL_LIB) $(SPARROW_LIB) $(STATIC) $(DYNAMIC) -o $(BUILD_PATH)schizophrenia
 
 level.o: level.c level.h
 	$(CPP) $(CFLAGS) -fPIC -c level.c $(SDL) $(INCLUDE) $(SDL_INCLUDE) $(SPARROW_INCLUDE)
 
 physics.o: physics.c physics.h
 	$(CPP) $(CFLAGS) -fPIC -c physics.c $(SDL) $(INCLUDE) $(SDL_INCLUDE) $(SPARROW_INCLUDE)
+
+feedback.o: feedback.c feedback.h
+	$(CPP) $(CFLAGS) -fPIC -c feedback.c $(SDL) $(INCLUDE) $(SDL_INCLUDE) $(SPARROW_INCLUDE)
 
 clean:
 	rm -f *.o

@@ -22,22 +22,24 @@
 #include <SDL_image.h>
 #include "level.h"
 #include "physics.h"
+#include "feedback.h"
 
 #include "global_defines.h"
 
 SDL_Surface *screen;
 spFontPointer font = NULL;
-pLevel level;
+
+pLevel* levelPointer;
 
 void draw_schizo( void )
 {
 	RESET_ZBUFFER
-	CLEAN_TARGET(level->backgroundColor)
+	CLEAN_TARGET((*levelPointer)->backgroundColor)
 	spSetZSet( Z_SORTING );
 	spSetZTest( Z_SORTING );
 	spSetAlphaTest( 1 );
 
-	drawLevel(level);
+	drawLevel((*levelPointer));
 
 	//HUD (for debug reasons)
 	spSetZSet( 0 );
@@ -45,313 +47,36 @@ void draw_schizo( void )
 	spSetAlphaTest( 1 );
 	char buffer[256];
 	sprintf( buffer, "camera X: %i\ncamera Y: %i\ncollisiontests: %i\nfps: %i\nspeed:%.5i,%.5i",
-			level->actualCamera.x >> SP_ACCURACY-5,level->actualCamera.y >> SP_ACCURACY-5,
+			(*levelPointer)->actualCamera.x >> SP_ACCURACY-5,(*levelPointer)->actualCamera.y >> SP_ACCURACY-5,
 			getCollisionCount(),spGetFPS(),
-			level->choosenPlayer->physicsElement->position.x - level->choosenPlayer->physicsElement->backupPosition.x,
-			level->choosenPlayer->physicsElement->position.y - level->choosenPlayer->physicsElement->backupPosition.y);
+			(*levelPointer)->choosenPlayer->physicsElement->position.x - (*levelPointer)->choosenPlayer->physicsElement->backupPosition.x,
+			(*levelPointer)->choosenPlayer->physicsElement->position.y - (*levelPointer)->choosenPlayer->physicsElement->backupPosition.y);
 	spFontDrawRight( screen->w-1, screen->h-font->maxheight*5, -1, buffer, font );
 
 	spFlip();
 }
 
 Sint32 rotation = 0;
-Sint32 last_run = 0;
-Sint32 in_jump = 0;
-int can_jump = 1;
-
-void setSpeed( pPhysicsElement element )
-{
-	if (element->levelObject == NULL)
-		return;
-	if (element->type == PLATFORM)
-	{
-		if (element->levelObject->direction == 0)
-		{
-			element->speed.x = element->levelObject->speed.v1.x;
-			element->speed.y = element->levelObject->speed.v1.y;
-		}
-		else
-		{
-			element->speed.x = element->levelObject->speed.v2.x;
-			element->speed.y = element->levelObject->speed.v2.y;
-		}	
-	}
-	else
-	if (element->levelObject == level->choosenPlayer)
-	{
-		//Moving the player Y
-		if ( spGetInput()->button[SP_BUTTON_LEFT] )
-		{
-			if ( in_jump == 0 && can_jump && (element->had_collision & 8) ) // start the jump
-				in_jump = 1;
-		}
-		else
-		{
-			if ( in_jump >= JUMP_MIN_TIME && can_jump ) // start turn-around
-			{
-				in_jump = JUMP_UPWARDS_TIME;
-				can_jump = 0;
-			}
-			if ( in_jump == 0 ) // allow another jump only after another press of the button
-				can_jump = 1;
-		}
-
-		if (element->had_collision & 2 && can_jump) //collision on top
-		{
-			// start turn-around
-			in_jump = JUMP_UPWARDS_TIME;
-			can_jump = 0;
-		}
-		else
-		if (in_jump)
-		{
-			if (in_jump < JUMP_UPWARDS_TIME) // moving upwards
-			{
-				in_jump++;
-				element->speed.y-=JUMP_FORCE;
-				element->freeFallCounter = 0;
-			}
-			else
-			if (in_jump < JUMP_END_TIME) // smooth turn-around (peak of jump)
-			{
-				in_jump++;
-				element->speed.y-=GRAVITY_MAX*(JUMP_END_TIME-in_jump)/(JUMP_END_TIME-JUMP_UPWARDS_TIME);
-				element->freeFallCounter = 0;
-				can_jump = 0;
-			}
-			else // end jump
-			{
-				in_jump = 0;
-				can_jump = 0;
-			}
-		}
-		else
-		if (element->had_collision & 8) //ground collision
-		{
-			in_jump = 0;
-		}
-
-		//Moving the player X
-		if (spGetInput()->axis[0] < 0)
-		{
-			if (in_jump || element->freeFallCounter)
-				spSelectSprite(level->choosenPlayer->animation,"jump left");
-			else
-				spSelectSprite(level->choosenPlayer->animation,"run left");
-			if (last_run >= 0)
-				last_run = 0;
-			last_run-=1;
-			if (last_run > -(MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
-				element->speed.x = last_run*MOVEMENT_ACCEL;
-			else
-				element->speed.x = -MAX_MOVEMENT_FORCE;
-		}
-		else
-		if (spGetInput()->axis[0] > 0)
-		{
-			if (in_jump || element->freeFallCounter)
-				spSelectSprite(level->choosenPlayer->animation,"jump right");
-			else
-				spSelectSprite(level->choosenPlayer->animation,"run right");
-			if (last_run <= 0)
-				last_run = 0;
-			last_run+=1;
-			if (last_run < (MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
-				element->speed.x = last_run*MOVEMENT_ACCEL;
-			else
-				element->speed.x = MAX_MOVEMENT_FORCE;
-		}
-		else
-		{
-			if (element->lastDirection < 0)
-			{
-				if (in_jump || element->freeFallCounter)
-					spSelectSprite(element->levelObject->animation,"jump left");
-				else
-					spSelectSprite(element->levelObject->animation,"stand left");
-			}
-			else
-			if (element->lastDirection > 0)
-			{
-				if (in_jump || element->freeFallCounter)
-					spSelectSprite(element->levelObject->animation,"jump right");
-				else
-					spSelectSprite(element->levelObject->animation,"stand right");
-			}
-			if (last_run < 0)
-				last_run = 0;
-			else
-			if (last_run > 0)
-				last_run = 0;
-		}
-	}
-	//Setting the correct sprite
-	else
-	if (element->levelObject->type == PLAYER)
-	{
-		if (element->lastDirection < 0)
-		{
-			if (element->freeFallCounter)
-				spSelectSprite(element->levelObject->animation,"jump left");
-			else
-				spSelectSprite(element->levelObject->animation,"stand left");
-		}
-		else
-		if (element->lastDirection > 0)
-		{
-			if (element->freeFallCounter)
-				spSelectSprite(element->levelObject->animation,"jump right");
-			else
-				spSelectSprite(element->levelObject->animation,"stand right");
-		}
-	}
-}
-
-void removeCollision( pPhysicsCollision collision )
-{
-	if (collision != collision->next)
-	{
-		collision->prev->next = collision->next;
-		collision->next->prev = collision->prev;
-	}
-	free(collision);
-}
-
-int gravFeedback( pPhysicsCollision collision )
-{
-	if (collision->element[0]->type == PLAYER && collision->hitPosition[0] == 2) //TOP hit on player
-		collision->element[0]->killed = 1;
-	if (collision->element[1]->type == PLAYER && collision->hitPosition[1] == 2) //TOP hit on player
-		collision->element[1]->killed = 1;
-	return 0;
-}
-
-int has_unmoveable_child_in_direction(pPhysicsElement element,int direction)
-{
-	if (element->moveable == 0)
-		return 1;
-	pPhysicsCollisionChain chain = element->collisionChain[direction];
-	while (chain)
-	{
-		if (has_unmoveable_child_in_direction(chain->element,direction))
-			return 1;
-		chain = chain->next;
-	}
-	if (direction == 3)
-	{
-		chain = element->collisionChain[5];
-		while (chain)
-		{
-			if (has_unmoveable_child_in_direction(chain->element,5))
-				return 1;
-			chain = chain->next;
-		}
-	}
-	return 0;
-}
-
-int yFeedback( pPhysicsCollision collision )
-{
-	if (collision->element[0]->type == PLATFORM)
-	{
-		if ((collision->element[0]->speed.y > 0 &&
-		     collision->hitPosition[0] == 8 &&
-		     has_unmoveable_child_in_direction(collision->element[1],3)) || //Moving down and collision on downside
-				(collision->element[0]->speed.y < 0 &&
-		     collision->hitPosition[0] == 2 && 
-		     has_unmoveable_child_in_direction(collision->element[1],1))) //Moving up and collision on upside
-		{
-			collision->element[0]->levelObject->direction = 1 - collision->element[0]->levelObject->direction;
-			collision->element[0]->speed.x = 0;
-			collision->element[0]->speed.y = 0;
-			collision->element[0]->position.x = collision->element[0]->backupPosition.x;
-			collision->element[0]->position.y = collision->element[0]->backupPosition.y;
-		}
-	}
-	if (collision->element[1]->type == PLATFORM)
-	{
-		if ((collision->element[1]->speed.y > 0 &&
-		     collision->hitPosition[1] == 8 &&
-		     has_unmoveable_child_in_direction(collision->element[0],3)) || //Moving down and collision on downside
-				(collision->element[1]->speed.y < 0 &&
-		     collision->hitPosition[1] == 2 && 
-		     has_unmoveable_child_in_direction(collision->element[0],1))) //Moving up and collision on upside
-		{
-			collision->element[1]->levelObject->direction = 1 - collision->element[1]->levelObject->direction;
-			collision->element[1]->speed.x = 0;
-			collision->element[1]->speed.y = 0;
-			collision->element[1]->position.x = collision->element[1]->backupPosition.x;
-			collision->element[1]->position.y = collision->element[1]->backupPosition.y;
-		}
-	}
-	return 0;
-}
-
-int xFeedback( pPhysicsCollision collision )
-{
-	if (collision->element[0]->type == PLATFORM)
-	{
-		if ((collision->element[0]->speed.x > 0 &&
-		     collision->hitPosition[0] == 4 &&
-		     has_unmoveable_child_in_direction(collision->element[1],2)) || //Moving right and collision on rightside
-				(collision->element[0]->speed.x < 0 &&
-		     collision->hitPosition[0] == 1 && 
-		     has_unmoveable_child_in_direction(collision->element[1],0))) //Moving left and collision on leftside
-		{
-			collision->element[0]->levelObject->direction = 1 - collision->element[0]->levelObject->direction;
-			collision->element[0]->speed.x = 0;
-			collision->element[0]->speed.y = 0;
-			collision->element[0]->position.x = collision->element[0]->backupPosition.x;
-			collision->element[0]->position.y = collision->element[0]->backupPosition.y;
-		}
-	}
-	if (collision->element[1]->type == PLATFORM)
-	{
-		if ((collision->element[1]->speed.x > 0 &&
-		     collision->hitPosition[1] == 4 &&
-		     has_unmoveable_child_in_direction(collision->element[0],2)) || //Moving right and collision on rightside
-				(collision->element[1]->speed.x < 0 &&
-		     collision->hitPosition[1] == 1 && 
-		     has_unmoveable_child_in_direction(collision->element[0],0))) //Moving left and collision on leftside
-		{
-			collision->element[1]->levelObject->direction = 1 - collision->element[1]->levelObject->direction;
-			collision->element[1]->speed.x = 0;
-			collision->element[1]->speed.y = 0;
-			collision->element[1]->position.x = collision->element[1]->backupPosition.x;
-			collision->element[1]->position.y = collision->element[1]->backupPosition.y;
-		}
-	}
-	return 0;
-}
 
 int calc_schizo( Uint32 steps )
 {
-	//Controls and some Logic (more in setSpeed)
-	if (spGetInput()->button[SP_BUTTON_R])
-	{
-		spGetInput()->button[SP_BUTTON_R] = 0;
-		level->choosenPlayer = level->choosenPlayer->prev;
-		in_jump = 0;
-	}
-	if (spGetInput()->button[SP_BUTTON_L])
-	{
-		spGetInput()->button[SP_BUTTON_L] = 0;
-		level->choosenPlayer = level->choosenPlayer->next;
-		in_jump = 0;
-	}
+	//Ingame controls
+	do_control_stuff();
+	
+	//Finish?
 	if ( spGetInput()->button[SP_BUTTON_START] )
 		return 1;
 
 	//Physics
 	int i;
 	for (i = 0; i < steps; i++)
-			doPhysics(setSpeed,gravFeedback,yFeedback,xFeedback,level);
+			doPhysics(setSpeed,gravFeedback,yFeedback,xFeedback,(*levelPointer));
 
 	//Visualization stuff
 	rotation+=steps*16;
 	updateLevelObjects();
-	updateLevelSprites(level,steps);
-	calcCamera(level,steps);
+	updateLevelSprites((*levelPointer),steps);
+	calcCamera((*levelPointer),steps);
 	return 0;
 }
 
@@ -376,19 +101,20 @@ int main( int argc, char **argv )
 	spSelectRenderTarget(screen);
 	resize( screen->w, screen->h );
 
-	//Loading the first level:
+	//Loading the first (*levelPointer):
+	levelPointer = getLevelOverPointer();
 	if (argc < 2)
-		level = loadLevel("./level/tile_test.tmx");
+		(*levelPointer) = loadLevel("./level/tile_test.tmx");
 	else
-		level = loadLevel(argv[1]);
-	createPhysicsFromLevel(level);
+		(*levelPointer) = loadLevel(argv[1]);
+	createPhysicsFromLevel((*levelPointer));
 
 	//All glory the main loop
 	spLoop( draw_schizo, calc_schizo, 10, resize, NULL );
 
 	//Winter Wrap up, Winter Wrap up …
 	clearPhysics();
-	deleteLevel(level);
+	deleteLevel((*levelPointer));
 	spFontDelete( font );
 	spQuitCore();
 	return 0;
