@@ -47,6 +47,7 @@ typedef struct sPhysicsElement {
 	int killed;
 	int had_collision; //saved hitPositions
 	int lastDirection;
+	int is_static;
 	LevelObjectType type;
 	pLevelObject levelObject;
 	/* left,up,right,down,grav_up,grav_down */

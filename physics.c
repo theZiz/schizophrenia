@@ -67,6 +67,7 @@ pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 
 	if (moveable || gravitation || moves)
 	{
+		element->is_static = 0;
 		if (firstMoveableElement)
 		{
 			element->prev = firstMoveableElement->prev;
@@ -83,6 +84,7 @@ pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 	}
 	else
 	{
+		element->is_static = 1;
 		if (firstStaticElement)
 		{
 			element->prev = firstStaticElement->prev;
@@ -496,8 +498,11 @@ int createUniqueChainOfOneDirection(pPhysicsCollisionChain* first,pPhysicsElemen
 	pPhysicsCollisionChain chain = element->collisionChain[direction];
 	while (chain)
 	{
-		count += addToCollisionChain(first,chain->element);
-		count += createUniqueChainOfOneDirection(first,chain->element,direction);
+		if (chain->element->is_static == 0)
+		{
+			count += addToCollisionChain(first,chain->element);
+			count += createUniqueChainOfOneDirection(first,chain->element,direction);
+		}
 		chain = chain->next;
 	}
 	return count;
@@ -531,17 +536,6 @@ void doPhysics(void ( *setSpeed )( pPhysicsElement element ),
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
-
-	element = firstStaticElement;
-	if (element)
-	do
-	{
-		int i;
-		for (i = 0; i < COLLISION_CHAIN_COUNT;i++)
-			deleteCollisionChain(element->collisionChain[i]);
-		element = element->next;
-	}
-	while (element != firstStaticElement);
 
 	/////////////////////////
 	// Step I: Gravitation //
