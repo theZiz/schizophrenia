@@ -532,6 +532,17 @@ void doPhysics(void ( *setSpeed )( pPhysicsElement element ),
 	}
 	while (element != firstMoveableElement);
 
+	element = firstStaticElement;
+	if (element)
+	do
+	{
+		int i;
+		for (i = 0; i < COLLISION_CHAIN_COUNT;i++)
+			deleteCollisionChain(element->collisionChain[i]);
+		element = element->next;
+	}
+	while (element != firstStaticElement);
+
 	/////////////////////////
 	// Step I: Gravitation //
 	/////////////////////////
