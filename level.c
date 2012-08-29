@@ -106,8 +106,8 @@ void allocLayer(pLayer layer,int width, int height)
 	layer->height = height;
 }
 
-#define READ_TIL_TAG_BEGIN end = spReadUntil(file,buffer,65536,'<'); if (end) break;
-#define READ_TIL_TAG_END end = spReadUntil(file,buffer,65536,'>'); if (end) break;
+#define READ_TIL_TAG_BEGIN end = spReadUntil(file,buffer,65536,'<',1); if (end) break;
+#define READ_TIL_TAG_END end = spReadUntil(file,buffer,65536,'>',1); if (end) break;
 
 int getHexSign(char sign)
 {
@@ -248,9 +248,9 @@ pLevel loadLevel(char* filename)
 
 	char buffer[65536];
 	//Reading to the begin of the first tag
-	spReadUntil(file,buffer,65536,'<');
+	spReadUntil(file,buffer,65536,'<',1);
 	//Reading the first tag
-	spReadUntil(file,buffer,65536,'>');
+	spReadUntil(file,buffer,65536,'>',1);
 	if (buffer[0] == '?')
 		printf("Reading first line %s - Everything as expected\n",buffer);
 	else
@@ -260,8 +260,8 @@ pLevel loadLevel(char* filename)
 		return NULL;
 	}
 	//Reading the first level specific tag
-	spReadUntil(file,buffer,65536,'<');
-	spReadUntil(file,buffer,65536,'>');
+	spReadUntil(file,buffer,65536,'<',1);
+	spReadUntil(file,buffer,65536,'>',1);
 	if (strstr(buffer,"map"))
 	{
 		printf("Reading level map\n");
@@ -880,8 +880,8 @@ void drawLevel(pLevel level)
 {
 	spSetVerticalOrigin(SP_TOP);
 	spSetHorizontalOrigin(SP_LEFT);
-	int screenWidth = spGetWindowSurface()->w;
-	int screenHeight = spGetWindowSurface()->h;
+	int screenWidth = spGetRenderTarget()->w;
+	int screenHeight = spGetRenderTarget()->h;
 	int screenTileWidth  = screenWidth/32+2;
 	int screenTileHeight = screenWidth/32+2;
 	int screenTileBeginX = level->actualCamera.x >> SP_ACCURACY;
