@@ -120,6 +120,7 @@ int main( int argc, char **argv )
 	clearPhysics();
 	deleteLevel((*levelPointer));
 	spFontDelete( font );
+	spDeleteSurface(screen);
 	spQuitCore();
 	return 0;
 }
