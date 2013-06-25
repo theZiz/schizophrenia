@@ -50,10 +50,14 @@ all: schizophrenia
 targets:
 	@echo "The targets are the same like for sparrow3d. :P"
 
-schizophrenia: schizophrenia.c level.o physics.o feedback.o
+schizophrenia: schizophrenia.c level.o physics.o feedback.o makeBuildDir
 	cp $(SPARROW_LIB)/libsparrow3d.so $(BUILD)
 	cp $(SPARROW_LIB)/libsparrowSound.so $(BUILD)
 	$(CPP) $(CFLAGS) schizophrenia.c level.o physics.o feedback.o $(SDL) $(INCLUDE) $(LIB) $(STATIC) $(DYNAMIC) -o $(BUILD)/schizophrenia
+
+makeBuildDir:
+	 @if [ ! -d $(BUILD:/schizophrenia=/) ]; then mkdir $(BUILD:/schizophrenia=/);fi
+	 @if [ ! -d $(BUILD) ]; then mkdir $(BUILD);fi
 
 level.o: level.c level.h
 	$(CPP) $(CFLAGS) -fPIC -c level.c $(SDL) $(INCLUDE)
