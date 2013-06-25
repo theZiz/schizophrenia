@@ -27,7 +27,9 @@
 #include "global_defines.h"
 
 SDL_Surface *screen = NULL;
-SDL_Surface *real_screen;
+#ifdef ZOOMZOOM
+	SDL_Surface *real_screen;
+#endif
 spFontPointer font = NULL;
 
 pLevel* levelPointer;
@@ -53,7 +55,9 @@ void draw_schizo( void )
 			(*levelPointer)->choosenPlayer->physicsElement->position.x - (*levelPointer)->choosenPlayer->physicsElement->backupPosition.x,
 			(*levelPointer)->choosenPlayer->physicsElement->position.y - (*levelPointer)->choosenPlayer->physicsElement->backupPosition.y);
 	spFontDrawRight( screen->w-1, screen->h-font->maxheight*5, -1, buffer, font );
-	spScale2XFast(screen,real_screen);
+	#ifdef ZOOMZOOM
+		spScale2XFast(screen,real_screen);
+	#endif
 	spFlip();
 }
 
@@ -83,9 +87,11 @@ int calc_schizo( Uint32 steps )
 
 void resize( Uint16 w, Uint16 h )
 {
-	if (screen)
-		spDeleteSurface(screen);
-	screen = spCreateSurface(real_screen->w/2,real_screen->h/2);
+	#ifdef ZOOMZOOM
+		if (screen)
+			spDeleteSurface(screen);
+		screen = spCreateSurface(real_screen->w/2,real_screen->h/2);
+	#endif
 	spSelectRenderTarget(screen);
 	//Font Loading
 	if ( font )
@@ -102,8 +108,13 @@ int main( int argc, char **argv )
 	spInitCore();
 
 	//Setup
-	real_screen = spCreateDefaultWindow();
-	resize( real_screen->w, real_screen->h );
+	#ifdef ZOOMZOOM
+		real_screen = spCreateDefaultWindow();
+		resize( real_screen->w, real_screen->h );
+	#else
+		screen = spCreateDefaultWindow();
+		resize( screen->w, screen->h );
+	#endif
 
 	//Loading the first (*levelPointer):
 	levelPointer = getLevelOverPointer();

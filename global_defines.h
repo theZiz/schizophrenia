@@ -21,6 +21,8 @@
 
 /* This file contains some defines needed by multiply files of schizophrenia */
 
+//#define ZOOMZOOM
+
 /* Determines, whether Z sorting is activated or not. It should be deactivated
    and the primitives should be sorted internal */
 #define Z_SORTING 0
