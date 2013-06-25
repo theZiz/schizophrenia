@@ -51,21 +51,8 @@ typedef struct sPhysicsElement {
 	LevelObjectType type;
 	pLevelObject levelObject;
 	/* left,up,right,down,grav_up,grav_down */
-	pPhysicsCollisionChain collisionChain[COLLISION_CHAIN_COUNT]; 
 	pPhysicsElement prev,next;
 } tPhysicsElement;
-
-typedef struct sPhysicsCollisionChain {
-	pPhysicsElement element;
-	pPhysicsCollisionChain next;
-} tPhysicsCollisionChain;
-
-typedef struct sPhysicsCollision {
-	pPhysicsElement element[2];
-	/* like permeability; always pairs like left/right or top/down */
-	int hitPosition[2]; 
-	pPhysicsCollision prev,next;
-} tPhysicsCollision;
 
 pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 			int moveable,int moves,int gravitation,int superPower,pLevelObject levelObject);
