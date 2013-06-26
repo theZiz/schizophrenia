@@ -56,23 +56,23 @@ void setSpeed( pPhysicsElement element )
 	{
 		if (element->levelObject->direction == 0)
 		{
-			element->speed.x = element->levelObject->speed.v1.x;
-			element->speed.y = element->levelObject->speed.v1.y;
+			element->newSpeed.x += element->levelObject->speed.v1.x;
+			element->newSpeed.y += element->levelObject->speed.v1.y;
 		}
 		else
 		{
-			element->speed.x = element->levelObject->speed.v2.x;
-			element->speed.y = element->levelObject->speed.v2.y;
+			element->newSpeed.x = element->levelObject->speed.v2.x;
+			element->newSpeed.y = element->levelObject->speed.v2.y;
 		}	
 	}
 	else
 	if (element->levelObject == level->choosenPlayer)
 	{
 		//Moving the player Y
-		if ( spGetInput()->button[SP_BUTTON_LEFT] )
+		/*if ( spGetInput()->button[SP_BUTTON_LEFT] )
 		{
-			//if ( in_jump == 0 && can_jump && (element->had_collision & 8) ) // start the jump
-			//	in_jump = 1;
+			if ( in_jump == 0 && can_jump && element->grav_hit ) // start the jump
+				in_jump = 1;
 		}
 		else
 		{
@@ -85,7 +85,7 @@ void setSpeed( pPhysicsElement element )
 				can_jump = 1;
 		}
 
-		/*if (element->had_collision & 2 && can_jump) //collision on top
+		if (element->collision_at_position[1] && can_jump) //collision on top
 		{
 			// start turn-around
 			in_jump = JUMP_UPWARDS_TIME;
@@ -115,7 +115,7 @@ void setSpeed( pPhysicsElement element )
 			}
 		}
 		else
-		if (element->had_collision & 8) //ground collision
+		if (element->grav_hit) //ground collision
 		{
 			in_jump = 0;
 		}*/
@@ -123,75 +123,32 @@ void setSpeed( pPhysicsElement element )
 		//Moving the player X
 		if (spGetInput()->axis[0] < 0)
 		{
-			if (in_jump || element->freeFallCounter)
-				spSelectSprite(level->choosenPlayer->animation,"jump left");
-			else
-				spSelectSprite(level->choosenPlayer->animation,"run left");
 			if (last_run >= 0)
 				last_run = 0;
 			last_run-=1;
 			if (last_run > -(MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
-				element->speed.x = last_run*MOVEMENT_ACCEL;
+				element->newSpeed.x = last_run*MOVEMENT_ACCEL;
 			else
-				element->speed.x = -MAX_MOVEMENT_FORCE;
+				element->newSpeed.x = -MAX_MOVEMENT_FORCE;
 		}
 		else
 		if (spGetInput()->axis[0] > 0)
 		{
-			if (in_jump || element->freeFallCounter)
-				spSelectSprite(level->choosenPlayer->animation,"jump right");
-			else
-				spSelectSprite(level->choosenPlayer->animation,"run right");
 			if (last_run <= 0)
 				last_run = 0;
 			last_run+=1;
 			if (last_run < (MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
-				element->speed.x = last_run*MOVEMENT_ACCEL;
+				element->newSpeed.x = last_run*MOVEMENT_ACCEL;
 			else
-				element->speed.x = MAX_MOVEMENT_FORCE;
+				element->newSpeed.x = MAX_MOVEMENT_FORCE;
 		}
 		else
 		{
-			if (element->lastDirection < 0)
-			{
-				if (in_jump || element->freeFallCounter)
-					spSelectSprite(element->levelObject->animation,"jump left");
-				else
-					spSelectSprite(element->levelObject->animation,"stand left");
-			}
-			else
-			if (element->lastDirection > 0)
-			{
-				if (in_jump || element->freeFallCounter)
-					spSelectSprite(element->levelObject->animation,"jump right");
-				else
-					spSelectSprite(element->levelObject->animation,"stand right");
-			}
 			if (last_run < 0)
 				last_run = 0;
 			else
 			if (last_run > 0)
 				last_run = 0;
-		}
-	}
-	//Setting the correct sprite
-	else
-	if (element->levelObject->type == PLAYER)
-	{
-		if (element->lastDirection < 0)
-		{
-			if (element->freeFallCounter)
-				spSelectSprite(element->levelObject->animation,"jump left");
-			else
-				spSelectSprite(element->levelObject->animation,"stand left");
-		}
-		else
-		if (element->lastDirection > 0)
-		{
-			if (element->freeFallCounter)
-				spSelectSprite(element->levelObject->animation,"jump right");
-			else
-				spSelectSprite(element->levelObject->animation,"stand right");
 		}
 	}
 }

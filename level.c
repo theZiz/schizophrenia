@@ -933,7 +933,7 @@ void drawLevel(pLevel level)
 						              - ((level->actualCamera.x >> SP_ACCURACY -5));
 						int positionY = (obj->y >> SP_ACCURACY-5)+screenHeight/2
 						              - ((level->actualCamera.y >> SP_ACCURACY -5));
-						spDrawSprite(positionX,positionY,-2,spActiveSprite(obj->animation));
+						spDrawSprite(positionX,positionY+1,-2,spActiveSprite(obj->animation));
 					}
 					obj = obj->next;
 				}

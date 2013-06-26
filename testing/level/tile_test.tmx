@@ -124,7 +124,7 @@
 </data>
  </layer>
  <objectgroup name="player" width="81" height="20">
-  <object gid="101" x="389" y="283"/>
+  <object gid="101" x="383" y="66"/>
   <object gid="101" x="853" y="249"/>
   <object gid="101" x="1539" y="275"/>
   <object gid="101" x="2156" y="285"/>

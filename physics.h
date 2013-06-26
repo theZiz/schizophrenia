@@ -26,29 +26,38 @@
 #include "global_defines.h"
 
 typedef struct sPhysicsElement *pPhysicsElement;
-typedef struct sPhysicsCollisionChain *pPhysicsCollisionChain;
 typedef struct sPhysicsCollision *pPhysicsCollision;
 
 #include "level.h"
 
-#define COLLISION_CHAIN_COUNT 6
-
 typedef struct sPhysicsElement {
-	struct {Sint32 x,y;} position,backupPosition,speed,newSpeed;
+	//constant stuff
 	Sint32 w,h; //32 pixel == SP_ONE
 	int permeability; //bit,direction: 1,left 2,top 4,right 8,down (15 means solid, 0 transparent
 	int floating;
 	int moveable;
 	int platform;
-	int killed;
-	int is_static;
-	int freeFallCounter;
-	int lastDirection;
 	int background;
+	int is_static;
 	LevelObjectType type;
 	pLevelObject levelObject;
 	pPhysicsElement prev,next;
+	//stuff, which changes
+	struct {Sint32 x,y;} position,backupPosition,speed,newSpeed;
+	int killed;
+	int freeFallCounter;
+	int lastDirection;
+	pPhysicsCollision collision;
+	int collision_at_position[4];
+	int grav_hit;
 } tPhysicsElement;
+
+typedef struct sPhysicsCollision {
+	int position; // 0 left, 2 top, 4 right, 8 down
+	pPhysicsElement me;
+	pPhysicsElement partner;
+	pPhysicsCollision next;
+} tPhysicsCollsision;
 
 pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 			int permeability,int floating,int moveable,int platform,int background, pLevelObject levelObject, int static_);

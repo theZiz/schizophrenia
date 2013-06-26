@@ -36,7 +36,7 @@ dass es sich bewegt und es gerumst hat. Es bekommt folgende Informationen:
   Geschwindigkeit auf diesen Wert gesetzt.
 Wenn sich eine platform bewegt, werden alle Objekte auf ihr mitbewegt.
 
-Idee 2:
+Idee 2 (im Moment implementiert):
 Alle Bewegungen (Graviation, X und Y) von allen beweglichen Objekten passieren
 gleichzeitig. Wenn sich eine Platform bewegt, bewegt sich alles "auf" ihr mit.
 Seriell wird jede Kollision durchgegangen und aufgelöst, meist durch

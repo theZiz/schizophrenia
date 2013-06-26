@@ -49,10 +49,11 @@ void draw_schizo( void )
 	spSetZTest( 0 );
 	spSetAlphaTest( 1 );
 	char buffer[256];
-	sprintf( buffer, "camera X: %i\ncamera Y: %i\ncollisiontests: %i\nfps: %i\nspeed:%.5i,%.5i",
+	sprintf( buffer, "camera X: %i\ncamera Y: %i\ncollisiontests: %i\nfps: %i\nspeed:%.5i,%.5i(%.5i)",
 			(*levelPointer)->actualCamera.x >> SP_ACCURACY-5,(*levelPointer)->actualCamera.y >> SP_ACCURACY-5,
 			getCollisionCount(),spGetFPS(),
-			(*levelPointer)->choosenPlayer->physicsElement->position.x - (*levelPointer)->choosenPlayer->physicsElement->backupPosition.x,
+			(*levelPointer)->choosenPlayer->physicsElement->speed.x,
+			(*levelPointer)->choosenPlayer->physicsElement->speed.y,
 			(*levelPointer)->choosenPlayer->physicsElement->position.y - (*levelPointer)->choosenPlayer->physicsElement->backupPosition.y);
 	spFontDrawRight( screen->w-1, screen->h-font->maxheight*5, -1, buffer, font );
 	#ifdef ZOOMZOOM
