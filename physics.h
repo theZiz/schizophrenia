@@ -34,28 +34,24 @@ typedef struct sPhysicsCollision *pPhysicsCollision;
 #define COLLISION_CHAIN_COUNT 6
 
 typedef struct sPhysicsElement {
-	struct {Sint32 x,y;} position,backupPosition,speed;
+	struct {Sint32 x,y;} position,backupPosition,speed,newSpeed;
 	Sint32 w,h; //32 pixel == SP_ONE
-	int gravitation; //gravitation moves this element
-	/* bit,direction: 1,left 2,top 4,right 8,down (15 means solid, 0 transparent
-	 * (doors, switches...)) */
-	int permeability; 
-	int moves; //x and y forces move this element.
-	int moveable; //can be moved from out
-	int superPower;
-	int freeFallCounter;
+	int permeability; //bit,direction: 1,left 2,top 4,right 8,down (15 means solid, 0 transparent
+	int floating;
+	int moveable;
+	int platform;
 	int killed;
-	int had_collision; //saved hitPositions
-	int lastDirection;
 	int is_static;
+	int freeFallCounter;
+	int lastDirection;
+	int background;
 	LevelObjectType type;
 	pLevelObject levelObject;
-	/* left,up,right,down,grav_up,grav_down */
 	pPhysicsElement prev,next;
 } tPhysicsElement;
 
-pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
-			int moveable,int moves,int gravitation,int superPower,pLevelObject levelObject);
+pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
+			int permeability,int floating,int moveable,int platform,int background, pLevelObject levelObject, int static_);
 void createPhysicsFromLevel(pLevel level);
 void clearPhysics(); //Deletes the whole scene
 void doPhysics(void ( *setSpeed )( pPhysicsElement element ),

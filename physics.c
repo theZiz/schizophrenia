@@ -26,25 +26,28 @@ pPhysicsElement firstStaticElement = NULL;
 pPhysicsElement *staticElementLookUp = NULL;
 int staticElementLookUpX,staticElementLookUpY;
 
-pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
-			int moveable,int moves,int gravitation,int superPower,pLevelObject levelObject)
+pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
+			int permeability,int floating,int moveable,int platform,int background, pLevelObject levelObject, int static_)
 {
 	pPhysicsElement element = (pPhysicsElement)malloc(sizeof(tPhysicsElement));
-	element->position.x = px;
-	element->position.y = py;
-	element->backupPosition.x = px;
-	element->backupPosition.y = py;
-	element->lastDirection = 1;
-	element->w = w;
-	element->h = h;
+	element->position.x = x;
+	element->position.y = y;
+	element->backupPosition.x = x;
+	element->backupPosition.y = y;
 	element->speed.x = 0;
 	element->speed.y = 0;
-	element->gravitation = gravitation;
-	element->permeability = 15; //mask 0b1111
-	element->superPower = superPower;
-	element->freeFallCounter = 0;
+	element->newSpeed.x = 0;
+	element->newSpeed.y = 0;
+	element->w = w;
+	element->h = h;
+	element->permeability = permeability; //mask 0b1111
+	element->floating = floating;
 	element->moveable = moveable;
-	element->moves = moves;
+	element->platform = platform;
+	element->background = background;
+	element->killed = 0;
+	element->freeFallCounter = 0;
+	element->lastDirection = 1;
 	element->levelObject = levelObject;
 	if (levelObject)
 	{
@@ -54,7 +57,7 @@ pPhysicsElement createPhysicsElement(Sint32 px,Sint32 py,Sint32 w,Sint32 h,
 	else
 		element->type = UNKONWN;
 
-	if (moveable || gravitation || moves)
+	if (!static_)
 	{
 		element->is_static = 0;
 		if (firstMoveableElement)
@@ -104,7 +107,7 @@ void createPhysicsFromLevel(pLevel level)
 		Sint32 y = spIntToFixed(i / level->layer.physics.width);
 		if (level->layer.physics.tile[i].nr)
 		{
-			pPhysicsElement element = createPhysicsElement(x,y,SP_ONE,SP_ONE,0,0,0,0,NULL);
+			pPhysicsElement element = createPhysicsElement(x,y,SP_ONE,SP_ONE,15,0,0,0,0,NULL,1);
 			element->permeability = level->layer.physics.tile[i].nr;
 			staticElementLookUp[i] = element;
 		}
@@ -121,9 +124,9 @@ void createPhysicsFromLevel(pLevel level)
 		do
 		{
 			int moveable = 0;
-			int moves = 0;
-			int gravitation = 0;
-			int superPower = 0;
+			int floating = 0;
+			int platform = 0;
+			int background = 0;
 			switch (obj->type)
 			{
 				case TROPHIES: case GENERIC: case UNKONWN: case UNSELECTABLE: case LOGICGROUP:
@@ -131,21 +134,16 @@ void createPhysicsFromLevel(pLevel level)
 					continue;
 				case PLAYER: case NEGA: case BOX: case BUG:
 					moveable = 1;
-					moves = 1;
-					gravitation = 1;
 					break;
 				case PLATFORM:
-					moves = 1;
-					superPower = 1;
+					floating = 1;
+					platform = 1;
 					break;
-			}
-			pPhysicsElement element = createPhysicsElement(obj->x,obj->y,obj->w << SP_ACCURACY-5,obj->h << SP_ACCURACY-5,moveable,moves,gravitation,superPower,obj);
-			switch (obj->type)
-			{
 				case SWITCH: case BUTTON: case DOOR: case COLLECTIBLE:
-					element->permeability = 0;
+					background = 1;
 					break;
 			}
+			pPhysicsElement element = createPhysicsElement(obj->x,obj->y,obj->w << SP_ACCURACY-5,obj->h << SP_ACCURACY-5,15,floating,moveable,platform,background,obj,0);
 			obj = obj->next;
 		}
 		while (obj != group->firstObject);
@@ -222,7 +220,6 @@ void doPhysics(void ( *setSpeed )( pPhysicsElement element ),
 		element->speed.x = 0;
 		element->speed.y = 0;
 		setSpeed(element);
-		element->had_collision = 0;
 		element->backupPosition.x = element->position.x;
 		element->backupPosition.y = element->position.y;
 		//DEBUG

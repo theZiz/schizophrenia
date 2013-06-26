@@ -44,6 +44,15 @@ zurücksetzen der Position. Wenn zurückgesetzt wurde, werden alle Objekte, die
 ihre neue Position behalten haben neu getestet bis es kein bewegtes Objekt mehr
 gibt oder keine Kollision mit diesen.
 
+Maßnahmen gegen "Zittern":
+Bisher war es so, wenn man sich auf einer Platform bewegt hat, zitterte man. Das
+ist aufgrund der Umrechnung von Welt in Pixelkoordinaten. Bei dieser wird der
+"Rest" abgeschnitten. Wenn ich den "Rest" von Spieler und Plattform gleichsetze
+und gleichmäßig verändere, würde der Effekt weg gehen. Aber dann wird das Laufen
+auf der Plattform vielleicht komisch... u.U. sollte ich doch auf Pixelgenaue
+Physik zurückgreifen. Oder ich merke beim Zeichnen, dass der Spieler auf einer
+Plattform ist und synchronisiere nur beim Zeichnen - nicht Physikintern
+
 Ziz:
 + Bewegung der Platformen
 + Gravitationskollisionsketten

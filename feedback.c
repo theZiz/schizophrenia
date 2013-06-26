@@ -71,8 +71,8 @@ void setSpeed( pPhysicsElement element )
 		//Moving the player Y
 		if ( spGetInput()->button[SP_BUTTON_LEFT] )
 		{
-			if ( in_jump == 0 && can_jump && (element->had_collision & 8) ) // start the jump
-				in_jump = 1;
+			//if ( in_jump == 0 && can_jump && (element->had_collision & 8) ) // start the jump
+			//	in_jump = 1;
 		}
 		else
 		{
@@ -85,7 +85,7 @@ void setSpeed( pPhysicsElement element )
 				can_jump = 1;
 		}
 
-		if (element->had_collision & 2 && can_jump) //collision on top
+		/*if (element->had_collision & 2 && can_jump) //collision on top
 		{
 			// start turn-around
 			in_jump = JUMP_UPWARDS_TIME;
@@ -118,7 +118,7 @@ void setSpeed( pPhysicsElement element )
 		if (element->had_collision & 8) //ground collision
 		{
 			in_jump = 0;
-		}
+		}*/
 
 		//Moving the player X
 		if (spGetInput()->axis[0] < 0)
