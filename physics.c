@@ -44,7 +44,7 @@ pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 	element->killed = 0;
 	element->freeFallCounter = 0;
 	if (platform)
-		element->specific.lastDirection = 1;
+		element->specific.platform.lastDirection = 1;
 	else
 	{
 		element->specific.player.can_jump = 0;
@@ -269,47 +269,64 @@ static int check_Y_collision(pPhysicsElement e1,pPhysicsElement e2,int backup) /
 	return 0;
 }
 
-int collision_check_y(pPhysicsElement element,pPhysicsElement partner,int backupY)
+int collision_check_y(pPhysicsElement element,pPhysicsElement partner,int backupX,int backupY)
 {
 	int pos = check_Y_collision(element,partner,backupY);
 	if (pos)
 	{
-		int diff = backupY - element->position.y;
-		if (pos ==-1) //element over partner
+		if (element->platform)
 		{
-			element->position.y = partner->position.y - element->h;
-			if (!element->floating)
-				element->freeFallCounter = 0;
-		}
-		else //element under partner
-			element->position.y = partner->position.y + partner->h;
-		int newDiff = backupY - element->position.y;
-		if (diff*newDiff < 0 || //different signs
-			abs(diff) < abs (newDiff) ) //distance is bigger!
+			element->position.x = backupX;
 			element->position.y = backupY;
+			element->specific.platform.had_y_collision = 1;
+		}
+		else
+		{
+			int diff = backupY - element->position.y;
+			if (pos ==-1) //element over partner
+			{
+				element->position.y = partner->position.y - element->h;
+				if (!element->floating)
+					element->freeFallCounter = 0;
+			}
+			else //element under partner
+				element->position.y = partner->position.y + partner->h;
+			int newDiff = backupY - element->position.y;
+			if (diff*newDiff < 0 || //different signs
+				abs(diff) < abs (newDiff) ) //distance is bigger!
+				element->position.y = backupY;
+		}
 	}
 	return pos;
 }
 
-int collision_check_x(pPhysicsElement element,pPhysicsElement partner,int backupX)
+int collision_check_x(pPhysicsElement element,pPhysicsElement partner,int backupX,int backupY)
 {
 	int pos = check_X_collision(element,partner,backupX);
 	if (pos)
 	{
-		int diff = backupX - element->position.x;
-		if (pos ==-1) //element left of partner
-			element->position.x = partner->position.x - element->w;
-		else //element right of partner
-			element->position.x = partner->position.x + partner->w;
-		int newDiff = backupX - element->position.x;
-		if (diff*newDiff < 0 || //different signs
-			abs(diff) < abs (newDiff) ) //distance is bigger!
+		if (element->platform)
+		{
 			element->position.x = backupX;
+			element->position.y = backupY;
+		}
+		else
+		{
+			int diff = backupX - element->position.x;
+			if (pos ==-1) //element left of partner
+				element->position.x = partner->position.x - element->w;
+			else //element right of partner
+				element->position.x = partner->position.x + partner->w;
+			int newDiff = backupX - element->position.x;
+			if (diff*newDiff < 0 || //different signs
+				abs(diff) < abs (newDiff) ) //distance is bigger!
+				element->position.x = backupX;
+		}
 	}
 	return pos;
 }
 
-static void check_all_collisions(pPhysicsElement element, int (*collision_check) (pPhysicsElement element,pPhysicsElement partner,int backup),int backup,void (*hitFeedback) ( pPhysicsElement element , int pos))
+static void check_all_collisions(pPhysicsElement element, int (*collision_check) (pPhysicsElement element,pPhysicsElement partner,int backupX,int backupY),int backupX,int backupY,void (*hitFeedback) ( pPhysicsElement element , int pos))
 {
 	//Collision with moveable stuff
 	pPhysicsElement partner = firstMoveableElement;
@@ -320,7 +337,7 @@ static void check_all_collisions(pPhysicsElement element, int (*collision_check)
 			partner = partner->next;
 			continue;
 		}
-		int pos = collision_check(element,partner,backup);
+		int pos = collision_check(element,partner,backupX,backupY);
 		if (pos)
 			hitFeedback(element,pos);
 		partner = partner->next;
@@ -330,7 +347,7 @@ static void check_all_collisions(pPhysicsElement element, int (*collision_check)
 	partner = firstStaticElement;
 	do
 	{
-		int pos = collision_check(element,partner,backup);
+		int pos = collision_check(element,partner,backupX,backupY);
 		if (pos)
 			hitFeedback(element,pos);
 		partner = partner->next;
@@ -387,20 +404,21 @@ void doPhysics(void ( *setSpeed )( pPhysicsElement element ), void ( *xHit )( pP
 	if (element)
 	do
 	{
-		if (element->background)
-		{
-			// TODO: Doing something incredible intelligent here!
-		}
 		//Y
 		//Movement + Backup
-		int backup = element->position.y;
+		int backupX = element->position.x;
+		int backupY = element->position.y;
 		element->position.y += element->speed.y;
-		check_all_collisions(element,collision_check_y,backup,yHit);
+		if (element->platform)
+			element->specific.platform.had_y_collision = 0;
+		check_all_collisions(element,collision_check_y,backupX,backupY,yHit);
 		//X
 		//Movement + Backup
-		backup = element->position.x;
-		element->position.x += element->speed.x;
-		check_all_collisions(element,collision_check_x,backup,xHit);
+		if (!(element->platform && element->specific.platform.had_y_collision))
+		{
+			element->position.x += element->speed.x;
+			check_all_collisions(element,collision_check_x,backupX,backupY,xHit);
+		}
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
