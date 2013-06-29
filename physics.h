@@ -51,6 +51,7 @@ typedef struct sPhysicsElement {
 			int in_jump;
 			int can_jump;
 			int last_run;
+			int pushes;
 		} player;
 	} specific;
 } tPhysicsElement;

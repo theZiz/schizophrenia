@@ -50,6 +50,7 @@ pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 		element->specific.player.can_jump = 0;
 		element->specific.player.in_jump = 0;
 		element->specific.player.last_run = 0;
+		element->specific.player.pushes = 0;
 	}
 	element->levelObject = levelObject;
 	if (levelObject)
