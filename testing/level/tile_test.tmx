@@ -124,7 +124,7 @@
 </data>
  </layer>
  <objectgroup name="player" width="81" height="20">
-  <object gid="101" x="383" y="66"/>
+  <object gid="101" x="320" y="66"/>
   <object gid="101" x="853" y="249"/>
   <object gid="101" x="1539" y="275"/>
   <object gid="101" x="2156" y="285"/>
@@ -152,6 +152,7 @@
   <object x="2323" y="255"/>
   <object x="2259" y="320"/>
   <object x="290" y="194" width="20" height="20"/>
+  <object x="390" y="194" width="20" height="20"/>
   <object x="600" y="310"/>
  </objectgroup>
  <objectgroup name="door" width="81" height="20">

@@ -26,7 +26,6 @@
 #include "global_defines.h"
 
 typedef struct sPhysicsElement *pPhysicsElement;
-typedef struct sPhysicsCollision *pPhysicsCollision;
 
 #include "level.h"
 
@@ -43,30 +42,17 @@ typedef struct sPhysicsElement {
 	pLevelObject levelObject;
 	pPhysicsElement prev,next;
 	//stuff, which changes
-	struct {Sint32 x,y;} position,backupPosition,speed,newSpeed;
+	struct {Sint32 x,y;} position,speed;
 	int killed;
 	int freeFallCounter;
 	int lastDirection;
-	pPhysicsCollision collision;
-	int collision_at_position[4];
-	int grav_hit;
 } tPhysicsElement;
-
-typedef struct sPhysicsCollision {
-	int position; // 0 left, 2 top, 4 right, 8 down
-	pPhysicsElement me;
-	pPhysicsElement partner;
-	pPhysicsCollision next;
-} tPhysicsCollsision;
 
 pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 			int permeability,int floating,int moveable,int platform,int background, pLevelObject levelObject, int static_);
 void createPhysicsFromLevel(pLevel level);
 void clearPhysics(); //Deletes the whole scene
-void doPhysics(void ( *setSpeed )( pPhysicsElement element ),
-               int ( *gravFeedback )( pPhysicsCollision collision ),
-               int ( *yFeedback )( pPhysicsCollision collision ),
-               int ( *xFeedback )( pPhysicsCollision collision ), pLevel level);
+void doPhysics(void ( *setSpeed )( pPhysicsElement element ), pLevel level);
 void updateLevelObjects();
 
 int getCollisionCount(); //DEBUG

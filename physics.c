@@ -32,12 +32,8 @@ pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 	pPhysicsElement element = (pPhysicsElement)malloc(sizeof(tPhysicsElement));
 	element->position.x = x;
 	element->position.y = y;
-	element->backupPosition.x = x;
-	element->backupPosition.y = y;
 	element->speed.x = 0;
 	element->speed.y = 0;
-	element->newSpeed.x = 0;
-	element->newSpeed.y = 0;
 	element->w = w;
 	element->h = h;
 	element->permeability = permeability; //mask 0b1111
@@ -48,9 +44,7 @@ pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 	element->killed = 0;
 	element->freeFallCounter = 0;
 	element->lastDirection = 1;
-	element->grav_hit = 0;
 	element->levelObject = levelObject;
-	element->collision = NULL;
 	if (levelObject)
 	{
 		levelObject->physicsElement = element;
@@ -207,210 +201,172 @@ void updateLevelObjects()
 int collision_tests;
 #endif
 
-int check_for_collision_and_insert_holy_shit_long_function_name(pPhysicsElement e1,pPhysicsElement e2,int only_grav)
+int check_X_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 left, 0 no collision, 1 collision right as seen from e1
 {
 	#ifdef COUNT_COLLISION
-	if (only_grav)
-		collision_tests++;
-	else
-		collision_tests+=4;
+	collision_tests+=2;
 	#endif
-	if (only_grav)
+	if (e1->position.y + e1->h > e2->position.y &&
+	    e1->position.y         < e2->position.y + e2->h)
 	{
-		if (e1->position.x + e1->w >= e2->position.x &&
-				e1->position.x         <  e2->position.x + e2->w)
-		{
-			//e1 above e2
-			if (e1->position.y + e1->h >= e2->position.y &&
-					e1->position.y + e1->h <  e2->position.y + e2->h)
-				e1->grav_hit = 1;
-
-			//e2 above e1
-			if (e2->position.y + e2->h >= e1->position.y &&
-					e2->position.y + e2->h <  e1->position.y + e1->h)
-				e2->grav_hit = 1;
-		}
+		//e1 left of e2
+		if (e1->position.x + e1->w >  e2->position.x &&
+		    e1->position.x + e1->w <= e2->position.x + e2->w)
+			return -1;
+		//e2 left of e1
+		if (e2->position.x + e2->w >  e1->position.x &&
+		    e2->position.x + e2->w <= e1->position.x + e1->w)
+		    return 1;
 	}
-	else
+	return 0;
+}
+
+int check_Y_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 top, 0 no collision, 1 collision bottom as seen from e1
+{
+	#ifdef COUNT_COLLISION
+	collision_tests+=2;
+	#endif
+	if (e1->position.x + e1->w > e2->position.x &&
+	    e1->position.x         < e2->position.x + e2->w)
 	{
-		int position1 = 0;
-		int position2 = 0;
-		if (e1->position.x + e1->w >= e2->position.x &&
-				e1->position.x         <  e2->position.x + e2->w)
-		{
-			//e1 above e2
-			if (e1->position.y + e1->h >= e2->position.y &&
-					e1->position.y + e1->h <  e2->position.y + e2->h)
-			{
-				e1->collision_at_position[3] = 1;
-				position1 |= 8;
-				e2->collision_at_position[1] = 1;
-				position2 |= 2;
-			}
+		//e1 above e2
+		if (e1->position.y + e1->h >  e2->position.y &&
+		    e1->position.y + e1->h <= e2->position.y + e2->h)
+			return -1;
+		//e2 above e1
+		if (e2->position.y + e2->h >  e1->position.y &&
+		    e2->position.y + e2->h <= e1->position.y + e1->h)
+		    return 1;
+	}
+	return 0;
+}
 
-			//e2 above e1
-			if (e2->position.y + e2->h >= e1->position.y &&
-					e2->position.y + e2->h <  e1->position.y + e1->h)
-			{
-				e2->collision_at_position[3] = 1;
-				position2 |= 8;
-				e1->collision_at_position[1] = 1;
-				position1 |= 2;
-			}
-		}
-		if (e1->position.y + e1->h >= e2->position.y &&
-				e1->position.y         <  e2->position.y + e2->h)
+void collision_check_y(pPhysicsElement element,pPhysicsElement partner,int backupY)
+{
+	int pos = check_Y_collision(element,partner);
+	if (pos)
+	{
+		int diff = backupY - element->position.y;
+		if (pos ==-1) //element over partner
 		{
-			//e1 left of e2
-			if (e1->position.x + e1->w >= e2->position.x &&
-					e1->position.x + e1->w <  e2->position.x + e2->w)
-			{
-				e1->collision_at_position[2] = 1;
-				position1 |= 4;
-				e2->collision_at_position[0] = 1;
-				position2 |= 0;
-			}
-
-			//e2 left of e1
-			if (e2->position.x + e2->w >= e1->position.x &&
-					e2->position.x + e2->w <  e1->position.x + e1->w)
-			{
-				e2->collision_at_position[2] = 1;
-				position2 |= 4;
-				e1->collision_at_position[0] = 1;
-				position1 |= 0;
-			}
+			element->position.y = partner->position.y - element->h;
+			if (!element->floating)
+				element->freeFallCounter = 0;
 		}
-		if (position1)
-		{
-			pPhysicsCollision collision;
-			if (!e1->is_static)
-			{
-				collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollsision));
-				collision->me = e1;
-				collision->partner = e2;
-				collision->position = position1;
-				collision->next = e1->collision;
-				e1->collision = collision;
-			}
-			if (!e2->is_static)
-			{
-				collision = (pPhysicsCollision)malloc(sizeof(tPhysicsCollsision));
-				collision->me = e2;
-				collision->partner = e1;
-				collision->position = position2;
-				collision->next = e2->collision;
-				e2->collision = collision;
-			}
-		}
+		else //element under partner
+			element->position.y = partner->position.y + partner->h;
+		int newDiff = backupY - element->position.y;
+		if (diff*newDiff < 0 || //different signs
+			abs(diff) < abs (newDiff) ) //distance is bigger!
+			element->position.y = backupY;
 	}
 }
+
+void collision_check_x(pPhysicsElement element,pPhysicsElement partner,int backupX)
+{
+	int pos = check_X_collision(element,partner);
+	if (pos)
+	{
+		int diff = backupX - element->position.x;
+		if (pos ==-1) //element left of partner
+			element->position.x = partner->position.x - element->w;
+		else //element right of partner
+			element->position.x = partner->position.x + partner->w;
+		int newDiff = backupX - element->position.x;
+		if (diff*newDiff < 0 || //different signs
+			abs(diff) < abs (newDiff) ) //distance is bigger!
+			element->position.x = backupX;
+	}	
+}
+
+void check_all_collisions(pPhysicsElement element, void (*collision_check) (pPhysicsElement element,pPhysicsElement partner,int backup),int backup)
+{
+	//Collision with moveable stuff
+	pPhysicsElement partner = firstMoveableElement;
+	do
+	{
+		if (element == partner)
+		{
+			partner = partner->next;
+			continue;
+		}
+		collision_check(element,partner,backup);
+		partner = partner->next;
+	}
+	while (partner != firstMoveableElement);
+	//Collision with static stuff
+	partner = firstStaticElement;
+	do
+	{
+		collision_check(element,partner,backup);
+		partner = partner->next;
+	}
+	while (partner != firstStaticElement);
+}
 	
-void doPhysics(void ( *setSpeed )( pPhysicsElement element ),
-               int ( *gravFeedback )( pPhysicsCollision collision ),
-               int ( *yFeedback )( pPhysicsCollision collision ),
-               int ( *xFeedback )( pPhysicsCollision collision ), pLevel level)
+void doPhysics(void ( *setSpeed )( pPhysicsElement element ), pLevel level)
 {
 	#ifdef COUNT_COLLISION
 	collision_tests = 0;
 	#endif
-	//Setting up every elements speed; Backup the position and killing
+	
+	/////////////////////////
+	// Reset + Speed Setup //
+	/////////////////////////
 	pPhysicsElement element = firstMoveableElement;
 	if (element)
 	do
 	{
+		element->speed.x = 0;
+		element->speed.y = 0;
 		setSpeed(element);
-		element->speed.x = element->newSpeed.x;
-		element->speed.y = element->newSpeed.y;
-		element->newSpeed.x = 0;
-		element->newSpeed.y = 0;
-		element->backupPosition.x = element->position.x;
-		element->backupPosition.y = element->position.y;
 		element->killed = 0;
-		element = element->next;
-		//Deleting all old collisions
-		while (element->collision)
-		{
-			pPhysicsCollision next = element->collision->next;
-			free(element->collision);
-			element->collision = next;
-		}
-		int i;
-		for (i = 0; i < 4; i++)
-			element->collision_at_position[i] = 0;
-		element->grav_hit = 0;
-	}
-	while (element != firstMoveableElement);
-
-
-	/////////////////////////
-	// Step I: Gravitation //
-	/////////////////////////
-	element = firstMoveableElement;
-	if (element)
-	do
-	{
+		//Gravitation
 		if (!element->floating)
 		{
 			#if (GRAVITY_COUNTER > 0)
 			if (element->freeFallCounter < GRAVITY_COUNTER)
-				element->position.y += element->freeFallCounter * ( GRAVITY_MAX / GRAVITY_COUNTER );
+				element->speed.y += element->freeFallCounter * ( GRAVITY_MAX / GRAVITY_COUNTER );
 			else
 			#endif
-				element->position.y += GRAVITY_MAX;
+				element->speed.y += GRAVITY_MAX;
 			element->freeFallCounter++;
 		}
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
 	
-	/////////////////////////////////////////////////////////
-	// Testing for collision and saving in collision chain //
-	/////////////////////////////////////////////////////////
-	element = firstMoveableElement;
-	if (element)
-	do
-	{
-		pPhysicsElement partner = element->next;
-		while (partner != firstMoveableElement)
-		{
-			check_for_collision_and_insert_holy_shit_long_function_name(element,partner,1);
-			partner = partner->next;
-		}
-		partner = firstStaticElement;
-		do
-		{
-			check_for_collision_and_insert_holy_shit_long_function_name(element,partner,1);
-			partner = partner->next;
-		}
-		while (partner != firstStaticElement);
-		element = element->next;
-	}
-	while (element != firstMoveableElement);
+	////////////////////////
+	// Platform Speed add //
+	////////////////////////
 	
-	/////////////////////////////
-	// Reaction to Gravitation //
-	/////////////////////////////
-	if (element)
-	do
-	{
-		if (element->grav_hit)
-			element->position.y = spIntToFixed(spFixedToInt(element->backupPosition.y*32+1))/32;
-		element = element->next;
-	}
-	while (element != firstMoveableElement);
-	
-	
-	element = firstMoveableElement;
-	if (element)
-	do
-	{
-		element->position.x += element->speed.x;
-		element->position.y += element->speed.y;
-		element = element->next;
-	}
-	while (element != firstMoveableElement);
+	/////////////////////
+	// Mover Speed add //
+	/////////////////////
 
+
+	//////////////////////////
+	// Movement + Collision //
+	//////////////////////////
+
+	element = firstMoveableElement;
+	if (element)
+	do
+	{
+		//Y
+		//Movement + Backup
+		int backup = element->position.y;
+		element->position.y += element->speed.y;
+		check_all_collisions(element,collision_check_y,backup);
+		//X
+		//Movement + Backup
+		backup = element->position.x;
+		element->position.x += element->speed.x;
+		check_all_collisions(element,collision_check_x,backup);
+		element = element->next;
+	}
+	while (element != firstMoveableElement);
+	
 	///////////////////////////////////////////////////////////////
 	// Removing killed elements (and the level objects if exist) //
 	///////////////////////////////////////////////////////////////
@@ -435,9 +391,7 @@ void doPhysics(void ( *setSpeed )( pPhysicsElement element ),
 						firstMoveableElement = element->next;
 				}
 				if (element->levelObject)
-				{
 					removeObject(element->levelObject,level);
-				}
 				free(element);
 				somewhat_killed = 1;
 				break;
@@ -446,61 +400,6 @@ void doPhysics(void ( *setSpeed )( pPhysicsElement element ),
 		}
 		while (element != firstMoveableElement);
 	}
-
-	/////////////////////////////////////////////////////////
-	// Testing for collision and saving in collision chain //
-	/////////////////////////////////////////////////////////
-	element = firstMoveableElement;
-	if (element)
-	do
-	{
-		pPhysicsElement partner = element-> next;
-		while (partner != firstMoveableElement)
-		{
-			check_for_collision_and_insert_holy_shit_long_function_name(element,partner,0);
-			partner = partner->next;
-		}
-		partner = firstStaticElement;
-		do
-		{
-			check_for_collision_and_insert_holy_shit_long_function_name(element,partner,0);
-			partner = partner->next;
-		}
-		while (partner != firstStaticElement);
-		element = element->next;
-	}
-	while (element != firstMoveableElement);
-	
-	///////////////////////////
-	// Reaction to Collision //
-	///////////////////////////
-	element = firstMoveableElement;
-	if (element)
-	do
-	{
-		if ((element->collision_at_position[1] || element->collision_at_position[3]))
-			element->position.y = element->backupPosition.y;
-		if (element->collision_at_position[0] || element->collision_at_position[2])
-			element->position.x = element->backupPosition.x;
-		element = element->next;
-	}
-	while (element != firstMoveableElement);
-
-	////////////////////////////////////
-	// Reseting the Free Fall Counter //
-	////////////////////////////////////
-	element = firstMoveableElement;
-	if (element)
-	do
-	{
-		if (!element->floating)
-		{
-			if (element->grav_hit) //ground collision
-				element->freeFallCounter = 0;
-		}
-		element = element->next;
-	}
-	while (element != firstMoveableElement);
 }
 
 #ifdef COUNT_COLLISION

@@ -49,12 +49,11 @@ void draw_schizo( void )
 	spSetZTest( 0 );
 	spSetAlphaTest( 1 );
 	char buffer[256];
-	sprintf( buffer, "camera X: %i\ncamera Y: %i\ncollisiontests: %i\nfps: %i\nspeed:%.5i,%.5i(%.5i)",
+	sprintf( buffer, "camera X: %i\ncamera Y: %i\ncollisiontests: %i\nfps: %i\nspeed:%.5i,%.5i",
 			(*levelPointer)->actualCamera.x >> SP_ACCURACY-5,(*levelPointer)->actualCamera.y >> SP_ACCURACY-5,
 			getCollisionCount(),spGetFPS(),
 			(*levelPointer)->choosenPlayer->physicsElement->speed.x,
-			(*levelPointer)->choosenPlayer->physicsElement->speed.y,
-			(*levelPointer)->choosenPlayer->physicsElement->position.y - (*levelPointer)->choosenPlayer->physicsElement->backupPosition.y);
+			(*levelPointer)->choosenPlayer->physicsElement->speed.y);
 	spFontDrawRight( screen->w-1, screen->h-font->maxheight*5, -1, buffer, font );
 	#ifdef ZOOMZOOM
 		spScale2XFast(screen,real_screen);
@@ -76,7 +75,7 @@ int calc_schizo( Uint32 steps )
 	//Physics
 	int i;
 	for (i = 0; i < steps; i++)
-			doPhysics(setSpeed,NULL,NULL,NULL,(*levelPointer));
+			doPhysics(setSpeed,(*levelPointer));
 
 	//Visualization stuff
 	rotation+=steps*16;

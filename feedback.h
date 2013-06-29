@@ -28,9 +28,6 @@
 pLevel* getLevelOverPointer();
 void do_control_stuff();
 void setSpeed( pPhysicsElement element );
-int gravFeedback( pPhysicsCollision collision );
-int yFeedback( pPhysicsCollision collision );
-int xFeedback( pPhysicsCollision collision );
 
 #endif
 

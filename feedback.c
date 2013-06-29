@@ -56,13 +56,13 @@ void setSpeed( pPhysicsElement element )
 	{
 		if (element->levelObject->direction == 0)
 		{
-			element->newSpeed.x += element->levelObject->speed.v1.x;
-			element->newSpeed.y += element->levelObject->speed.v1.y;
+			element->speed.x += element->levelObject->speed.v1.x;
+			element->speed.y += element->levelObject->speed.v1.y;
 		}
 		else
 		{
-			element->newSpeed.x = element->levelObject->speed.v2.x;
-			element->newSpeed.y = element->levelObject->speed.v2.y;
+			element->speed.x = element->levelObject->speed.v2.x;
+			element->speed.y = element->levelObject->speed.v2.y;
 		}	
 	}
 	else
@@ -127,9 +127,9 @@ void setSpeed( pPhysicsElement element )
 				last_run = 0;
 			last_run-=1;
 			if (last_run > -(MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
-				element->newSpeed.x = last_run*MOVEMENT_ACCEL;
+				element->speed.x = last_run*MOVEMENT_ACCEL;
 			else
-				element->newSpeed.x = -MAX_MOVEMENT_FORCE;
+				element->speed.x = -MAX_MOVEMENT_FORCE;
 		}
 		else
 		if (spGetInput()->axis[0] > 0)
@@ -138,9 +138,9 @@ void setSpeed( pPhysicsElement element )
 				last_run = 0;
 			last_run+=1;
 			if (last_run < (MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
-				element->newSpeed.x = last_run*MOVEMENT_ACCEL;
+				element->speed.x = last_run*MOVEMENT_ACCEL;
 			else
-				element->newSpeed.x = MAX_MOVEMENT_FORCE;
+				element->speed.x = MAX_MOVEMENT_FORCE;
 		}
 		else
 		{
