@@ -103,7 +103,7 @@ void createPhysicsFromLevel(pLevel level)
 		Sint32 y = spIntToFixed(i / level->layer.physics.width);
 		if (level->layer.physics.tile[i].nr)
 		{
-			pPhysicsElement element = createPhysicsElement(x,y,SP_ONE,SP_ONE,15,0,0,0,0,NULL,1);
+			pPhysicsElement element = createPhysicsElement(x,y,SP_ONE,SP_ONE,level->layer.physics.tile[i].nr,0,0,0,0,NULL,1);
 			element->permeability = level->layer.physics.tile[i].nr;
 			staticElementLookUp[i] = element;
 		}
@@ -201,7 +201,7 @@ void updateLevelObjects()
 int collision_tests;
 #endif
 
-int check_X_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 left, 0 no collision, 1 collision right as seen from e1
+static int check_X_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 left, 0 no collision, 1 collision right as seen from e1
 {
 	#ifdef COUNT_COLLISION
 	collision_tests+=2;
@@ -210,18 +210,22 @@ int check_X_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 left, 0 no col
 	    e1->position.y         < e2->position.y + e2->h)
 	{
 		//e1 left of e2
-		if (e1->position.x + e1->w >  e2->position.x &&
+		if ((e1->permeability & 4) &&
+		    (e2->permeability & 1) &&
+		    e1->position.x + e1->w >  e2->position.x &&
 		    e1->position.x + e1->w <= e2->position.x + e2->w)
 			return -1;
 		//e2 left of e1
-		if (e2->position.x + e2->w >  e1->position.x &&
+		if ((e1->permeability & 1) &&
+		    (e2->permeability & 4) &&
+		    e2->position.x + e2->w >  e1->position.x &&
 		    e2->position.x + e2->w <= e1->position.x + e1->w)
 		    return 1;
 	}
 	return 0;
 }
 
-int check_Y_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 top, 0 no collision, 1 collision bottom as seen from e1
+static int check_Y_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 top, 0 no collision, 1 collision bottom as seen from e1
 {
 	#ifdef COUNT_COLLISION
 	collision_tests+=2;
@@ -230,11 +234,15 @@ int check_Y_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 top, 0 no coll
 	    e1->position.x         < e2->position.x + e2->w)
 	{
 		//e1 above e2
-		if (e1->position.y + e1->h >  e2->position.y &&
+		if ((e1->permeability & 8) &&
+		    (e2->permeability & 2) &&
+		    e1->position.y + e1->h >  e2->position.y &&
 		    e1->position.y + e1->h <= e2->position.y + e2->h)
 			return -1;
 		//e2 above e1
-		if (e2->position.y + e2->h >  e1->position.y &&
+		if ((e1->permeability & 2) &&
+		    (e2->permeability & 8) &&
+		    e2->position.y + e2->h >  e1->position.y &&
 		    e2->position.y + e2->h <= e1->position.y + e1->h)
 		    return 1;
 	}
@@ -279,7 +287,7 @@ void collision_check_x(pPhysicsElement element,pPhysicsElement partner,int backu
 	}	
 }
 
-void check_all_collisions(pPhysicsElement element, void (*collision_check) (pPhysicsElement element,pPhysicsElement partner,int backup),int backup)
+static void check_all_collisions(pPhysicsElement element, void (*collision_check) (pPhysicsElement element,pPhysicsElement partner,int backup),int backup)
 {
 	//Collision with moveable stuff
 	pPhysicsElement partner = firstMoveableElement;
