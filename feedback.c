@@ -21,9 +21,6 @@
 
 #include "feedback.h"
 
-Sint32 in_jump = 0;
-int can_jump = 1;
-Sint32 last_run = 0;
 pLevel level;
 
 pLevel* getLevelOverPointer()
@@ -38,13 +35,11 @@ void do_control_stuff()
 	{
 		spGetInput()->button[SP_BUTTON_R] = 0;
 		level->choosenPlayer = level->choosenPlayer->prev;
-		in_jump = 0;
 	}
 	if (spGetInput()->button[SP_BUTTON_L])
 	{
 		spGetInput()->button[SP_BUTTON_L] = 0;
 		level->choosenPlayer = level->choosenPlayer->next;
-		in_jump = 0;
 	}
 }
 
@@ -68,87 +63,98 @@ void setSpeed( pPhysicsElement element )
 	else
 	if (element->levelObject == level->choosenPlayer)
 	{
-		//Moving the player Y
-		/*if ( spGetInput()->button[SP_BUTTON_LEFT] )
+		//Half of the Y-Movement stuff
+		if ( !spGetInput()->button[SP_BUTTON_LEFT] )
 		{
-			if ( in_jump == 0 && can_jump && element->grav_hit ) // start the jump
-				in_jump = 1;
-		}
-		else
-		{
-			if ( in_jump >= JUMP_MIN_TIME && can_jump ) // start turn-around
+			if ( element->specific.player.in_jump >= JUMP_MIN_TIME && element->specific.player.can_jump ) // start turn-around
 			{
-				in_jump = JUMP_UPWARDS_TIME;
-				can_jump = 0;
+				element->specific.player.in_jump = JUMP_UPWARDS_TIME;
+				element->specific.player.can_jump = 0;
 			}
-			if ( in_jump == 0 ) // allow another jump only after another press of the button
-				can_jump = 1;
+			if ( element->specific.player.in_jump == 0 ) // allow another jump only after another press of the button
+				element->specific.player.can_jump = 1;
 		}
-
-		if (element->collision_at_position[1] && can_jump) //collision on top
+		if (element->specific.player.in_jump)
 		{
-			// start turn-around
-			in_jump = JUMP_UPWARDS_TIME;
-			can_jump = 0;
-		}
-		else
-		if (in_jump)
-		{
-			if (in_jump < JUMP_UPWARDS_TIME) // moving upwards
+			if (element->specific.player.in_jump < JUMP_UPWARDS_TIME) // moving upwards
 			{
-				in_jump++;
+				element->specific.player.in_jump++;
 				element->speed.y-=JUMP_FORCE;
 				element->freeFallCounter = 0;
 			}
 			else
-			if (in_jump < JUMP_END_TIME) // smooth turn-around (peak of jump)
+			if (element->specific.player.in_jump < JUMP_END_TIME) // smooth turn-around (peak of jump)
 			{
-				in_jump++;
-				element->speed.y-=GRAVITY_MAX*(JUMP_END_TIME-in_jump)/(JUMP_END_TIME-JUMP_UPWARDS_TIME);
+				element->specific.player.in_jump++;
+				element->speed.y-=GRAVITY_MAX*(JUMP_END_TIME-element->specific.player.in_jump)/(JUMP_END_TIME-JUMP_UPWARDS_TIME);
 				element->freeFallCounter = 0;
-				can_jump = 0;
+				element->specific.player.can_jump = 0;
 			}
 			else // end jump
 			{
-				in_jump = 0;
-				can_jump = 0;
+				element->specific.player.in_jump = 0;
+				element->specific.player.can_jump = 0;
 			}
 		}
-		else
-		if (element->grav_hit) //ground collision
-		{
-			in_jump = 0;
-		}*/
-
 		//Moving the player X
 		if (spGetInput()->axis[0] < 0)
 		{
-			if (last_run >= 0)
-				last_run = 0;
-			last_run-=1;
-			if (last_run > -(MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
-				element->speed.x = last_run*MOVEMENT_ACCEL;
+			if (element->specific.player.last_run >= 0)
+				element->specific.player.last_run = 0;
+			element->specific.player.last_run-=1;
+			if (element->specific.player.last_run > -(MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
+				element->speed.x = element->specific.player.last_run*MOVEMENT_ACCEL;
 			else
 				element->speed.x = -MAX_MOVEMENT_FORCE;
 		}
 		else
 		if (spGetInput()->axis[0] > 0)
 		{
-			if (last_run <= 0)
-				last_run = 0;
-			last_run+=1;
-			if (last_run < (MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
-				element->speed.x = last_run*MOVEMENT_ACCEL;
+			if (element->specific.player.last_run <= 0)
+				element->specific.player.last_run = 0;
+			element->specific.player.last_run+=1;
+			if (element->specific.player.last_run < (MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
+				element->speed.x = element->specific.player.last_run*MOVEMENT_ACCEL;
 			else
 				element->speed.x = MAX_MOVEMENT_FORCE;
 		}
 		else
 		{
-			if (last_run < 0)
-				last_run = 0;
+			if (element->specific.player.last_run < 0)
+				element->specific.player.last_run = 0;
 			else
-			if (last_run > 0)
-				last_run = 0;
+			if (element->specific.player.last_run > 0)
+				element->specific.player.last_run = 0;
 		}
+	}
+}
+
+void xHit( pPhysicsElement element,int pos)
+{
+
+}
+
+void yHit( pPhysicsElement element,int pos)
+{	
+	if (element->levelObject == level->choosenPlayer)
+	{
+		//Other half of the Y-Movement stuff
+		if (pos == -1)
+		{
+			if (spGetInput()->button[SP_BUTTON_LEFT])
+			{
+				if ( element->specific.player.in_jump == 0 && element->specific.player.can_jump) // start the jump
+					element->specific.player.in_jump = 1;
+			}
+			else
+				element->specific.player.in_jump = 0;
+		}
+
+		if (pos == 1 && element->specific.player.can_jump) //collision on top
+		{
+			// start turn-around
+			element->specific.player.in_jump = JUMP_UPWARDS_TIME;
+			element->specific.player.can_jump = 0;
+		}		
 	}
 }

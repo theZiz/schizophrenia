@@ -45,14 +45,21 @@ typedef struct sPhysicsElement {
 	struct {Sint32 x,y;} position,speed;
 	int killed;
 	int freeFallCounter;
-	int lastDirection;
+	union {
+		int lastDirection;
+		struct {
+			int in_jump;
+			int can_jump;
+			int last_run;
+		} player;
+	} specific;
 } tPhysicsElement;
 
 pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 			int permeability,int floating,int moveable,int platform,int background, pLevelObject levelObject, int static_);
 void createPhysicsFromLevel(pLevel level);
 void clearPhysics(); //Deletes the whole scene
-void doPhysics(void ( *setSpeed )( pPhysicsElement element ), pLevel level);
+void doPhysics(void ( *setSpeed )( pPhysicsElement element ), void ( *xHit )( pPhysicsElement element,int pos ), void ( *yHit )( pPhysicsElement element ,int pos), pLevel level);
 void updateLevelObjects();
 
 int getCollisionCount(); //DEBUG

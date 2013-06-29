@@ -43,7 +43,14 @@ pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 	element->background = background;
 	element->killed = 0;
 	element->freeFallCounter = 0;
-	element->lastDirection = 1;
+	if (platform)
+		element->specific.lastDirection = 1;
+	else
+	{
+		element->specific.player.can_jump = 0;
+		element->specific.player.in_jump = 0;
+		element->specific.player.last_run = 0;
+	}
 	element->levelObject = levelObject;
 	if (levelObject)
 	{
@@ -201,7 +208,7 @@ void updateLevelObjects()
 int collision_tests;
 #endif
 
-static int check_X_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 left, 0 no collision, 1 collision right as seen from e1
+static int check_X_collision(pPhysicsElement e1,pPhysicsElement e2,int backup) //-1 left, 0 no collision, 1 collision right as seen from e1
 {
 	#ifdef COUNT_COLLISION
 	collision_tests+=2;
@@ -212,12 +219,18 @@ static int check_X_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 left, 0
 		//e1 left of e2
 		if ((e1->permeability & 4) &&
 		    (e2->permeability & 1) &&
+		    e1->speed.x > 0 && //movement to the right
+		    !(backup + e1->w >  e2->position.x && //no collision in before
+		      backup + e1->w <= e2->position.x + e2->w) && //no collision in before
 		    e1->position.x + e1->w >  e2->position.x &&
 		    e1->position.x + e1->w <= e2->position.x + e2->w)
 			return -1;
-		//e2 left of e1
+		//e1 right of e2
 		if ((e1->permeability & 1) &&
 		    (e2->permeability & 4) &&
+		    e1->speed.x < 0 && //movement to the left
+		    !(e2->position.x + e2->w >  backup && //no collision in before
+		      e2->position.x + e2->w <= backup + e1->w) && //no collision in before
 		    e2->position.x + e2->w >  e1->position.x &&
 		    e2->position.x + e2->w <= e1->position.x + e1->w)
 		    return 1;
@@ -225,7 +238,7 @@ static int check_X_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 left, 0
 	return 0;
 }
 
-static int check_Y_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 top, 0 no collision, 1 collision bottom as seen from e1
+static int check_Y_collision(pPhysicsElement e1,pPhysicsElement e2,int backup) //-1 top, 0 no collision, 1 collision bottom as seen from e1
 {
 	#ifdef COUNT_COLLISION
 	collision_tests+=2;
@@ -236,12 +249,18 @@ static int check_Y_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 top, 0 
 		//e1 above e2
 		if ((e1->permeability & 8) &&
 		    (e2->permeability & 2) &&
+		    e1->speed.y > 0 && //movement down
+		    !(backup + e1->h >  e2->position.y && //no collision in before
+		      backup + e1->h <= e2->position.y + e2->h) && //no collision in before
 		    e1->position.y + e1->h >  e2->position.y &&
 		    e1->position.y + e1->h <= e2->position.y + e2->h)
 			return -1;
 		//e2 above e1
 		if ((e1->permeability & 2) &&
 		    (e2->permeability & 8) &&
+		    e1->speed.y < 0 && //movement up
+		    !(e2->position.y + e2->h >  backup && //no collision in before
+		      e2->position.y + e2->h <= backup + e1->h) && //no collision in before
 		    e2->position.y + e2->h >  e1->position.y &&
 		    e2->position.y + e2->h <= e1->position.y + e1->h)
 		    return 1;
@@ -249,9 +268,9 @@ static int check_Y_collision(pPhysicsElement e1,pPhysicsElement e2) //-1 top, 0 
 	return 0;
 }
 
-void collision_check_y(pPhysicsElement element,pPhysicsElement partner,int backupY)
+int collision_check_y(pPhysicsElement element,pPhysicsElement partner,int backupY)
 {
-	int pos = check_Y_collision(element,partner);
+	int pos = check_Y_collision(element,partner,backupY);
 	if (pos)
 	{
 		int diff = backupY - element->position.y;
@@ -268,11 +287,12 @@ void collision_check_y(pPhysicsElement element,pPhysicsElement partner,int backu
 			abs(diff) < abs (newDiff) ) //distance is bigger!
 			element->position.y = backupY;
 	}
+	return pos;
 }
 
-void collision_check_x(pPhysicsElement element,pPhysicsElement partner,int backupX)
+int collision_check_x(pPhysicsElement element,pPhysicsElement partner,int backupX)
 {
-	int pos = check_X_collision(element,partner);
+	int pos = check_X_collision(element,partner,backupX);
 	if (pos)
 	{
 		int diff = backupX - element->position.x;
@@ -284,21 +304,24 @@ void collision_check_x(pPhysicsElement element,pPhysicsElement partner,int backu
 		if (diff*newDiff < 0 || //different signs
 			abs(diff) < abs (newDiff) ) //distance is bigger!
 			element->position.x = backupX;
-	}	
+	}
+	return pos;
 }
 
-static void check_all_collisions(pPhysicsElement element, void (*collision_check) (pPhysicsElement element,pPhysicsElement partner,int backup),int backup)
+static void check_all_collisions(pPhysicsElement element, int (*collision_check) (pPhysicsElement element,pPhysicsElement partner,int backup),int backup,void (*hitFeedback) ( pPhysicsElement element , int pos))
 {
 	//Collision with moveable stuff
 	pPhysicsElement partner = firstMoveableElement;
 	do
 	{
-		if (element == partner)
+		if (element == partner || partner->background)
 		{
 			partner = partner->next;
 			continue;
 		}
-		collision_check(element,partner,backup);
+		int pos = collision_check(element,partner,backup);
+		if (pos)
+			hitFeedback(element,pos);
 		partner = partner->next;
 	}
 	while (partner != firstMoveableElement);
@@ -306,13 +329,15 @@ static void check_all_collisions(pPhysicsElement element, void (*collision_check
 	partner = firstStaticElement;
 	do
 	{
-		collision_check(element,partner,backup);
+		int pos = collision_check(element,partner,backup);
+		if (pos)
+			hitFeedback(element,pos);
 		partner = partner->next;
 	}
 	while (partner != firstStaticElement);
 }
 	
-void doPhysics(void ( *setSpeed )( pPhysicsElement element ), pLevel level)
+void doPhysics(void ( *setSpeed )( pPhysicsElement element ), void ( *xHit )( pPhysicsElement element,int pos ), void ( *yHit )( pPhysicsElement element ,int pos), pLevel level)
 {
 	#ifdef COUNT_COLLISION
 	collision_tests = 0;
@@ -361,16 +386,20 @@ void doPhysics(void ( *setSpeed )( pPhysicsElement element ), pLevel level)
 	if (element)
 	do
 	{
+		if (element->background)
+		{
+			// TODO: Doing something incredible intelligent here!
+		}
 		//Y
 		//Movement + Backup
 		int backup = element->position.y;
 		element->position.y += element->speed.y;
-		check_all_collisions(element,collision_check_y,backup);
+		check_all_collisions(element,collision_check_y,backup,yHit);
 		//X
 		//Movement + Backup
 		backup = element->position.x;
 		element->position.x += element->speed.x;
-		check_all_collisions(element,collision_check_x,backup);
+		check_all_collisions(element,collision_check_x,backup,xHit);
 		element = element->next;
 	}
 	while (element != firstMoveableElement);

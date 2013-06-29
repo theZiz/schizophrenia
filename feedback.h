@@ -28,6 +28,8 @@
 pLevel* getLevelOverPointer();
 void do_control_stuff();
 void setSpeed( pPhysicsElement element );
+void xHit( pPhysicsElement element , int pos);
+void yHit( pPhysicsElement element , int pos);
 
 #endif
 
