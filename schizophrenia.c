@@ -75,7 +75,7 @@ int calc_schizo( Uint32 steps )
 	//Physics
 	int i;
 	for (i = 0; i < steps; i++)
-		doPhysics(setSpeed,xHit,yHit,(*levelPointer));
+		doPhysics(*levelPointer);
 
 	//Visualization stuff
 	rotation+=steps*16;

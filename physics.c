@@ -20,6 +20,7 @@
 */
 
 #include "physics.h"
+#include "feedback.h"
 
 pPhysicsElement firstMoveableElement = NULL;
 pPhysicsElement firstStaticElement = NULL;
@@ -27,7 +28,7 @@ pPhysicsElement *staticElementLookUp = NULL;
 int staticElementLookUpX,staticElementLookUpY;
 
 pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
-			int permeability,int floating,int moveable,int platform,int background, pLevelObject levelObject, int static_)
+			int permeability,int floating,int moveable,int platform,int background, int mover,pLevelObject levelObject, int static_)
 {
 	pPhysicsElement element = (pPhysicsElement)malloc(sizeof(tPhysicsElement));
 	element->position.x = x;
@@ -41,6 +42,7 @@ pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 	element->moveable = moveable;
 	element->platform = platform;
 	element->background = background;
+	element->mover = mover;
 	element->killed = 0;
 	element->freeFallCounter = 0;
 	if (platform)
@@ -111,7 +113,7 @@ void createPhysicsFromLevel(pLevel level)
 		Sint32 y = spIntToFixed(i / level->layer.physics.width);
 		if (level->layer.physics.tile[i].nr)
 		{
-			pPhysicsElement element = createPhysicsElement(x,y,SP_ONE,SP_ONE,level->layer.physics.tile[i].nr,0,0,0,0,NULL,1);
+			pPhysicsElement element = createPhysicsElement(x,y,SP_ONE,SP_ONE,level->layer.physics.tile[i].nr,0,0,0,0,0,NULL,1);
 			element->permeability = level->layer.physics.tile[i].nr;
 			staticElementLookUp[i] = element;
 		}
@@ -131,12 +133,16 @@ void createPhysicsFromLevel(pLevel level)
 			int floating = 0;
 			int platform = 0;
 			int background = 0;
+			int mover = 0;
 			switch (obj->type)
 			{
 				case TROPHIES: case GENERIC: case UNKONWN: case UNSELECTABLE: case LOGICGROUP:
 					obj = obj->next;
 					continue;
-				case PLAYER: case NEGA: case BOX: case BUG:
+				case PLAYER:
+					mover = 1;
+					break;
+				case NEGA: case BOX: case BUG:
 					moveable = 1;
 					break;
 				case PLATFORM:
@@ -148,7 +154,7 @@ void createPhysicsFromLevel(pLevel level)
 					floating = 1;
 					break;
 			}
-			pPhysicsElement element = createPhysicsElement(obj->x,obj->y,obj->w << SP_ACCURACY-5,obj->h << SP_ACCURACY-5,15,floating,moveable,platform,background,obj,0);
+			pPhysicsElement element = createPhysicsElement(obj->x,obj->y,obj->w << SP_ACCURACY-5,obj->h << SP_ACCURACY-5,15,floating,moveable,platform,background,mover,obj,0);
 			obj = obj->next;
 		}
 		while (obj != group->firstObject);
@@ -269,6 +275,8 @@ static int check_Y_collision(pPhysicsElement e1,pPhysicsElement e2,int backup) /
 	return 0;
 }
 
+void movementAndCollision(pPhysicsElement element);
+
 int collision_check_y(pPhysicsElement element,pPhysicsElement partner,int backupX,int backupY)
 {
 	int pos = check_Y_collision(element,partner,backupY);
@@ -305,6 +313,15 @@ int collision_check_x(pPhysicsElement element,pPhysicsElement partner,int backup
 	int pos = check_X_collision(element,partner,backupX);
 	if (pos)
 	{
+		if (element->mover && partner->moveable)
+		{
+			partner->speed.x = element->speed.x/2;
+			partner->speed.y = element->speed.y/2;
+			movementAndCollision(partner);
+			pos = check_X_collision(element,partner,backupX);
+			if (pos == 0)
+				return 0;
+		}
 		if (element->platform)
 		{
 			element->position.x = backupX;
@@ -344,7 +361,23 @@ static void check_all_collisions(pPhysicsElement element, int (*collision_check)
 	}
 	while (partner != firstMoveableElement);
 	//Collision with static stuff
-	partner = firstStaticElement;
+	int x1 = spMin(spMax(spFixedToInt(element->position.x),0),staticElementLookUpX-1);
+	int y1 = spMin(spMax(spFixedToInt(element->position.y),0),staticElementLookUpY-1);
+	int x2 = spMin(spMax(spFixedToInt(element->position.x+element->w)+1,0),staticElementLookUpX-1);
+	int y2 = spMin(spMax(spFixedToInt(element->position.y+element->h)+1,0),staticElementLookUpY-1);
+	int x,y;
+	for (x = x1; x < x2; x++)
+		for (y = y1; y < y2; y++)
+		{
+			partner = staticElementLookUp[x+y*staticElementLookUpX];
+			if (partner)
+			{
+				int pos = collision_check(element,partner,backupX,backupY);
+				if (pos)
+					hitFeedback(element,pos);
+			}
+		}
+	/*partner = firstStaticElement;
 	do
 	{
 		int pos = collision_check(element,partner,backupX,backupY);
@@ -352,58 +385,11 @@ static void check_all_collisions(pPhysicsElement element, int (*collision_check)
 			hitFeedback(element,pos);
 		partner = partner->next;
 	}
-	while (partner != firstStaticElement);
+	while (partner != firstStaticElement);*/
 }
-	
-void doPhysics(void ( *setSpeed )( pPhysicsElement element ), void ( *xHit )( pPhysicsElement element,int pos ), void ( *yHit )( pPhysicsElement element ,int pos), pLevel level)
+
+void movementAndCollision(pPhysicsElement element)
 {
-	#ifdef COUNT_COLLISION
-	collision_tests = 0;
-	#endif
-	
-	/////////////////////////
-	// Reset + Speed Setup //
-	/////////////////////////
-	pPhysicsElement element = firstMoveableElement;
-	if (element)
-	do
-	{
-		element->speed.x = 0;
-		element->speed.y = 0;
-		setSpeed(element);
-		element->killed = 0;
-		//Gravitation
-		if (!element->floating)
-		{
-			#if (GRAVITY_COUNTER > 0)
-			if (element->freeFallCounter < GRAVITY_COUNTER)
-				element->speed.y += element->freeFallCounter * ( GRAVITY_MAX / GRAVITY_COUNTER );
-			else
-			#endif
-				element->speed.y += GRAVITY_MAX;
-			element->freeFallCounter++;
-		}
-		element = element->next;
-	}
-	while (element != firstMoveableElement);
-	
-	////////////////////////
-	// Platform Speed add //
-	////////////////////////
-	
-	/////////////////////
-	// Mover Speed add //
-	/////////////////////
-
-
-	//////////////////////////
-	// Movement + Collision //
-	//////////////////////////
-
-	element = firstMoveableElement;
-	if (element)
-	do
-	{
 		//Y
 		//Movement + Backup
 		int backupX = element->position.x;
@@ -418,7 +404,49 @@ void doPhysics(void ( *setSpeed )( pPhysicsElement element ), void ( *xHit )( pP
 		{
 			element->position.x += element->speed.x;
 			check_all_collisions(element,collision_check_x,backupX,backupY,xHit);
+		}	
+}
+	
+void doPhysics(pLevel level)
+{
+	#ifdef COUNT_COLLISION
+	collision_tests = 0;
+	#endif
+	
+	///////////
+	// Reset //
+	///////////
+	pPhysicsElement element = firstMoveableElement;
+	if (element)
+	do
+	{
+		element->killed = 0;
+		element = element->next;
+	}
+	while (element != firstMoveableElement);
+	
+	//////////////////////////
+	// Movement + Collision //
+	//////////////////////////
+	element = firstMoveableElement;
+	if (element)
+	do
+	{
+		element->speed.x = 0;
+		element->speed.y = 0;
+		setSpeed(element);
+		//Gravitation
+		if (!element->floating)
+		{
+			#if (GRAVITY_COUNTER > 0)
+			if (element->freeFallCounter < GRAVITY_COUNTER)
+				element->speed.y += element->freeFallCounter * ( GRAVITY_MAX / GRAVITY_COUNTER );
+			else
+			#endif
+				element->speed.y += GRAVITY_MAX;
+			element->freeFallCounter++;
 		}
+		movementAndCollision(element);
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
