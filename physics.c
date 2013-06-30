@@ -111,7 +111,6 @@ void createPhysicsFromLevel(pLevel level)
 		if (level->layer.physics.tile[i].nr)
 		{
 			pPhysicsElement element = createPhysicsElement(x,y,SP_ONE,SP_ONE,level->layer.physics.tile[i].nr,0,0,0,0,0,NULL,1);
-			element->permeability = level->layer.physics.tile[i].nr;
 			staticElementLookUp[i] = element;
 		}
 		else
@@ -392,10 +391,10 @@ static void check_all_collisions(pPhysicsElement element, int (*collision_check)
 	}
 	while (partner != firstMoveableElement);
 	//Collision with static stuff
-	int x1 = spMin(spMax(spFixedToInt(element->position.x),0),staticElementLookUpX-1);
-	int y1 = spMin(spMax(spFixedToInt(element->position.y),0),staticElementLookUpY-1);
-	int x2 = spMin(spMax(spFixedToInt(element->position.x+element->w)+1,0),staticElementLookUpX-1);
-	int y2 = spMin(spMax(spFixedToInt(element->position.y+element->h)+1,0),staticElementLookUpY-1);
+	int x1 = spMin(spMax(spFixedToInt(element->position.x)-1,0),staticElementLookUpX);
+	int y1 = spMin(spMax(spFixedToInt(element->position.y)-1,0),staticElementLookUpY);
+	int x2 = spMin(spMax(spFixedToInt(element->position.x+element->w)+1,0),staticElementLookUpX);
+	int y2 = spMin(spMax(spFixedToInt(element->position.y+element->h)+1,0),staticElementLookUpY);
 	int x,y;
 	for (x = x1; x < x2; x++)
 		for (y = y1; y < y2; y++)

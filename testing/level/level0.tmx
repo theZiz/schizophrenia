@@ -9,6 +9,12 @@
  <tileset firstgid="65" name="lab_house_tiles01" tilewidth="32" tileheight="32">
   <image source="../images/lab_house_tiles01.png" trans="ff00ff" width="320" height="320"/>
  </tileset>
+ <tileset firstgid="165" name="player" tilewidth="24" tileheight="48">
+  <image source="../images/science_guy_frames01.png" trans="ff00ff" width="216" height="192"/>
+ </tileset>
+ <tileset firstgid="201" name="door" tilewidth="32" tileheight="54">
+  <image source="../images/doors01.png" trans="ff00ff" width="256" height="54"/>
+ </tileset>
  <layer name="background layer" width="85" height="6">
   <data encoding="csv">
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,65,66,67,66,67,66,67,66,65,66,67,66,67,66,67,66,68,66,67,66,67,66,67,66,68,66,67,66,67,66,67,66,68,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -50,18 +56,17 @@
 </data>
  </layer>
  <objectgroup name="player" width="85" height="6">
-  <object x="48" y="130"/>
+  <object gid="165" x="51" y="126"/>
  </objectgroup>
  <objectgroup name="generic" width="85" height="6">
   <object name="./sprites/title.ssc" x="184" y="-24"/>
   <object name="./sprites/credits.ssc" x="608" y="-24"/>
  </objectgroup>
  <objectgroup name="door" width="85" height="6">
-  <object name="level1-1.tmx" type="0" x="1104" y="160"/>
-  <object name="level2-1.tmx" type="1" x="1360" y="160"/>
-  <object name="level3-1.tmx" type="2" x="1616" y="160"/>
-  <object name="level5.tmx" type="1" x="2672" y="160"/>
-  <object name="level4-1.tmx" type="3" x="1872" y="160"/>
+  <object name="level1-1.tmx" gid="201" type="0" x="1104" y="160"/>
+  <object name="level2-1.tmx" gid="203" type="1" x="1359" y="160"/>
+  <object name="level3-1.tmx" gid="205" type="2" x="1617" y="160"/>
+  <object name="level4-1.tmx" gid="207" type="3" x="1872" y="160"/>
  </objectgroup>
  <objectgroup name="trophies" width="85" height="6">
   <object name="0" x="1041" y="106"/>
