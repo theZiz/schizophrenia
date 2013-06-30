@@ -22,7 +22,7 @@
 #include "physics.h"
 #include "feedback.h"
 
-#define A_BIT 128
+#define A_BIT 1024
 
 pPhysicsElement firstMoveableElement = NULL;
 pPhysicsElement firstStaticElement = NULL;
@@ -131,6 +131,10 @@ void createPhysicsFromLevel(pLevel level)
 			int platform = 0;
 			int background = 0;
 			int mover = 0;
+			int w = obj->w << SP_ACCURACY-5;
+			int h = obj->h << SP_ACCURACY-5;
+			int x = obj->x;
+			int y = obj->y;
 			switch (obj->type)
 			{
 				case TROPHIES: case GENERIC: case UNKONWN: case UNSELECTABLE: case LOGICGROUP:
@@ -138,6 +142,8 @@ void createPhysicsFromLevel(pLevel level)
 					continue;
 				case PLAYER:
 					mover = 1;
+					x+=spFloatToFixed(0.04);
+					w-=spFloatToFixed(0.08);
 					break;
 				case NEGA: case BOX: case BUG:
 					moveable = 1;
@@ -151,7 +157,7 @@ void createPhysicsFromLevel(pLevel level)
 					floating = 1;
 					break;
 			}
-			pPhysicsElement element = createPhysicsElement(obj->x,obj->y,obj->w << SP_ACCURACY-5,obj->h << SP_ACCURACY-5,15,floating,moveable,platform,background,mover,obj,0);
+			pPhysicsElement element = createPhysicsElement(x,y,w,h,15,floating,moveable,platform,background,mover,obj,0);
 			obj = obj->next;
 		}
 		while (obj != group->firstObject);
@@ -354,7 +360,7 @@ void seek_and_move_a_bit_above(pPhysicsElement element)
 		collision_tests++;
 		#endif
 		if (element->position.x + element->w >  partner->position.x &&
-				element->position.x              <  partner->position.x + partner->w &&
+			element->position.x              <  partner->position.x + partner->w &&
 		    partner->position.y + partner->h >  element->position.y - A_BIT &&
 		    partner->position.y + partner->h <= element->position.y - A_BIT + element->h)
 		{
@@ -420,8 +426,8 @@ void movementAndCollision(pPhysicsElement element)
 		int backupY = element->position.y;
 		if (element->platform)
 		{
-			if (!element->specific.platform.had_collision)
-				seek_and_move_a_bit_above(element);
+			//if (!element->specific.platform.had_collision)
+			seek_and_move_a_bit_above(element);
 			element->specific.platform.had_collision = 0;
 		}
 		//Y
