@@ -125,8 +125,8 @@
   <object name="2" x="416" y="384"/>
  </objectgroup>
  <objectgroup name="door" width="36" height="20">
-  <object name="level1-2.tmx@31,-11" x="192" y="576"/>
-  <object name="level1-4.tmx" x="1056" y="384"/>
+  <object name="level1-2.tmx@31,-11" x="191" y="549"/>
+  <object name="level1-4.tmx" x="1056" y="357"/>
  </objectgroup>
  <objectgroup name="group1" width="36" height="20">
   <object name="button" x="640" y="572"/>

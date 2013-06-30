@@ -132,8 +132,8 @@
   <object x="641" y="480"/>
  </objectgroup>
  <objectgroup name="door" width="50" height="20">
-  <object name="level1-1.tmx@47,-16" x="65" y="608"/>
-  <object name="level1-4.tmx" x="1024" y="416"/>
+  <object name="level1-1.tmx@47,-16" x="64" y="581"/>
+  <object name="level1-4.tmx" x="1025" y="390"/>
  </objectgroup>
  <objectgroup name="collectible00" width="50" height="20">
   <object name="1" x="64" y="448"/>

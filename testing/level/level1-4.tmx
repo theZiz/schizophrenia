@@ -109,8 +109,8 @@
   <object name="7" x="832" y="128"/>
  </objectgroup>
  <objectgroup name="door" width="31" height="16">
-  <object name="level1-2.tmx@31,-11" x="544" y="416"/>
-  <object name="level0.tmx@34,-3" x="544" y="224"/>
+  <object name="level1-2.tmx@31,-11" x="545" y="390"/>
+  <object name="level0.tmx@34,-3" x="553" y="195"/>
  </objectgroup>
  <objectgroup name="bug" width="31" height="16">
   <object name="right" x="97" y="288"/>
