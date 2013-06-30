@@ -22,6 +22,8 @@
 #include "physics.h"
 #include "feedback.h"
 
+#define A_BIT 128
+
 pPhysicsElement firstMoveableElement = NULL;
 pPhysicsElement firstStaticElement = NULL;
 pPhysicsElement *staticElementLookUp = NULL;
@@ -45,15 +47,10 @@ pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 	element->mover = mover;
 	element->killed = 0;
 	element->freeFallCounter = 0;
-	if (platform)
-		element->specific.platform.lastDirection = 1;
-	else
-	{
-		element->specific.player.can_jump = 0;
-		element->specific.player.in_jump = 0;
-		element->specific.player.last_run = 0;
-		element->specific.player.pushes = 0;
-	}
+	element->specific.player.can_jump = 0;
+	element->specific.player.in_jump = 0;
+	element->specific.player.last_run = 0;
+	element->specific.player.pushes = 0;
 	element->levelObject = levelObject;
 	if (levelObject)
 	{
@@ -161,7 +158,6 @@ void createPhysicsFromLevel(pLevel level)
 		group = group->next;
 	}
 	while (group != level->firstObjectGroup);
-
 }
 
 void clearPhysics()
@@ -286,7 +282,7 @@ int collision_check_y(pPhysicsElement element,pPhysicsElement partner,int backup
 		{
 			element->position.x = backupX;
 			element->position.y = backupY;
-			element->specific.platform.had_y_collision = 1;
+			element->specific.platform.had_collision = 1;
 		}
 		else
 		{
@@ -326,6 +322,7 @@ int collision_check_x(pPhysicsElement element,pPhysicsElement partner,int backup
 		{
 			element->position.x = backupX;
 			element->position.y = backupY;
+			element->specific.platform.had_collision = 1;
 		}
 		else
 		{
@@ -341,6 +338,34 @@ int collision_check_x(pPhysicsElement element,pPhysicsElement partner,int backup
 		}
 	}
 	return pos;
+}
+
+void seek_and_move_a_bit_above(pPhysicsElement element)
+{
+	pPhysicsElement partner = firstMoveableElement;
+	do
+	{
+		if (!(partner->moveable || partner->mover) || element == partner)
+		{
+			partner = partner->next;
+			continue;
+		}
+		#ifdef COUNT_COLLISION
+		collision_tests++;
+		#endif
+		if (element->position.x + element->w >  partner->position.x &&
+				element->position.x              <  partner->position.x + partner->w &&
+		    partner->position.y + partner->h >  element->position.y - A_BIT &&
+		    partner->position.y + partner->h <= element->position.y - A_BIT + element->h)
+		{
+			partner->speed.x = element->speed.x;
+			partner->speed.y = element->speed.y;
+			seek_and_move_a_bit_above(partner);
+			movementAndCollision(partner);
+		}
+		partner = partner->next;
+	}
+	while (partner != firstMoveableElement);
 }
 
 static void check_all_collisions(pPhysicsElement element, int (*collision_check) (pPhysicsElement element,pPhysicsElement partner,int backupX,int backupY),int backupX,int backupY,void (*hitFeedback) ( pPhysicsElement element , int pos))
@@ -390,21 +415,26 @@ static void check_all_collisions(pPhysicsElement element, int (*collision_check)
 
 void movementAndCollision(pPhysicsElement element)
 {
-		//Y
 		//Movement + Backup
 		int backupX = element->position.x;
 		int backupY = element->position.y;
-		element->position.y += element->speed.y;
 		if (element->platform)
-			element->specific.platform.had_y_collision = 0;
+		{
+			if (!element->specific.platform.had_collision)
+				seek_and_move_a_bit_above(element);
+			element->specific.platform.had_collision = 0;
+		}
+		//Y
+		element->position.y += element->speed.y;
 		check_all_collisions(element,collision_check_y,backupX,backupY,yHit);
 		//X
-		//Movement + Backup
-		if (!(element->platform && element->specific.platform.had_y_collision))
+		if (!(element->platform && element->specific.platform.had_collision))
 		{
 			element->position.x += element->speed.x;
 			check_all_collisions(element,collision_check_x,backupX,backupY,xHit);
 		}	
+		element->speed.x = 0;
+		element->speed.y = 0;
 }
 	
 void doPhysics(pLevel level)

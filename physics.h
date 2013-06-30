@@ -48,8 +48,7 @@ typedef struct sPhysicsElement {
 	int freeFallCounter;
 	union {
 		struct {
-			int lastDirection;
-			int had_y_collision;
+			int had_collision;
 		} platform;
 		struct {
 			int in_jump;

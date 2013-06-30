@@ -88,6 +88,8 @@ void setSpeed( pPhysicsElement element )
 		return;
 	if (element->type == PLATFORM)
 	{
+		if (element->specific.platform.had_collision)
+			element->levelObject->direction = 1 - element->levelObject->direction;
 		if (element->levelObject->direction == 0)
 		{
 			element->speed.x += element->levelObject->speed.v1.x;
