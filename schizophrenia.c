@@ -28,7 +28,11 @@
 
 SDL_Surface *screen = NULL;
 #if defined ZOOMUP || defined ZOOMDOWN
-	SDL_Surface *real_screen;
+	#if defined ZOOMUP && defined ZOOMDOWN
+		SDL_Surface *dummy_screen;
+	#else
+		SDL_Surface *real_screen;
+	#endif
 #endif
 spFontPointer font = NULL;
 
@@ -56,7 +60,13 @@ void draw_schizo( void )
 			(*levelPointer)->choosenPlayer->physicsElement->speed.y);
 	spFontDrawRight( screen->w-1, screen->h-font->maxheight*5, -1, buffer, font );
 	#if defined ZOOMUP && defined ZOOMDOWN
-	
+		#ifdef FIRSTUP
+			spScale2XSmooth(screen,dummy_screen);
+			spScaleDownSmooth(dummy_screen,screen);
+		#else
+			spScaleDownSmooth(screen,dummy_screen);
+			spScale2XSmooth(dummy_screen,screen);
+		#endif
 	#elif defined ZOOMUP
 		spScale2XSmooth(screen,real_screen);
 	#elif defined ZOOMDOWN
@@ -92,21 +102,30 @@ int calc_schizo( Uint32 steps )
 void resize( Uint16 w, Uint16 h )
 {
 	#if defined ZOOMUP || defined ZOOMDOWN
-		if (screen)
-			spDeleteSurface(screen);
 		#if defined ZOOMUP && defined ZOOMDOWN
-			screen = spCreateSurface(real_screen->w,real_screen->h);
-		#elif defined ZOOMUP
-			screen = spCreateSurface(real_screen->w/2,real_screen->h/2);
+			if (dummy_screen)
+				spDeleteSurface(dummy_screen);
+			#ifdef FIRSTUP
+				dummy_screen = spCreateSurface(screen->w*2,screen->h*2);
+			#else
+				dummy_screen = spCreateSurface(screen->w/2,screen->h/2);
+			#endif
 		#else
-			screen = spCreateSurface(real_screen->w*2,real_screen->h*2);
+			if (screen)
+				spDeleteSurface(screen);
+			#ifdef ZOOMUP
+				screen = spCreateSurface(real_screen->w/2,real_screen->h/2);
+			#else
+				screen = spCreateSurface(real_screen->w*2,real_screen->h*2);
+			#endif
 		#endif
 	#endif
 	spSelectRenderTarget(screen);
 	//Font Loading
 	if ( font )
 		spFontDelete( font );
-	font = spFontLoad( "./font/LiberationMono-Regular.ttf", 10 * spGetSizeFactor() >> SP_ACCURACY );
+	int zoom = spMin( ( screen->w << SP_ACCURACY ) / 320, ( screen->h << SP_ACCURACY ) / 240 ); //at 320x240 == 1.0
+	font = spFontLoad( "./font/LiberationMono-Regular.ttf", 10 * zoom >> SP_ACCURACY );
 	spFontAdd( font,SP_FONT_GROUP_ASCII, 0 ); //Just for debug stuff
 	spFontAddBorder( font, spGetFastRGB(127,127,127) );
 }
@@ -116,9 +135,11 @@ int main( int argc, char **argv )
 {
 	//sparrow3D Init
 	spInitCore();
+	
+	spSetDefaultWindowSize(800,480);
 
 	//Setup
-	#if defined ZOOMUP || defined ZOOMDOWN
+	#if (defined ZOOMUP || defined ZOOMDOWN) && !(defined ZOOMUP && defined ZOOMDOWN)
 		real_screen = spCreateDefaultWindow();
 		resize( real_screen->w, real_screen->h );
 	#else
