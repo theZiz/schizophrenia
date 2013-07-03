@@ -59,7 +59,7 @@ void draw_schizo( void )
 	
 	#elif defined ZOOMUP
 		spScale2XSmooth(screen,real_screen);
-	#else
+	#elif defined ZOOMDOWN
 		spScaleDownSmooth(screen,real_screen);
 	#endif
 	spFlip();
