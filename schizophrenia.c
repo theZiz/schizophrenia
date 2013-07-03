@@ -27,7 +27,7 @@
 #include "global_defines.h"
 
 SDL_Surface *screen = NULL;
-#ifdef ZOOMZOOM
+#if defined ZOOMUP || defined ZOOMDOWN
 	SDL_Surface *real_screen;
 #endif
 spFontPointer font = NULL;
@@ -55,8 +55,12 @@ void draw_schizo( void )
 			(*levelPointer)->choosenPlayer->physicsElement->speed.x,
 			(*levelPointer)->choosenPlayer->physicsElement->speed.y);
 	spFontDrawRight( screen->w-1, screen->h-font->maxheight*5, -1, buffer, font );
-	#ifdef ZOOMZOOM
-		spScale2XFast(screen,real_screen);
+	#if defined ZOOMUP && defined ZOOMDOWN
+	
+	#elif defined ZOOMUP
+		spScale2XSmooth(screen,real_screen);
+	#else
+		spScaleDownSmooth(screen,real_screen);
 	#endif
 	spFlip();
 }
@@ -87,10 +91,16 @@ int calc_schizo( Uint32 steps )
 
 void resize( Uint16 w, Uint16 h )
 {
-	#ifdef ZOOMZOOM
+	#if defined ZOOMUP || defined ZOOMDOWN
 		if (screen)
 			spDeleteSurface(screen);
-		screen = spCreateSurface(real_screen->w/2,real_screen->h/2);
+		#if defined ZOOMUP && defined ZOOMDOWN
+			screen = spCreateSurface(real_screen->w,real_screen->h);
+		#elif defined ZOOMUP
+			screen = spCreateSurface(real_screen->w/2,real_screen->h/2);
+		#else
+			screen = spCreateSurface(real_screen->w*2,real_screen->h*2);
+		#endif
 	#endif
 	spSelectRenderTarget(screen);
 	//Font Loading
@@ -108,7 +118,7 @@ int main( int argc, char **argv )
 	spInitCore();
 
 	//Setup
-	#ifdef ZOOMZOOM
+	#if defined ZOOMUP || defined ZOOMDOWN
 		real_screen = spCreateDefaultWindow();
 		resize( real_screen->w, real_screen->h );
 	#else
