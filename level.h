@@ -61,8 +61,9 @@ typedef enum {
 
 
 #include "physics.h"
+#define PARALAX 3
 
-typedef struct sTile {int nr;spSpritePointer sprite;} tTile;
+typedef struct sTile {int nr;spSpritePointer sprite[PARALAX];} tTile;
 
 typedef struct sLayer {
 	int width,height;
@@ -95,7 +96,7 @@ typedef struct sLevelObjectGroup {
 } tLevelObjectGroup;
 
 typedef struct sLevel {
-	spSpritePointer *spriteTable;
+	spSpritePointer *(spriteTable[PARALAX]);
 	int spriteTableCount;
 	struct {tLayer physics,background,player,foreground;} layer;
 	struct {Sint32 x,y;} targetCamera, actualCamera;

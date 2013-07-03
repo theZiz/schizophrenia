@@ -236,7 +236,9 @@ pLevel loadLevel(char* filename)
 	level->targetCamera.x = 0;
 	level->targetCamera.y = 0;
 	level->backgroundColor = 65535; //white
-	level->spriteTable = NULL;
+	int i;
+	for (i = 0; i < PARALAX; i++)
+		level->spriteTable[i] = NULL;
 	level->firstObjectGroup = NULL;
 	level->choosenPlayer = NULL;
 
@@ -424,10 +426,14 @@ pLevel loadLevel(char* filename)
 			if (strstr(buffer,"layer") == buffer)
 			{
 				//Creating spriteLookUptable if not existing
-				if (level->spriteTable == NULL)
+				if (level->spriteTable[0] == NULL)
 				{
-					level->spriteTable = (spSpritePointer*)malloc((tile_set->lastgid+1)*sizeof(spSpritePointer));
-					memset(level->spriteTable,0,(tile_set->lastgid+1)*sizeof(spSpritePointer));
+					int i;
+					for (i = 0; i < PARALAX; i++)
+					{
+						level->spriteTable[i] = (spSpritePointer*)malloc((tile_set->lastgid+1)*sizeof(spSpritePointer));
+						memset(level->spriteTable[i],0,(tile_set->lastgid+1)*sizeof(spSpritePointer));
+					}
 					level->spriteTableCount = tile_set->lastgid+1;
 				}
 				//Loading layer
@@ -490,14 +496,17 @@ pLevel loadLevel(char* filename)
 					layer->tile[i].nr = atoi(next_number);
 					if (physics_layer)
 					{
-						layer->tile[i].sprite = NULL;
+						layer->tile[i].sprite[0] = NULL;
 						if (layer->tile[i].nr)
 							layer->tile[i].nr-=physics_basis;
 					}
 					else
-						layer->tile[i].sprite = get_sprite(layer->tile[i].nr,tile_set,level->spriteTable);
+					{
+						int j;
+						for (j = 0; j < PARALAX; j++)
+							layer->tile[i].sprite[j] = get_sprite(layer->tile[i].nr,tile_set,level->spriteTable[j]);
+					}
 					next_number = strchr(next_number,',');
-
 				}
 
 				READ_TIL_TAG_END
@@ -909,7 +918,7 @@ void drawLevel(pLevel level)
 					continue;
 				if (y < 0 || y >= layer->height)
 					continue;
-				spSpritePointer sprite = layer->tile[x+y*layer->width].sprite;
+				spSpritePointer sprite = layer->tile[x+y*layer->width].sprite[0];
 				if (sprite == NULL)
 					continue;
 				int positionX = (x-screenTileBeginX)*32+screenWidth/2-((level->actualCamera.x >> SP_ACCURACY -5) & 31);
@@ -958,11 +967,14 @@ void deleteLevel(pLevel level)
 		free(level->layer.player.tile);
 	if (level->layer.foreground.tile)
 		free(level->layer.foreground.tile);
-	int i;
-	for (i = 0; i < level->spriteTableCount; i++)
-		if (level->spriteTable[i])
-			spDeleteSprite(level->spriteTable[i]);
-	free(level->spriteTable);
+	int i,j;
+	for (j = 0; j < PARALAX; j++)
+	{
+		for (i = 0; i < level->spriteTableCount; i++)
+			if (level->spriteTable[j][i])
+				spDeleteSprite(level->spriteTable[j][i]);
+		free(level->spriteTable[j]);
+	}
 	//Deleting all objects
 	pLevelObjectGroup group = level->firstObjectGroup;
 	if (group)
