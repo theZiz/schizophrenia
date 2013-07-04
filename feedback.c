@@ -117,28 +117,7 @@ void setSpeed( pPhysicsElement element )
 				if ( element->specific.player.in_jump == 0 ) // allow another jump only after another press of the button
 					element->specific.player.can_jump = 1;
 			}
-			if (element->specific.player.in_jump)
-			{
-				if (element->specific.player.in_jump < JUMP_UPWARDS_TIME) // moving upwards
-				{
-					element->specific.player.in_jump++;
-					element->speed.y-=JUMP_FORCE;
-					element->freeFallCounter = 0;
-				}
-				else
-				if (element->specific.player.in_jump < JUMP_END_TIME) // smooth turn-around (peak of jump)
-				{
-					element->specific.player.in_jump++;
-					element->speed.y-=GRAVITY_MAX*(JUMP_END_TIME-element->specific.player.in_jump)/(JUMP_END_TIME-JUMP_UPWARDS_TIME);
-					element->freeFallCounter = 0;
-					element->specific.player.can_jump = 0;
-				}
-				else // end jump
-				{
-					element->specific.player.in_jump = 0;
-					element->specific.player.can_jump = 0;
-				}
-			}
+
 			//Moving the player X
 			if (spGetInput()->axis[0] < 0)
 			{
@@ -163,6 +142,28 @@ void setSpeed( pPhysicsElement element )
 			}
 		}
 		//For every player:
+		if (element->specific.player.in_jump)
+		{
+			if (element->specific.player.in_jump < JUMP_UPWARDS_TIME) // moving upwards
+			{
+				element->specific.player.in_jump++;
+				element->speed.y-=JUMP_FORCE;
+				element->freeFallCounter = 0;
+			}
+			else
+			if (element->specific.player.in_jump < JUMP_END_TIME) // smooth turn-around (peak of jump)
+			{
+				element->specific.player.in_jump++;
+				element->speed.y-=GRAVITY_MAX*(JUMP_END_TIME-element->specific.player.in_jump)/(JUMP_END_TIME-JUMP_UPWARDS_TIME);
+				element->freeFallCounter = 0;
+				element->specific.player.can_jump = 0;
+			}
+			else // end jump
+			{
+				element->specific.player.in_jump = 0;
+				element->specific.player.can_jump = 0;
+			}
+		}
 		selectCorrectSprite(element);
 	}
 }

@@ -143,8 +143,11 @@ void createPhysicsFromLevel(pLevel level)
 					x+=spFloatToFixed(0.04);
 					w-=spFloatToFixed(0.08);
 					break;
-				case NEGA: case BOX: case BUG:
-					moveable = 1;
+				case NEGA:
+					x+=spFloatToFixed(0.04);
+					w-=spFloatToFixed(0.08);
+				case BOX: case BUG:
+ 					moveable = 1;
 					break;
 				case PLATFORM:
 					floating = 1;
