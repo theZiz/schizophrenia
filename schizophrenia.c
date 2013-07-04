@@ -54,7 +54,7 @@ void draw_schizo( void )
 	spSetAlphaTest( 1 );
 	char buffer[256];
 	sprintf( buffer, "camera X: %i\ncamera Y: %i\ncollisiontests: %i\nfps: %i\nspeed:%.5i,%.5i",
-			(*levelPointer)->actualCamera.x >> SP_ACCURACY-5,(*levelPointer)->actualCamera.y >> SP_ACCURACY-5,
+			(*levelPointer)->currentCamera.x >> SP_ACCURACY-5,(*levelPointer)->currentCamera.y >> SP_ACCURACY-5,
 			getCollisionCount(),spGetFPS(),
 			(*levelPointer)->choosenPlayer->physicsElement->speed.x,
 			(*levelPointer)->choosenPlayer->physicsElement->speed.y);
@@ -136,7 +136,7 @@ int main( int argc, char **argv )
 	//sparrow3D Init
 	spInitCore();
 	
-	spSetDefaultWindowSize(800,480);
+	//spSetDefaultWindowSize(800,480);
 
 	//Setup
 	#if (defined ZOOMUP || defined ZOOMDOWN) && !(defined ZOOMUP && defined ZOOMDOWN)

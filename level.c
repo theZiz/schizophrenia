@@ -141,7 +141,7 @@ typedef struct sTile_set {
 	pTile_set next;
 } tTile_set;
 
-spSpritePointer get_sprite(int tilenr,pTile_set tile_set,spSpritePointer *table)
+spSpritePointer get_sprite(int tilenr,pTile_set tile_set,spSpritePointer *table,int zoom,Uint16 backgroundColor)
 {
 	if (tilenr <= 0)
 		return NULL;
@@ -158,7 +158,35 @@ spSpritePointer get_sprite(int tilenr,pTile_set tile_set,spSpritePointer *table)
 			table[tilenr] = spNewSprite(NULL);
 			char filename[1024];
 			sprintf(filename,"./level/%s",tile_set->filename);
-			spNewSubSpriteWithTiling(table[tilenr],spLoadSurface(filename),linePosition*tile_set->tilewidth,lineNumber*tile_set->tileheight,tile_set->tilewidth,tile_set->tileheight,1000);
+			SDL_Surface* surface = spLoadSurfaceZoom(filename,SP_ONE >> zoom);
+			if (spLastCachedSurfaceWasLoadedFirstTime())
+			{
+				//Adding the background color as "alpha"
+				SDL_LockSurface(surface);
+				Uint16* pixel = (Uint16*)surface->pixels;
+				Sint32 m = surface->pitch/surface->format->BytesPerPixel;
+				int br = spGetRFromColor(backgroundColor);
+				int bg = spGetGFromColor(backgroundColor);
+				int bb = spGetBFromColor(backgroundColor);
+				int x,y;
+				for (x = 0; x < surface->w; x++)
+					for (y = 0; y < surface->h; y++)
+						if (pixel[x+y*m] != SP_ALPHA_COLOR)
+						{
+							int r = spGetRFromColor(pixel[x+y*m]);
+							int g = spGetGFromColor(pixel[x+y*m]);
+							int b = spGetBFromColor(pixel[x+y*m]);
+							r += br*((1<<zoom)-1);
+							g += bg*((1<<zoom)-1);
+							b += bb*((1<<zoom)-1);
+							r >>= zoom;
+							g >>= zoom;
+							b >>= zoom;
+							pixel[x+y*m] = spGetFastRGB(r,g,b);
+						}
+				SDL_UnlockSurface(surface);
+			}
+			spNewSubSpriteWithTiling(table[tilenr],surface,linePosition*tile_set->tilewidth >> zoom,lineNumber*tile_set->tileheight >> zoom,tile_set->tilewidth >> zoom,tile_set->tileheight >> zoom,1000);
 			return table[tilenr];
 		}
 		tile_set = tile_set->next;
@@ -231,8 +259,8 @@ pLevel loadLevel(char* filename)
 	level->layer.background.tile = NULL;
 	level->layer.player.tile = NULL;
 	level->layer.foreground.tile = NULL;
-	level->actualCamera.x = 0;
-	level->actualCamera.y = 0;
+	level->currentCamera.x = 0;
+	level->currentCamera.y = 0;
 	level->targetCamera.x = 0;
 	level->targetCamera.y = 0;
 	level->backgroundColor = 65535; //white
@@ -504,7 +532,7 @@ pLevel loadLevel(char* filename)
 					{
 						int j;
 						for (j = 0; j < PARALAX; j++)
-							layer->tile[i].sprite[j] = get_sprite(layer->tile[i].nr,tile_set,level->spriteTable[j]);
+							layer->tile[i].sprite[j] = get_sprite(layer->tile[i].nr,tile_set,level->spriteTable[j],j,level->backgroundColor);
 					}
 					next_number = strchr(next_number,',');
 				}
@@ -877,8 +905,8 @@ pLevel loadLevel(char* filename)
 	}
 	else
 		level->choosenPlayer = NULL; //However: If this line is called, it will crash. ^^
-	level->actualCamera.x = level->choosenPlayer->x + (level->choosenPlayer->w << SP_ACCURACY - 6);
-	level->actualCamera.y = level->choosenPlayer->y + (level->choosenPlayer->h << SP_ACCURACY - 6);
+	level->currentCamera.x = level->choosenPlayer->x + (level->choosenPlayer->w << SP_ACCURACY - 6);
+	level->currentCamera.y = level->choosenPlayer->y + (level->choosenPlayer->h << SP_ACCURACY - 6);
 	level->targetCamera.x = level->choosenPlayer->x + (level->choosenPlayer->w << SP_ACCURACY - 6);
 	level->targetCamera.y = level->choosenPlayer->y + (level->choosenPlayer->h << SP_ACCURACY - 6);
 	SDL_RWclose(file);
@@ -889,70 +917,93 @@ void drawLevel(pLevel level)
 {
 	spSetVerticalOrigin(SP_TOP);
 	spSetHorizontalOrigin(SP_LEFT);
-	int screenWidth = spGetRenderTarget()->w;
-	int screenHeight = spGetRenderTarget()->h;
-	int screenTileWidth  = screenWidth/32+2;
-	int screenTileHeight = screenWidth/32+2;
-	int screenTileBeginX = level->actualCamera.x >> SP_ACCURACY;
-	int screenTileBeginY = level->actualCamera.y >> SP_ACCURACY;
-	int startX = screenTileBeginX-screenTileWidth/2;
-	int startY = screenTileBeginY-screenTileHeight/2;
-	int endX = screenTileBeginX+screenTileWidth/2;
-	int endY = screenTileBeginY+screenTileHeight/2;
-	//layer
-	int l;
-	for (l = -3; l < 0; l++)
+	int paralax;
+	for (paralax = PARALAX-1; paralax >= 0; paralax--)
 	{
-		pLayer layer;
-		switch (l)
+		int screenWidth = spGetRenderTarget()->w;
+		int screenHeight = spGetRenderTarget()->h;
+		int screenTileWidth  = screenWidth/(32>>paralax)+2;
+		int screenTileHeight = screenWidth/(32>>paralax)+2;
+		int screenTileBeginX = level->currentCamera.x >> SP_ACCURACY;
+		int screenTileBeginY = level->currentCamera.y >> SP_ACCURACY;
+		int startX = screenTileBeginX-screenTileWidth/2;
+		int startY = screenTileBeginY-screenTileHeight/2;
+		int endX = screenTileBeginX+screenTileWidth/2;
+		int endY = screenTileBeginY+screenTileHeight/2;
+		//layer
+		int l;
+		for (l = -3; l < 0; l++)
 		{
-			case -3: layer = &(level->layer.background); break;
-			case -2: layer = &(level->layer.player); break;
-			case -1: layer = &(level->layer.foreground); break;
-		}
-		int x,y;
-		for (x = startX; x < endX; x++)
-			for (y = startY; y < endY; y++)
+			pLayer layer;
+			switch (l)
 			{
-				if (x < 0 || x >= layer->width)
-					continue;
-				if (y < 0 || y >= layer->height)
-					continue;
-				spSpritePointer sprite = layer->tile[x+y*layer->width].sprite[0];
-				if (sprite == NULL)
-					continue;
-				int positionX = (x-screenTileBeginX)*32+screenWidth/2-((level->actualCamera.x >> SP_ACCURACY -5) & 31);
-				int positionY = (y-screenTileBeginY)*32+screenHeight/2-((level->actualCamera.y >> SP_ACCURACY -5) & 31);
-				spDrawSprite(positionX,positionY,l,sprite);
+				case -3: layer = &(level->layer.background); break;
+				case -2: layer = &(level->layer.player); break;
+				case -1: layer = &(level->layer.foreground); break;
 			}
-		if (l == -2) //player layer
-		{
-			//Drawing the objects.
-			pLevelObjectGroup group = level->firstObjectGroup;
-			if (group)
-			do
+			int x,y;
+			for (x = startX; x < endX; x++)
+				for (y = startY; y < endY; y++)
+				{
+					int X,Y;
+					//if (paralax == 0)
+					{
+						if (x < 0 || x >= layer->width)
+							continue;
+						if (y < 0 || y >= layer->height)
+							continue;
+						X = x;
+						Y = y;
+					}
+					/*else
+					{
+						if (x < 0)
+							X = (layer->width + (x % layer->width)) % layer->width;
+						else
+							X = x % layer->width;
+						//if (y < 0)
+						//	Y = (layer->height + (y % layer->height)) % layer->height;
+						//else
+						//	Y = y % layer->height;
+						if (y < 0 || y >= layer->height)
+							continue;
+						Y = y;
+					}*/
+					spSpritePointer sprite = layer->tile[X+Y*layer->width].sprite[paralax];
+					if (sprite == NULL)
+						continue;
+					int positionX = (x-screenTileBeginX)*(32>>paralax)+ screenWidth/2-((level->currentCamera.x >> SP_ACCURACY -5+paralax) & (31 >> paralax));
+					int positionY = (y-screenTileBeginY)*(32>>paralax)+screenHeight/2-((level->currentCamera.y >> SP_ACCURACY -5+paralax) & (31 >> paralax));
+					spDrawSprite(positionX,positionY,l,sprite);
+				}
+			if (paralax == 0 && l == -2) //player layer
 			{
-				pLevelObject obj = group->firstObject;
-				if (obj)
+				//Drawing the objects.
+				pLevelObjectGroup group = level->firstObjectGroup;
+				if (group)
 				do
 				{
-					if (obj->animation)
+					pLevelObject obj = group->firstObject;
+					if (obj)
+					do
 					{
-						int positionX = (obj->x >> SP_ACCURACY-5)+screenWidth/2
-						              - ((level->actualCamera.x >> SP_ACCURACY -5));
-						int positionY = (obj->y >> SP_ACCURACY-5)+screenHeight/2
-						              - ((level->actualCamera.y >> SP_ACCURACY -5));
-						spDrawSprite(positionX,positionY,-2,spActiveSprite(obj->animation));
+						if (obj->animation)
+						{
+							int positionX = (obj->x >> SP_ACCURACY-5)+screenWidth/2
+														- ((level->currentCamera.x >> SP_ACCURACY -5));
+							int positionY = (obj->y >> SP_ACCURACY-5)+screenHeight/2
+														- ((level->currentCamera.y >> SP_ACCURACY -5));
+							spDrawSprite(positionX,positionY,-2,spActiveSprite(obj->animation));
+						}
+						obj = obj->next;
 					}
-					obj = obj->next;
+					while (obj != group->firstObject);
+					group = group->next;
 				}
-				while (obj != group->firstObject);
-				group = group->next;
+				while (group != level->firstObjectGroup);
 			}
-			while (group != level->firstObjectGroup);
 		}
 	}
-
 	spSetVerticalOrigin(SP_CENTER);
 	spSetHorizontalOrigin(SP_CENTER);
 }
@@ -1008,8 +1059,8 @@ void calcCamera(pLevel level,Sint32 steps)
 	int i;
 	for (i = 0; i < steps; i++)
 	{
-		level->actualCamera.x += (level->targetCamera.x-level->actualCamera.x)>>7;
-		level->actualCamera.y += (level->targetCamera.y-level->actualCamera.y)>>7;
+		level->currentCamera.x += (level->targetCamera.x-level->currentCamera.x)>>7;
+		level->currentCamera.y += (level->targetCamera.y-level->currentCamera.y)>>7;
 	}
 }
 

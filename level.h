@@ -99,7 +99,7 @@ typedef struct sLevel {
 	spSpritePointer *(spriteTable[PARALAX]);
 	int spriteTableCount;
 	struct {tLayer physics,background,player,foreground;} layer;
-	struct {Sint32 x,y;} targetCamera, actualCamera;
+	struct {Sint32 x,y;} targetCamera, currentCamera;
 	Uint16 backgroundColor;
 	pLevelObjectGroup firstObjectGroup;
 	pLevelObject choosenPlayer;
