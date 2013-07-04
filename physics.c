@@ -45,7 +45,6 @@ pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 	element->platform = platform;
 	element->background = background;
 	element->mover = mover;
-	element->killed = 0;
 	element->freeFallCounter = 0;
 	element->specific.player.can_jump = 0;
 	element->specific.player.in_jump = 0;
@@ -448,22 +447,7 @@ void doPhysics(pLevel level)
 	collision_tests = 0;
 	#endif
 	
-	///////////
-	// Reset //
-	///////////
 	pPhysicsElement element = firstMoveableElement;
-	if (element)
-	do
-	{
-		element->killed = 0;
-		element = element->next;
-	}
-	while (element != firstMoveableElement);
-	
-	//////////////////////////
-	// Movement + Collision //
-	//////////////////////////
-	element = firstMoveableElement;
 	if (element)
 	do
 	{
@@ -481,44 +465,26 @@ void doPhysics(pLevel level)
 				element->speed.y += GRAVITY_MAX;
 			element->freeFallCounter++;
 		}
+		//The physics itself:
 		movementAndCollision(element);
+		if (spFixedToInt(element->position.y+element->h) >= staticElementLookUpY)
+		{
+			printf("Knife! Hehehehe...\n");
+			//Removing Element
+			if (element->levelObject)
+				removeObject(element->levelObject,level);
+			pPhysicsElement prev = element->prev;
+			pPhysicsElement next = element->next;
+			next->prev = prev;
+			prev->next = next;
+			if (element == firstMoveableElement)
+				firstMoveableElement = next;
+			free(element);
+			element = prev;
+		}
 		element = element->next;
 	}
 	while (element != firstMoveableElement);
-	
-	///////////////////////////////////////////////////////////////
-	// Removing killed elements (and the level objects if exist) //
-	///////////////////////////////////////////////////////////////
-	int somewhat_killed = 0;
-	while (somewhat_killed)
-	{
-		somewhat_killed = 0;
-		element = firstMoveableElement;
-		if (element)
-		do
-		{
-			pPhysicsElement next = element->next;
-			if (element->killed)
-			{
-				if (element == element->next)
-					firstMoveableElement = NULL;
-				else
-				{
-					element->prev->next = element->next;
-					element->next->prev = element->prev;
-					if (firstMoveableElement == element)
-						firstMoveableElement = element->next;
-				}
-				if (element->levelObject)
-					removeObject(element->levelObject,level);
-				free(element);
-				somewhat_killed = 1;
-				break;
-			}
-			element = next;
-		}
-		while (element != firstMoveableElement);
-	}
 }
 
 #ifdef COUNT_COLLISION

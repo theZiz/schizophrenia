@@ -81,7 +81,7 @@ pLevelObject createObject(pLevelObjectGroup group,LevelObjectType type)
 void removeObject(pLevelObject obj,pLevel level)
 {
 	if (obj == level->choosenPlayer)
-		level->choosenPlayer = level->choosenPlayer->next;
+		level->choosenPlayer = level->choosenPlayer->prev;
 	if (obj->some_char)
 		free(obj->some_char);
 	if (obj->animation)

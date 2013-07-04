@@ -44,7 +44,6 @@ typedef struct sPhysicsElement {
 	pPhysicsElement prev,next;
 	//stuff, which changes
 	struct {Sint32 x,y;} position,speed;
-	int killed;
 	int freeFallCounter;
 	union {
 		struct {
