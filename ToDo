@@ -1,9 +1,4 @@
 Ziz:
-+ Bewegung der Platformen
-+ Gravitationskollisionsketten
-+ Y-Verschub
-- Schubkollisionsketten
-- X-Verschub
 - Bewegung in Abhängigkeit von gedrückten Schaltern
 - Energieanzeige
 - Klonbarparameter
@@ -26,7 +21,6 @@ Foxblock:
 - Nicht-Klonbar-Effekt
 
 Details, die man irgendwann mal machen kann, was aber spieltechnisch kaum was ändert:
-- Scale2x für die Pandora und PC
 - Todesanimation abspielen wenn Objekt/Spieler stirbt
 - Sound- und Bildeffekt wenn ein Physiker stirbt oder gelöscht wird
 - Effekt wenn man Puzleteile einsammelt (Flashbacks - nachdem man alle Puzzleteile )
@@ -49,8 +43,7 @@ Level:
 
 Überdenken:
 - Quantenverschränktheit
-- freie Steuerungskonfiguration
+- freie Steuerungskonfiguration => Find ich doof. Eigentlich wird die gut erklärt.
 - Keine freie Bewegung des Klon/Destroy-Fadenkreuzes, sondern direkte Auswahl der Objekte in der Umgebung ???
-- Hintergründe? Oder doch sich selbst sehen? Würde das zumindest gerne mal ausprobieren.
 - Nur klonen wenn man fest auf dem Boden steht (ist sonst zu leicht explotable), auf Platformen evtl auch
   -> Nur klonen wenn das zu klonende Objekt fest auf dem Boden steht
