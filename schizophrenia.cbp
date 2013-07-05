@@ -25,6 +25,7 @@
 					<Add option="-s" />
 					<Add option="-lmingw32" />
 					<Add option="-lSDLmain" />
+					<Add option="-lsparrow3d" />
 					<Add directory="$(#mingw.lib)" />
 					<Add directory="../sparrow3d/bin/W32" />
 				</Linker>
@@ -47,7 +48,6 @@
 				<Linker>
 					<Add option="-lmingw32" />
 					<Add option="-lSDLmain" />
-					<Add option="-lsparrow3d" />
 					<Add directory="$(#mingw.lib)" />
 				</Linker>
 			</Target>
@@ -58,10 +58,10 @@
 				<Option type="0" />
 				<Option compiler="armelfgcc" />
 				<Compiler>
-					<Add option="-O3" />
 					<Add option="-mcpu=cortex-a8" />
-					<Add option="-mtune=cortex-a8" />
 					<Add option="-mfpu=neon" />
+					<Add option="-O3" />
+					<Add option="-mtune=cortex-a8" />
 					<Add option="-march=armv7-a" />
 					<Add option="-ftree-vectorize" />
 					<Add option="-mfloat-abi=softfp" />
@@ -81,6 +81,7 @@
 					<Add option="-lpng" />
 					<Add option="-lz" />
 					<Add option="-lts" />
+					<Add option="-lsparrow3d" />
 					<Add directory="$(#pandora_sdk.lib)" />
 					<Add directory="../sparrow3d/bin/Pandora" />
 				</Linker>
@@ -115,13 +116,11 @@
 					<Add option="-lpng" />
 					<Add option="-lz" />
 					<Add option="-lts" />
-					<Add option="-lsparrow3d" />
 					<Add directory="$(#pandora_sdk.lib)" />
 				</Linker>
 			</Target>
 		</Build>
 		<Compiler>
-			<Add option="-Wall" />
 			<Add option="-fsingle-precision-constant" />
 			<Add option="-fPIC" />
 			<Add option="-ffast-math" />
@@ -135,6 +134,7 @@
 			<Add directory="../sparrow3d/" />
 		</Compiler>
 		<Linker>
+			<Add option="-lSDL_mixer" />
 			<Add option="-lSDL_ttf" />
 			<Add option="-lSDL_image" />
 			<Add option="-lSDL" />
@@ -202,66 +202,12 @@
 			<Option target="Windows x86 (Debug)" />
 			<Option target="Pandora (Debug)" />
 		</Unit>
-		<Unit filename="../sparrow3d/sparrowPrimitiveDrawingThread.c">
-			<Option compilerVar="CC" />
-			<Option target="Windows x86 (Debug)" />
-			<Option target="Pandora (Debug)" />
-		</Unit>
-		<Unit filename="../sparrow3d/sparrowPrimitiveDrawingThread.h">
-			<Option target="Windows x86 (Debug)" />
-			<Option target="Pandora (Debug)" />
-		</Unit>
-		<Unit filename="../sparrow3d/sparrowPrimitiveHelperAlphaTest.c">
-			<Option compilerVar="CC" />
-			<Option target="Windows x86 (Debug)" />
-			<Option target="Pandora (Debug)" />
-		</Unit>
-		<Unit filename="../sparrow3d/sparrowPrimitiveHelperBlending.c">
-			<Option compilerVar="CC" />
-			<Option target="Windows x86 (Debug)" />
-			<Option target="Pandora (Debug)" />
-		</Unit>
-		<Unit filename="../sparrow3d/sparrowPrimitiveHelperPattern.c">
-			<Option compilerVar="CC" />
-			<Option target="Windows x86 (Debug)" />
-			<Option target="Pandora (Debug)" />
-		</Unit>
-		<Unit filename="../sparrow3d/sparrowPrimitiveHelperPerspective.c">
-			<Option compilerVar="CC" />
-			<Option target="Windows x86 (Debug)" />
-			<Option target="Pandora (Debug)" />
-		</Unit>
-		<Unit filename="../sparrow3d/sparrowPrimitiveHelperZStuff.c">
-			<Option compilerVar="CC" />
-			<Option target="Windows x86 (Debug)" />
-			<Option target="Pandora (Debug)" />
-		</Unit>
-		<Unit filename="../sparrow3d/sparrowPrimitiveSetPixelInclude.c">
-			<Option compilerVar="CC" />
-			<Option target="Windows x86 (Debug)" />
-			<Option target="Pandora (Debug)" />
-		</Unit>
-		<Unit filename="../sparrow3d/sparrowPrimitiveTexTriangleInclude.c">
-			<Option compilerVar="CC" />
-			<Option target="Windows x86 (Debug)" />
-			<Option target="Pandora (Debug)" />
-		</Unit>
-		<Unit filename="../sparrow3d/sparrowPrimitiveTriangleInclude.c">
-			<Option compilerVar="CC" />
-			<Option target="Windows x86 (Debug)" />
-			<Option target="Pandora (Debug)" />
-		</Unit>
 		<Unit filename="../sparrow3d/sparrowPrimitives.c">
 			<Option compilerVar="CC" />
 			<Option target="Windows x86 (Debug)" />
 			<Option target="Pandora (Debug)" />
 		</Unit>
 		<Unit filename="../sparrow3d/sparrowPrimitives.h">
-			<Option target="Windows x86 (Debug)" />
-			<Option target="Pandora (Debug)" />
-		</Unit>
-		<Unit filename="../sparrow3d/sparrowPrimitivesAsm.c">
-			<Option compilerVar="CC" />
 			<Option target="Windows x86 (Debug)" />
 			<Option target="Pandora (Debug)" />
 		</Unit>
