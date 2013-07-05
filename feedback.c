@@ -45,9 +45,9 @@ void do_control_stuff()
 
 void selectCorrectSprite(pPhysicsElement player)
 {
-	if (player->specific.player.in_jump || player->freeFallCounter)
+	if (player->player.in_jump || player->freeFallCounter)
 	{
-		if (player->specific.player.last_run < 0)
+		if (player->player.last_run < 0)
 			spSelectSprite(player->levelObject->animation,"jump left");
 		else
 			spSelectSprite(player->levelObject->animation,"jump right");
@@ -56,17 +56,17 @@ void selectCorrectSprite(pPhysicsElement player)
 	{
 		if (player->speed.x)
 		{
-			if (player->specific.player.pushes)
+			if (player->player.pushes)
 			{
-				if (player->specific.player.last_run < 0)
+				if (player->player.last_run < 0)
 					spSelectSprite(player->levelObject->animation,"push left");
 				else
 					spSelectSprite(player->levelObject->animation,"push right");
-				player->specific.player.pushes = 0;
+				player->player.pushes = 0;
 			}
 			else
 			{
-				if (player->specific.player.last_run < 0)
+				if (player->player.last_run < 0)
 					spSelectSprite(player->levelObject->animation,"run left");
 				else
 					spSelectSprite(player->levelObject->animation,"run right");
@@ -74,7 +74,7 @@ void selectCorrectSprite(pPhysicsElement player)
 		}
 		else
 		{
-			if (player->specific.player.last_run < 0)
+			if (player->player.last_run < 0)
 				spSelectSprite(player->levelObject->animation,"stand left");
 			else
 				spSelectSprite(player->levelObject->animation,"stand right");
@@ -88,7 +88,7 @@ void setSpeed( pPhysicsElement element )
 		return;
 	if (element->type == PLATFORM)
 	{
-		if (element->specific.platform.had_collision)
+		if (element->had_collision)
 			element->levelObject->direction = 1 - element->levelObject->direction;
 		if (element->levelObject->direction == 0)
 		{
@@ -109,59 +109,59 @@ void setSpeed( pPhysicsElement element )
 			//Half of the Y-Movement stuff
 			if ( !spGetInput()->button[SP_BUTTON_LEFT] )
 			{
-				if ( element->specific.player.in_jump >= JUMP_MIN_TIME && element->specific.player.can_jump ) // start turn-around
+				if ( element->player.in_jump >= JUMP_MIN_TIME && element->player.can_jump ) // start turn-around
 				{
-					element->specific.player.in_jump = JUMP_UPWARDS_TIME;
-					element->specific.player.can_jump = 0;
+					element->player.in_jump = JUMP_UPWARDS_TIME;
+					element->player.can_jump = 0;
 				}
-				if ( element->specific.player.in_jump == 0 ) // allow another jump only after another press of the button
-					element->specific.player.can_jump = 1;
+				if ( element->player.in_jump == 0 ) // allow another jump only after another press of the button
+					element->player.can_jump = 1;
 			}
 
 			//Moving the player X
 			if (spGetInput()->axis[0] < 0)
 			{
-				if (element->specific.player.last_run >= 0)
-					element->specific.player.last_run = 0;
-				element->specific.player.last_run-=1;
-				if (element->specific.player.last_run > -(MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
-					element->speed.x = element->specific.player.last_run*MOVEMENT_ACCEL;
+				if (element->player.last_run >= 0)
+					element->player.last_run = 0;
+				element->player.last_run-=1;
+				if (element->player.last_run > -(MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
+					element->speed.x = element->player.last_run*MOVEMENT_ACCEL;
 				else
 					element->speed.x = -MAX_MOVEMENT_FORCE;
 			}
 			else
 			if (spGetInput()->axis[0] > 0)
 			{
-				if (element->specific.player.last_run <= 0)
-					element->specific.player.last_run = 0;
-				element->specific.player.last_run+=1;
-				if (element->specific.player.last_run < (MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
-					element->speed.x = element->specific.player.last_run*MOVEMENT_ACCEL;
+				if (element->player.last_run <= 0)
+					element->player.last_run = 0;
+				element->player.last_run+=1;
+				if (element->player.last_run < (MAX_MOVEMENT_FORCE / MOVEMENT_ACCEL))
+					element->speed.x = element->player.last_run*MOVEMENT_ACCEL;
 				else
 					element->speed.x = MAX_MOVEMENT_FORCE;
 			}
 		}
 		//For every player:
-		if (element->specific.player.in_jump)
+		if (element->player.in_jump)
 		{
-			if (element->specific.player.in_jump < JUMP_UPWARDS_TIME) // moving upwards
+			if (element->player.in_jump < JUMP_UPWARDS_TIME) // moving upwards
 			{
-				element->specific.player.in_jump++;
+				element->player.in_jump++;
 				element->speed.y-=JUMP_FORCE;
 				element->freeFallCounter = 0;
 			}
 			else
-			if (element->specific.player.in_jump < JUMP_END_TIME) // smooth turn-around (peak of jump)
+			if (element->player.in_jump < JUMP_END_TIME) // smooth turn-around (peak of jump)
 			{
-				element->specific.player.in_jump++;
-				element->speed.y-=GRAVITY_MAX*(JUMP_END_TIME-element->specific.player.in_jump)/(JUMP_END_TIME-JUMP_UPWARDS_TIME);
+				element->player.in_jump++;
+				element->speed.y-=GRAVITY_MAX*(JUMP_END_TIME-element->player.in_jump)/(JUMP_END_TIME-JUMP_UPWARDS_TIME);
 				element->freeFallCounter = 0;
-				element->specific.player.can_jump = 0;
+				element->player.can_jump = 0;
 			}
 			else // end jump
 			{
-				element->specific.player.in_jump = 0;
-				element->specific.player.can_jump = 0;
+				element->player.in_jump = 0;
+				element->player.can_jump = 0;
 			}
 		}
 		selectCorrectSprite(element);
@@ -171,7 +171,7 @@ void setSpeed( pPhysicsElement element )
 void xHit( pPhysicsElement element,int pos)
 {
 	if (element->levelObject == level->choosenPlayer)
-		element->specific.player.pushes = 1;
+		element->player.pushes = 1;
 }
 
 void yHit( pPhysicsElement element,int pos)
@@ -183,18 +183,18 @@ void yHit( pPhysicsElement element,int pos)
 		{
 			if (spGetInput()->button[SP_BUTTON_LEFT])
 			{
-				if ( element->specific.player.in_jump == 0 && element->specific.player.can_jump) // start the jump
-					element->specific.player.in_jump = 1;
+				if ( element->player.in_jump == 0 && element->player.can_jump) // start the jump
+					element->player.in_jump = 1;
 			}
 			else
-				element->specific.player.in_jump = 0;
+				element->player.in_jump = 0;
 		}
 
-		if (pos == 1 && element->specific.player.can_jump) //collision on top
+		if (pos == 1 && element->player.can_jump) //collision on top
 		{
 			// start turn-around
-			element->specific.player.in_jump = JUMP_UPWARDS_TIME;
-			element->specific.player.can_jump = 0;
+			element->player.in_jump = JUMP_UPWARDS_TIME;
+			element->player.can_jump = 0;
 		}		
 	}
 }

@@ -46,10 +46,10 @@ pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 	element->background = background;
 	element->mover = mover;
 	element->freeFallCounter = 0;
-	element->specific.player.can_jump = 0;
-	element->specific.player.in_jump = 0;
-	element->specific.player.last_run = 0;
-	element->specific.player.pushes = 0;
+	element->player.can_jump = 0;
+	element->player.in_jump = 0;
+	element->player.last_run = 0;
+	element->player.pushes = 0;
 	element->levelObject = levelObject;
 	if (levelObject)
 	{
@@ -146,7 +146,9 @@ void createPhysicsFromLevel(pLevel level)
 				case NEGA:
 					x+=spFloatToFixed(0.04);
 					w-=spFloatToFixed(0.08);
-				case BOX: case BUG:
+				case BUG:
+					break;
+				case BOX: 
  					moveable = 1;
 					break;
 				case PLATFORM:
@@ -285,11 +287,11 @@ int collision_check_y(pPhysicsElement element,pPhysicsElement partner,int backup
 	int pos = check_Y_collision(element,partner,backupY);
 	if (pos)
 	{
+		element->had_collision = 1;
 		if (element->platform)
 		{
 			element->position.x = backupX;
 			element->position.y = backupY;
-			element->specific.platform.had_collision = 1;
 		}
 		else
 		{
@@ -316,6 +318,7 @@ int collision_check_x(pPhysicsElement element,pPhysicsElement partner,int backup
 	int pos = check_X_collision(element,partner,backupX);
 	if (pos)
 	{
+		element->had_collision = 1;
 		if (element->mover && partner->moveable)
 		{
 			partner->speed.x = element->speed.x/2;
@@ -329,7 +332,6 @@ int collision_check_x(pPhysicsElement element,pPhysicsElement partner,int backup
 		{
 			element->position.x = backupX;
 			element->position.y = backupY;
-			element->specific.platform.had_collision = 1;
 		}
 		else
 		{
@@ -409,15 +411,6 @@ static void check_all_collisions(pPhysicsElement element, int (*collision_check)
 					hitFeedback(element,pos);
 			}
 		}
-	/*partner = firstStaticElement;
-	do
-	{
-		int pos = collision_check(element,partner,backupX,backupY);
-		if (pos)
-			hitFeedback(element,pos);
-		partner = partner->next;
-	}
-	while (partner != firstStaticElement);*/
 }
 
 void movementAndCollision(pPhysicsElement element)
@@ -426,16 +419,13 @@ void movementAndCollision(pPhysicsElement element)
 		int backupX = element->position.x;
 		int backupY = element->position.y;
 		if (element->platform)
-		{
-			//if (!element->specific.platform.had_collision)
 			seek_and_move_a_bit_above(element);
-			element->specific.platform.had_collision = 0;
-		}
+		element->had_collision = 0;
 		//Y
 		element->position.y += element->speed.y;
 		check_all_collisions(element,collision_check_y,backupX,backupY,yHit);
 		//X
-		if (!(element->platform && element->specific.platform.had_collision))
+		if (!(element->platform && element->had_collision))
 		{
 			element->position.x += element->speed.x;
 			check_all_collisions(element,collision_check_x,backupX,backupY,xHit);

@@ -45,17 +45,13 @@ typedef struct sPhysicsElement {
 	//stuff, which changes
 	struct {Sint32 x,y;} position,speed;
 	int freeFallCounter;
-	union {
-		struct {
-			int had_collision;
-		} platform;
-		struct {
-			int in_jump;
-			int can_jump;
-			int last_run;
-			int pushes;
-		} player;
-	} specific;
+	int had_collision;
+	struct {
+		int in_jump;
+		int can_jump;
+		int last_run;
+		int pushes;
+	} player;
 } tPhysicsElement;
 
 pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
