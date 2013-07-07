@@ -166,6 +166,13 @@ void setSpeed( pPhysicsElement element )
 		}
 		selectCorrectSprite(element);
 	}
+	if (element->type == BUTTON)
+	{
+		if (element->had_collision)
+			spSelectSprite(element->levelObject->animation,"on");
+		else
+			spSelectSprite(element->levelObject->animation,"off");
+	}
 }
 
 void xHit( pPhysicsElement element,int pos)

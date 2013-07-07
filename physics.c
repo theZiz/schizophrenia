@@ -280,6 +280,16 @@ static int check_Y_collision(pPhysicsElement e1,pPhysicsElement e2,int backup) /
 	return 0;
 }
 
+int check_background_collision(pPhysicsElement e1,pPhysicsElement e2)
+{
+	if (e1->position.x + e1->w > e2->position.x &&
+	    e1->position.x         < e2->position.x + e2->w &&
+	    e1->position.y + e1->h > e2->position.y &&
+	    e1->position.y         < e2->position.y + e2->h)
+	    return 1;
+	return 0;
+}
+
 void movementAndCollision(pPhysicsElement element);
 
 int collision_check_y(pPhysicsElement element,pPhysicsElement partner,int backupX,int backupY)
@@ -433,6 +443,25 @@ void movementAndCollision(pPhysicsElement element)
 		element->speed.x = 0;
 		element->speed.y = 0;
 }
+
+int backgroundCollision(pPhysicsElement element)
+{
+	//Collision with moveable stuff
+	pPhysicsElement partner = firstMoveableElement;
+	do
+	{
+		if (element == partner || partner->background)
+		{
+			partner = partner->next;
+			continue;
+		}
+		if (check_background_collision(element,partner))
+			return 1;
+		partner = partner->next;
+	}
+	while (partner != firstMoveableElement);
+	return 0;
+}
 	
 void doPhysics(pLevel level)
 {
@@ -459,21 +488,26 @@ void doPhysics(pLevel level)
 			element->freeFallCounter++;
 		}
 		//The physics itself:
-		movementAndCollision(element);
-		if (spFixedToInt(element->position.y+element->h) >= staticElementLookUpY)
+		if (element->background)
+			element->had_collision = backgroundCollision(element);
+		else
 		{
-			printf("Knife! Hehehehe...\n");
-			//Removing Element
-			if (element->levelObject)
-				removeObject(element->levelObject,level);
-			pPhysicsElement prev = element->prev;
-			pPhysicsElement next = element->next;
-			next->prev = prev;
-			prev->next = next;
-			if (element == firstMoveableElement)
-				firstMoveableElement = next;
-			free(element);
-			element = prev;
+			movementAndCollision(element);
+			if (spFixedToInt(element->position.y+element->h) >= staticElementLookUpY)
+			{
+				printf("Knife! Hehehehe...\n");
+				//Removing Element
+				if (element->levelObject)
+					removeObject(element->levelObject,level);
+				pPhysicsElement prev = element->prev;
+				pPhysicsElement next = element->next;
+				next->prev = prev;
+				prev->next = next;
+				if (element == firstMoveableElement)
+					firstMoveableElement = next;
+				free(element);
+				element = prev;
+			}
 		}
 		element = element->next;
 	}

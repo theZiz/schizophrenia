@@ -59,7 +59,6 @@ typedef enum {
 	ON = 1,DIRECTION2 = 1
 } LevelState;
 
-
 #include "physics.h"
 #define PARALAX 3
 
