@@ -156,7 +156,10 @@ void createPhysicsFromLevel(pLevel level)
 					floating = 1;
 					platform = 1;
 					break;
-				case SWITCH: case BUTTON: case DOOR: case COLLECTIBLE:
+				case BUTTON:
+					x+=spFloatToFixed(0.1);
+					w-=spFloatToFixed(0.2);
+				case SWITCH:case DOOR: case COLLECTIBLE:
 					background = 1;
 					floating = 1;
 					break;
