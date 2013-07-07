@@ -20,6 +20,7 @@
 */
 
 #include "feedback.h"
+#include "settings.h"
 
 pLevel level;
 
@@ -31,15 +32,34 @@ pLevel* getLevelOverPointer()
 void do_control_stuff()
 {
 	//Controls and some Logic (more in feedback.c)
-	if (spGetInput()->button[SP_BUTTON_R])
+	if (spGetInput()->button[get_next_button()])
 	{
-		spGetInput()->button[SP_BUTTON_R] = 0;
+		spGetInput()->button[get_next_button()] = 0;
 		level->choosenPlayer = level->choosenPlayer->prev;
 	}
-	if (spGetInput()->button[SP_BUTTON_L])
+	if (spGetInput()->button[get_prev_button()])
 	{
-		spGetInput()->button[SP_BUTTON_L] = 0;
+		spGetInput()->button[get_prev_button()] = 0;
 		level->choosenPlayer = level->choosenPlayer->next;
+	}
+	if (spGetInput()->button[get_push_button()])
+	{
+		spGetInput()->button[get_push_button()] = 0;
+		pPhysicsElement element = getFirstMoveableElement();
+		if (element)
+		do
+		{
+			if (element->type == SWITCH && element->had_collision_with_choosen_player)
+			{
+				element->levelObject->state = 1-element->levelObject->state;
+				if (element->levelObject->state)
+					spSelectSprite(element->levelObject->animation,"on");
+				else
+					spSelectSprite(element->levelObject->animation,"off");
+			}
+			element = element->next;
+		}
+		while (element != getFirstMoveableElement());		
 	}
 }
 
@@ -107,7 +127,7 @@ void setSpeed( pPhysicsElement element )
 		if (element->levelObject == level->choosenPlayer)
 		{
 			//Half of the Y-Movement stuff
-			if ( !spGetInput()->button[SP_BUTTON_LEFT] )
+			if ( !spGetInput()->button[get_jump_button()] )
 			{
 				if ( element->player.in_jump >= JUMP_MIN_TIME && element->player.can_jump ) // start turn-around
 				{
@@ -188,7 +208,7 @@ void yHit( pPhysicsElement element,int pos)
 		//Other half of the Y-Movement stuff
 		if (pos == -1)
 		{
-			if (spGetInput()->button[SP_BUTTON_LEFT])
+			if (spGetInput()->button[get_jump_button()])
 			{
 				if ( element->player.in_jump == 0 && element->player.can_jump) // start the jump
 					element->player.in_jump = 1;

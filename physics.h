@@ -46,11 +46,13 @@ typedef struct sPhysicsElement {
 	struct {Sint32 x,y;} position,speed;
 	int freeFallCounter;
 	int had_collision;
+	int had_collision_with_choosen_player;
 	struct {
 		int in_jump;
 		int can_jump;
 		int last_run;
 		int pushes;
+		int uses_stuff;
 	} player;
 } tPhysicsElement;
 
@@ -60,6 +62,8 @@ void createPhysicsFromLevel(pLevel level);
 void clearPhysics(); //Deletes the whole scene
 void doPhysics(pLevel level);
 void updateLevelObjects();
+
+pPhysicsElement getFirstMoveableElement();
 
 int getCollisionCount(); //DEBUG
 

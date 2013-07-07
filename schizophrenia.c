@@ -80,7 +80,7 @@ Sint32 rotation = 0;
 int calc_schizo( Uint32 steps )
 {
 	//Ingame controls
-	do_control_stuff();
+	do_control_stuff((*levelPointer));
 	
 	//Finish?
 	if ( spGetInput()->button[SP_BUTTON_START] )

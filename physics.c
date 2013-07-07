@@ -50,6 +50,7 @@ pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 	element->player.in_jump = 0;
 	element->player.last_run = 0;
 	element->player.pushes = 0;
+	element->had_collision_with_choosen_player = 0;
 	element->levelObject = levelObject;
 	if (levelObject)
 	{
@@ -444,9 +445,11 @@ void movementAndCollision(pPhysicsElement element)
 		element->speed.y = 0;
 }
 
-int backgroundCollision(pPhysicsElement element)
+int backgroundCollision(pPhysicsElement element, pLevel level)
 {
 	//Collision with moveable stuff
+	element->had_collision_with_choosen_player = 0;
+	int result = 0;
 	pPhysicsElement partner = firstMoveableElement;
 	do
 	{
@@ -456,11 +459,15 @@ int backgroundCollision(pPhysicsElement element)
 			continue;
 		}
 		if (check_background_collision(element,partner))
-			return 1;
+		{
+			result = 1;
+			if (partner->levelObject == level->choosenPlayer)
+				element->had_collision_with_choosen_player = 1;
+		}
 		partner = partner->next;
 	}
 	while (partner != firstMoveableElement);
-	return 0;
+	return result;
 }
 	
 void doPhysics(pLevel level)
@@ -489,7 +496,7 @@ void doPhysics(pLevel level)
 		}
 		//The physics itself:
 		if (element->background)
-			element->had_collision = backgroundCollision(element);
+			element->had_collision = backgroundCollision(element,level);
 		else
 		{
 			movementAndCollision(element);
@@ -525,3 +532,8 @@ int getCollisionCount()
 	return 42;
 }
 #endif
+
+pPhysicsElement getFirstMoveableElement()
+{
+	return firstMoveableElement;
+}
