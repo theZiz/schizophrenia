@@ -1,4 +1,7 @@
 Ziz:
+- Dialoge
+- Unterscheidung zwischen Schildern und eigenen Gedanken
+- Steuerungserklärung per Dialog
 - Bug in Anzeige
 - Bewegung in Abhängigkeit von gedrückten Schaltern
 - Energieanzeige
@@ -11,6 +14,8 @@ Ziz:
   - Zeichnen als beliebigfarbiges Schwirren von 1-Pixel-Partikeln
 - Puzzleteile anzeigen (+ gesammelte)
 - Puzzleteile sammeln
+- Steuerung in Config file
+- Steuerung per GUI änderbar
 
 Foxblock:
 - Teamlogo
@@ -48,3 +53,27 @@ Level:
 - Keine freie Bewegung des Klon/Destroy-Fadenkreuzes, sondern direkte Auswahl der Objekte in der Umgebung ???
 - Nur klonen wenn man fest auf dem Boden steht (ist sonst zu leicht explotable), auf Platformen evtl auch
   -> Nur klonen wenn das zu klonende Objekt fest auf dem Boden steht
+
+Allgemein Weltherrschaftsgedanken:
+- doppeltes Release mit Interviews (siehe Chatlog)
+- gefakte Meinungen
+	- "Göttliches Vergnügen" (Der Wachturm)
+	- "Wrrroooaaaar!" (Wookiee's health)
+	- "Lang lebe der König der Jump and Runs" / "Be prepared!" (Ska, Rebellenführer gegen das Muffasa-Regim)
+	- "This game is maddness" (Messenger of the persian godking)
+	- "Schlumpftastisch" (Bild des Schlumpfs)
+	- "I'm Commander Shepard and this is my favorite game on the citadel" (Commander Shepard)
+	- "…" -Gordon Freeman, Link, That Dude From Quake
+	- "Clone all the things!"
+	- "Cloning is magic!" (Princess Twilight Sparkle)
+	- "I want to clone the very best" (Ash Ketchum)
+	- "Prepare for trouble, and clone it double" (Team Rocket)
+	- "I came here to clone and chew bubblegum, and I am all out of gum" - Duke Nukem
+	- "This game sucks" -Scientist guy from Schizophrenia
+	- "This game is awesome -Guy from Schizophrenia
+	- "Selbst ich mag dieses Spiel" -zLouD
+	- "Bugs are abused! Not cool!" (People for the Ethical Treatment of Animals)- Tine Wittler
+- Widersprechen: Performance vs. Übertakten, Grafik vs. Spielidee
+- 8 Bit Blödsinn
+- NEON grün
+- [lacht], [popelt Gedankenversunken in der Nase], [schlürft genüsslich an seinem Fairtrade-Dekaf-Sojamilch-Latte-Espresso-Cappucino]
