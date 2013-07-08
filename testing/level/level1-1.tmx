@@ -145,7 +145,7 @@
  </objectgroup>
  <objectgroup name="second-horizontal" width="50" height="25">
   <object name="switch" x="1152" y="560"/>
-  <object name="paternoster" type="(0;0),(0.001;0)" x="1216" y="582" width="64" height="16"/>
+  <object name="paternoster" type="(-0.001;0),(0.001;0)" x="1216" y="582" width="64" height="16"/>
  </objectgroup>
  <objectgroup name="first-vertical" width="50" height="25">
   <object name="button" x="671" y="572"/>
