@@ -108,18 +108,50 @@ void setSpeed( pPhysicsElement element )
 		return;
 	if (element->type == PLATFORM)
 	{
-		if (element->had_collision)
-			element->levelObject->direction = 1 - element->levelObject->direction;
-		if (element->levelObject->direction == 0)
+		//is platform enabled?
+		int enabled = 1;
+		pLevelObject groupElement = element->levelObject->group->firstObject;
+		if (groupElement)
+		do
 		{
-			element->speed.x += element->levelObject->speed.v1.x;
-			element->speed.y += element->levelObject->speed.v1.y;
+			if (groupElement->type == BUTTON || groupElement->type == SWITCH)
+			{
+				if (groupElement->kind) //negative
+				{
+					if (groupElement->state == ON)
+					{
+						enabled = 0;
+						break;
+					}
+				}
+				else
+				{
+					if (groupElement->state == OFF)
+					{
+						enabled = 0;
+						break;
+					}
+				}
+			}
+			
+			groupElement = groupElement->next;
 		}
-		else
+		while (groupElement != element->levelObject->group->firstObject);
+		if (enabled)
 		{
-			element->speed.x = element->levelObject->speed.v2.x;
-			element->speed.y = element->levelObject->speed.v2.y;
-		}	
+			if (element->had_collision)
+				element->levelObject->direction = 1 - element->levelObject->direction;
+			if (element->levelObject->direction == 0)
+			{
+				element->speed.x += element->levelObject->speed.v1.x;
+				element->speed.y += element->levelObject->speed.v1.y;
+			}
+			else
+			{
+				element->speed.x = element->levelObject->speed.v2.x;
+				element->speed.y = element->levelObject->speed.v2.y;
+			}
+		}
 	}
 	else
 	if (element->type == PLAYER)
@@ -189,9 +221,17 @@ void setSpeed( pPhysicsElement element )
 	if (element->type == BUTTON)
 	{
 		if (element->had_collision)
-			spSelectSprite(element->levelObject->animation,"on");
+		{
+			if (element->levelObject->state == OFF)
+				spSelectSprite(element->levelObject->animation,"on");
+			element->levelObject->state = ON;
+		}
 		else
-			spSelectSprite(element->levelObject->animation,"off");
+		{
+			if (element->levelObject->state == ON)
+				spSelectSprite(element->levelObject->animation,"off");
+			element->levelObject->state = OFF;
+		}
 	}
 }
 
