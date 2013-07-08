@@ -136,7 +136,7 @@ int main( int argc, char **argv )
 	//sparrow3D Init
 	spInitCore();
 	
-	//spSetDefaultWindowSize(800,480);
+	spSetDefaultWindowSize(800,480);
 
 	//Setup
 	#if (defined ZOOMUP || defined ZOOMDOWN) && !(defined ZOOMUP && defined ZOOMDOWN)

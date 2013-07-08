@@ -924,10 +924,10 @@ void drawLevel(pLevel level)
 	int paralax;
 	for (paralax = PARALAX-1; paralax >= 0; paralax--)
 	{
-		int screenWidth = spGetRenderTarget()->w;
-		int screenHeight = spGetRenderTarget()->h;
+		int screenWidth = spGetRenderTarget()->w+32;
+		int screenHeight = spGetRenderTarget()->h+32;
 		int screenTileWidth  = screenWidth/(32>>paralax)+2;
-		int screenTileHeight = screenWidth/(32>>paralax)+2;
+		int screenTileHeight = screenHeight/(32>>paralax)+2;
 		int screenTileBeginX = level->currentCamera.x >> SP_ACCURACY;
 		int screenTileBeginY = level->currentCamera.y >> SP_ACCURACY;
 		int startX = screenTileBeginX-screenTileWidth/2;
