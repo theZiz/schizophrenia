@@ -137,11 +137,27 @@ void setSpeed( pPhysicsElement element )
 			groupElement = groupElement->next;
 		}
 		while (groupElement != element->levelObject->group->firstObject);
-		if (enabled)
+		if (element->levelObject->kind == 1)
 		{
-			if (element->had_collision)
-				element->levelObject->direction = 1 - element->levelObject->direction;
-			if (element->levelObject->direction == 0)
+			if (enabled)
+			{
+				if (element->had_collision)
+					element->levelObject->direction = 1 - element->levelObject->direction;
+				if (element->levelObject->direction == 0)
+				{
+					element->speed.x += element->levelObject->speed.v1.x;
+					element->speed.y += element->levelObject->speed.v1.y;
+				}
+				else
+				{
+					element->speed.x = element->levelObject->speed.v2.x;
+					element->speed.y = element->levelObject->speed.v2.y;
+				}
+			}
+		}
+		else
+		{
+			if (enabled)
 			{
 				element->speed.x += element->levelObject->speed.v1.x;
 				element->speed.y += element->levelObject->speed.v1.y;

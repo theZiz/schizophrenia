@@ -635,6 +635,12 @@ pLevel loadLevel(char* filename)
 								else
 								if (strcmp(attribute,"platform") == 0)
 									obj->type = PLATFORM;
+								else
+								if (strcmp(attribute,"paternoster") == 0)
+								{
+									obj->type = PLATFORM;
+									obj->kind = 1;
+								}
 							}
 							end_s[0] = '\"';
 						}
