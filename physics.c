@@ -97,6 +97,8 @@ pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 	return element;
 }
 
+#define PIXEL_SIZE (SP_ONE/32)
+
 void createPhysicsFromLevel(pLevel level)
 {
 	//Tiles
@@ -141,12 +143,12 @@ void createPhysicsFromLevel(pLevel level)
 					continue;
 				case PLAYER:
 					mover = 1;
-					x+=spFloatToFixed(0.04);
-					w-=spFloatToFixed(0.08);
+					x+=PIXEL_SIZE * 2;
+					w-=PIXEL_SIZE * 4;
 					break;
 				case NEGA:
-					x+=spFloatToFixed(0.04);
-					w-=spFloatToFixed(0.08);
+					x+=PIXEL_SIZE * 2;
+					w-=PIXEL_SIZE * 4;
 				case BUG:
 					break;
 				case BOX: 
@@ -157,8 +159,8 @@ void createPhysicsFromLevel(pLevel level)
 					platform = 1;
 					break;
 				case BUTTON:
-					x+=spFloatToFixed(0.1);
-					w-=spFloatToFixed(0.2);
+					x+=PIXEL_SIZE * 6;
+					w-=PIXEL_SIZE * 12;
 				case SWITCH:case DOOR: case COLLECTIBLE:
 					background = 1;
 					floating = 1;
@@ -211,8 +213,8 @@ void updateLevelObjects()
 	{
 		if (element->levelObject)
 		{
-			element->levelObject->x = element->position.x;
-			element->levelObject->y = element->position.y;
+			element->levelObject->x = element->position.x-((element->levelObject->w << SP_ACCURACY-5)-element->w)/2;
+			element->levelObject->y = element->position.y-((element->levelObject->h << SP_ACCURACY-5)-element->h)/2;
 		}
 		element = element->next;
 	}

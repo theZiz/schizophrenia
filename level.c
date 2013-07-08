@@ -915,8 +915,6 @@ pLevel loadLevel(char* filename)
 
 void drawLevel(pLevel level)
 {
-	spSetVerticalOrigin(SP_TOP);
-	spSetHorizontalOrigin(SP_LEFT);
 	int paralax;
 	for (paralax = PARALAX-1; paralax >= 0; paralax--)
 	{
@@ -1004,8 +1002,6 @@ void drawLevel(pLevel level)
 			}
 		}
 	}
-	spSetVerticalOrigin(SP_CENTER);
-	spSetHorizontalOrigin(SP_CENTER);
 }
 
 void deleteLevel(pLevel level)
