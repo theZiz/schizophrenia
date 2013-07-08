@@ -1,9 +1,9 @@
 Ziz:
+- Steuerung in Config file
+- Steuerung per GUI änderbar
 - Dialoge
 - Unterscheidung zwischen Schildern und eigenen Gedanken
 - Steuerungserklärung per Dialog
-- Bug in Anzeige
-- Bewegung in Abhängigkeit von gedrückten Schaltern
 - Energieanzeige
 - Klonbarparameter
 - Klonbare Objekte markieren
@@ -14,8 +14,6 @@ Ziz:
   - Zeichnen als beliebigfarbiges Schwirren von 1-Pixel-Partikeln
 - Puzzleteile anzeigen (+ gesammelte)
 - Puzzleteile sammeln
-- Steuerung in Config file
-- Steuerung per GUI änderbar
 
 Foxblock:
 - Teamlogo
