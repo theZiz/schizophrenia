@@ -109,7 +109,8 @@ void setSpeed( pPhysicsElement element )
 	if (element->type == PLATFORM)
 	{
 		//is platform enabled?
-		int enabled = 1;
+		int was_enabled = element->platform_enabled;
+		element->platform_enabled = 1;
 		pLevelObject groupElement = element->levelObject->group->firstObject;
 		if (groupElement)
 		do
@@ -120,7 +121,7 @@ void setSpeed( pPhysicsElement element )
 				{
 					if (groupElement->state == ON)
 					{
-						enabled = 0;
+						element->platform_enabled = 0;
 						break;
 					}
 				}
@@ -128,18 +129,17 @@ void setSpeed( pPhysicsElement element )
 				{
 					if (groupElement->state == OFF)
 					{
-						enabled = 0;
+						element->platform_enabled = 0;
 						break;
 					}
 				}
 			}
-			
 			groupElement = groupElement->next;
 		}
 		while (groupElement != element->levelObject->group->firstObject);
 		if (element->levelObject->kind == 1)
 		{
-			if (enabled)
+			if (element->platform_enabled)
 			{
 				if (element->had_collision)
 					element->levelObject->direction = 1 - element->levelObject->direction;
@@ -157,15 +157,20 @@ void setSpeed( pPhysicsElement element )
 		}
 		else
 		{
-			if (enabled)
+			if (element->platform_enabled != was_enabled)
+				element->paterNoster_is_on = 1;
+			if (element->paterNoster_is_on)
 			{
-				element->speed.x += element->levelObject->speed.v1.x;
-				element->speed.y += element->levelObject->speed.v1.y;
-			}
-			else
-			{
-				element->speed.x = element->levelObject->speed.v2.x;
-				element->speed.y = element->levelObject->speed.v2.y;
+				if (element->platform_enabled)
+				{
+					element->speed.x += element->levelObject->speed.v1.x;
+					element->speed.y += element->levelObject->speed.v1.y;
+				}
+				else
+				{
+					element->speed.x = element->levelObject->speed.v2.x;
+					element->speed.y = element->levelObject->speed.v2.y;
+				}
 			}
 		}
 	}

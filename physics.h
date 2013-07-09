@@ -47,6 +47,8 @@ typedef struct sPhysicsElement {
 	int freeFallCounter;
 	int had_collision;
 	int had_collision_with_choosen_player;
+	int platform_enabled;
+	int paterNoster_is_on;
 	struct {
 		int in_jump;
 		int can_jump;

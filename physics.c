@@ -52,6 +52,7 @@ pPhysicsElement createPhysicsElement(Sint32 x,Sint32 y,Sint32 w,Sint32 h,
 	element->player.pushes = 0;
 	element->had_collision_with_choosen_player = 0;
 	element->levelObject = levelObject;
+	element->paterNoster_is_on = 1;
 	if (levelObject)
 	{
 		levelObject->physicsElement = element;
@@ -434,7 +435,7 @@ void movementAndCollision(pPhysicsElement element)
 		//Movement + Backup
 		int backupX = element->position.x;
 		int backupY = element->position.y;
-		if (element->platform)
+		if (element->platform && (element->levelObject->kind == 1 || element->paterNoster_is_on))
 			seek_and_move_a_bit_above(element);
 		element->had_collision = 0;
 		//Y
@@ -446,8 +447,8 @@ void movementAndCollision(pPhysicsElement element)
 			element->position.x += element->speed.x;
 			check_all_collisions(element,collision_check_x,backupX,backupY,xHit);
 		}	
-		element->speed.x = 0;
-		element->speed.y = 0;
+		if (element->platform && element->had_collision && element->levelObject->kind == 0)
+			element->paterNoster_is_on = 0;
 }
 
 int backgroundCollision(pPhysicsElement element, pLevel level)

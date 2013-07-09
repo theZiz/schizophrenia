@@ -22,7 +22,7 @@
 /* This file contains some defines needed by multiply files of schizophrenia */
 
 //#define ZOOMDOWN
-//#define ZOOMUP
+#define ZOOMUP
 //#define FIRSTUP
 
 /* Determines, whether Z sorting is activated or not. It should be deactivated
