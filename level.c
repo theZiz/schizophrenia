@@ -165,25 +165,11 @@ spSpritePointer get_sprite(int tilenr,pTile_set tile_set,spSpritePointer *table,
 				SDL_LockSurface(surface);
 				Uint16* pixel = (Uint16*)surface->pixels;
 				Sint32 m = surface->pitch/surface->format->BytesPerPixel;
-				int br = spGetRFromColor(backgroundColor);
-				int bg = spGetGFromColor(backgroundColor);
-				int bb = spGetBFromColor(backgroundColor);
 				int x,y;
 				for (x = 0; x < surface->w; x++)
 					for (y = 0; y < surface->h; y++)
 						if (pixel[x+y*m] != SP_ALPHA_COLOR)
-						{
-							int r = spGetRFromColor(pixel[x+y*m]);
-							int g = spGetGFromColor(pixel[x+y*m]);
-							int b = spGetBFromColor(pixel[x+y*m]);
-							r += br*((1<<zoom)-1);
-							g += bg*((1<<zoom)-1);
-							b += bb*((1<<zoom)-1);
-							r >>= zoom;
-							g >>= zoom;
-							b >>= zoom;
-							pixel[x+y*m] = spGetFastRGB(r,g,b);
-						}
+							pixel[x+y*m] = spInterpolateColor(backgroundColor,pixel[x+y*m],SP_ONE >> zoom);
 				SDL_UnlockSurface(surface);
 			}
 			spNewSubSpriteWithTiling(table[tilenr],surface,linePosition*tile_set->tilewidth >> zoom,lineNumber*tile_set->tileheight >> zoom,tile_set->tilewidth >> zoom,tile_set->tileheight >> zoom,1000);

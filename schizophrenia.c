@@ -39,6 +39,8 @@ spFontPointer font = NULL;
 
 pLevel* levelPointer;
 
+int levelFade;
+
 void draw_schizo( void )
 {
 	RESET_ZBUFFER
@@ -73,6 +75,10 @@ void draw_schizo( void )
 	#elif defined ZOOMDOWN
 		spScaleDownSmooth(screen,real_screen);
 	#endif
+	if (levelFade > 0) // Fade in
+		spInterpolateTargetToColor(0,(levelFade*SP_ONE)/FADE_TIME);
+	if (levelFade < 0) // Fade out
+		spInterpolateTargetToColor(0,SP_ONE+(levelFade*SP_ONE)/FADE_TIME);
 	spFlip();
 }
 
@@ -86,12 +92,30 @@ int calc_schizo( Uint32 steps )
 
 	//Ingame controls
 	if (do_control_stuff()) //result is non zero => level change
+		levelFade = -FADE_TIME;
+		
+	if ( levelFade > 0 ) //Fade in
 	{
-		clearPhysics();
-		deleteLevel((*levelPointer));		
-		(*levelPointer) = loadLevel(get_saved_level());
-		createPhysicsFromLevel((*levelPointer));
-		return 0;
+		levelFade -= steps;
+		if (levelFade < 0)
+			levelFade = 0;
+		else
+			return 0;
+	}
+
+	if ( levelFade < 0 ) //Fade out
+	{
+		levelFade += steps;
+		if (levelFade > 0)
+		{
+			levelFade = FADE_TIME;
+			clearPhysics();
+			deleteLevel((*levelPointer));		
+			(*levelPointer) = loadLevel(get_saved_level());
+			createPhysicsFromLevel((*levelPointer));
+		}
+		else
+			return 0;
 	}
 	
 	//Physics
@@ -155,14 +179,16 @@ int main( int argc, char **argv )
 		resize( screen->w, screen->h );
 	#endif
 
-	//Loading the first (*levelPointer):
+	//Setting the first level
 	levelPointer = getLevelOverPointer();
 	if (argc < 2)
-		(*levelPointer) = loadLevel("./level/tile_test.tmx");
+		sprintf(get_saved_level(),"./level/tile_test.tmx");
 	else
-		(*levelPointer) = loadLevel(argv[1]);
+		sprintf(get_saved_level(),"%s",argv[1]);
+	levelFade = FADE_TIME;
+	(*levelPointer) = loadLevel(get_saved_level());
 	createPhysicsFromLevel((*levelPointer));
-
+	
 	//All glory the main loop
 	spLoop( draw_schizo, calc_schizo, 10, resize, NULL );
 

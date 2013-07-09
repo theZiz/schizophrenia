@@ -22,7 +22,7 @@
 #include "feedback.h"
 #include "settings.h"
 
-pLevel level;
+pLevel level = NULL;
 
 pLevel* getLevelOverPointer()
 {

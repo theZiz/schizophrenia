@@ -25,6 +25,8 @@
 //#define ZOOMUP
 //#define FIRSTUP
 
+#define FADE_TIME 500
+
 /* Determines, whether Z sorting is activated or not. It should be deactivated
    and the primitives should be sorted internal */
 #define Z_SORTING 0
