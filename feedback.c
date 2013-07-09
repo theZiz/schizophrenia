@@ -29,7 +29,7 @@ pLevel* getLevelOverPointer()
 	return &level;
 }
 
-void do_control_stuff()
+int do_control_stuff()
 {
 	//Controls and some Logic (more in feedback.c)
 	if (spGetInput()->button[get_next_button()])
@@ -61,6 +61,24 @@ void do_control_stuff()
 		}
 		while (element != getFirstMoveableElement());		
 	}
+	if (spGetInput()->axis[1] < 0)
+	{
+		spGetInput()->axis[1] = 0;
+		pPhysicsElement element = getFirstMoveableElement();
+		if (element)
+		do
+		{
+			if (element->type == DOOR && element->had_collision_with_choosen_player)
+			{
+				printf("Sprich Freund und tritt ein!\n");
+				sprintf(get_saved_level(),"./level/%s",element->levelObject->some_char);
+				return 1;
+			}
+			element = element->next;
+		}
+		while (element != getFirstMoveableElement());		
+	}
+	return 0;
 }
 
 void selectCorrectSprite(pPhysicsElement player)

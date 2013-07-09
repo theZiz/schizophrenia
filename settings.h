@@ -28,6 +28,6 @@ int get_next_button();
 int get_prev_button();
 int get_jump_button();
 int get_push_button();
-
+char* get_saved_level();
 
 #endif

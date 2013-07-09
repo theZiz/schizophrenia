@@ -23,6 +23,7 @@
 #include "level.h"
 #include "physics.h"
 #include "feedback.h"
+#include "settings.h"
 
 #include "global_defines.h"
 
@@ -79,13 +80,20 @@ Sint32 rotation = 0;
 
 int calc_schizo( Uint32 steps )
 {
-	//Ingame controls
-	do_control_stuff((*levelPointer));
-	
 	//Finish?
 	if ( spGetInput()->button[SP_BUTTON_START] )
 		return 1;
 
+	//Ingame controls
+	if (do_control_stuff()) //result is non zero => level change
+	{
+		clearPhysics();
+		deleteLevel((*levelPointer));		
+		(*levelPointer) = loadLevel(get_saved_level());
+		createPhysicsFromLevel((*levelPointer));
+		return 0;
+	}
+	
 	//Physics
 	int i;
 	for (i = 0; i < steps; i++)
@@ -136,7 +144,7 @@ int main( int argc, char **argv )
 	//sparrow3D Init
 	spInitCore();
 	
-	spSetDefaultWindowSize(800,480);
+	//spSetDefaultWindowSize(800,480);
 
 	//Setup
 	#if (defined ZOOMUP || defined ZOOMDOWN) && !(defined ZOOMUP && defined ZOOMDOWN)

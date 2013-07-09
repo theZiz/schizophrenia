@@ -21,6 +21,8 @@
 
 #include "settings.h"
 
+char saved_level[1024];
+
 int get_next_button()
 {
 	return SP_BUTTON_R;
@@ -41,3 +43,7 @@ int get_push_button()
 	return SP_BUTTON_RIGHT;
 }
 
+char* get_saved_level()
+{
+	return saved_level;
+}
